@@ -1,3 +1,4 @@
-.ipynb_checkpoints
-images
 *.docx
+images
+.ipynb_checkpoints
+venv

@@ -1,0 +1,4 @@
+notebook
+pandas
+seaborn
+python-docx
