@@ -1,4 +1,5 @@
 *.docx
+!basic-report.docx
 images
 .ipynb_checkpoints
 venv
