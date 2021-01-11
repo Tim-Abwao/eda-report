@@ -1,5 +1,7 @@
 # Basic Exploratory Data Analysis Report
 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Tim-Abwao/auto-eda/dev)
+
 A Jupyter notebook to help automate EDA report generation.
 
 The data is analysed using [pandas][1] & [numpy][2], plotted using [matplotlib][3] & [seaborn][4], and then packaged as a *Word .docx* file using [python-docx][5].
