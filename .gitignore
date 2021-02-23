@@ -1,5 +1,6 @@
+venv
+.ipynb_checkpoints
+__pycache__
 *.docx
 !basic-report.docx
-images
-.ipynb_checkpoints
-venv
+.~lock*
