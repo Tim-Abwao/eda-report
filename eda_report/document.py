@@ -132,9 +132,3 @@ class ReportDocument:
     def _save_file(self):
         """Save the document as a .docx file."""
         self.document.save(self.OUTPUT_FILENAME)
-
-
-if __name__ == '__main__':
-    import seaborn as sns, eda_report
-    data = sns.load_dataset('mpg')
-    ReportDocument(data)

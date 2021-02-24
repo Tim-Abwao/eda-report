@@ -47,7 +47,7 @@ class Variable:
         ]
         summary['Skewness'] = self.data.skew()
         summary['Kurtosis'] = self.data.kurt()
-        self.statistics = summary
+        self.statistics = summary.round(7)
 
     def _categorical_summary_statictics(self):
         """Get summary statistics for a categorical variable."""

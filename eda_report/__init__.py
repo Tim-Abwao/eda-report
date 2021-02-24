@@ -1,7 +1,7 @@
 from eda_report.document import ReportDocument
 
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 
 def get_word_report(data, *, title='Exploratory Data Analysis Report',
