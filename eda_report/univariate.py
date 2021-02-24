@@ -1,6 +1,6 @@
 import pandas as pd
 import seaborn as sns
-from auto_eda.plotting import Fig, savefig
+from eda_report.plotting import Fig, savefig
 
 
 class Variable:

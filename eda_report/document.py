@@ -1,7 +1,13 @@
 from docx import Document
 from docx.shared import Inches
-from auto_eda.univariate import Variable
-from auto_eda.multivariate import MultiVariable
+from eda_report.univariate import Variable
+from eda_report.multivariate import MultiVariable
+
+import logging
+logging.basicConfig(
+    format='[%(levelname)s %(asctime)s.%(msecs)03d] %(message)s',
+    level=logging.INFO, datefmt='%H:%M:%S'
+)
 
 
 TABLE_STYLE = 'Table Grid'
@@ -14,19 +20,22 @@ class ReportDocument:
         self.data = data
         self.TITLE = title
         self.GRAPH_COLOUR = graph_colour
-        self.output_filename = output_filename
-        self.variables = MultiVariable(self.data,
-                                       graph_colour=self.GRAPH_COLOUR)
+        self.OUTPUT_FILENAME = output_filename
         self.document = Document()
         self.get_report()
 
     def get_report(self):
         """Calculate statistics, plot graphs, and save results as a .docx file.
         """
-        self._create_title_page()
-        self._get_variable_info()
-        self._get_bivariate_analysis()
+        logging.info('Assessing correlation in numeric variables...')
+        self.variables = MultiVariable(self.data,
+                                       graph_colour=self.GRAPH_COLOUR)
+        logging.info('Done. Summarising each variable...')
+        self._create_title_page()  # begin the report document       
+        self._get_variable_info()  # summarise each variable
+        self._get_bivariate_analysis()  # summarise variable pairs
         self._save_file()
+        logging.info(f'Done. Results saved as {self.OUTPUT_FILENAME!r}')
 
     def _create_title_page(self):
         """Add a title and a brief summary of the data."""
@@ -122,4 +131,10 @@ class ReportDocument:
 
     def _save_file(self):
         """Save the document as a .docx file."""
-        self.document.save(self.output_filename)
+        self.document.save(self.OUTPUT_FILENAME)
+
+
+if __name__ == '__main__':
+    import seaborn as sns, eda_report
+    data = sns.load_dataset('mpg')
+    ReportDocument(data)

@@ -1,7 +1,7 @@
 import seaborn as sns
 import numpy as np
 from itertools import combinations
-from auto_eda.plotting import Fig, savefig
+from eda_report.plotting import Fig, savefig
 
 
 class MultiVariable:
