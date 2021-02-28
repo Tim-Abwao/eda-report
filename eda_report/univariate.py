@@ -1,6 +1,7 @@
 import pandas as pd
 import seaborn as sns
 from eda_report.plotting import Fig, savefig
+from pandas.api.types import  is_numeric_dtype, is_bool_dtype
 
 
 class Variable:
@@ -24,9 +25,14 @@ class Variable:
             self.missing = \
                 f"{missing_values} ({missing_values / len(self.data):.2%})"
 
-        if pd.api.types.is_numeric_dtype(self.data):
-            self.var_type = 'numeric'
+        if is_numeric_dtype(self.data):
+            if is_bool_dtype(self.data):
+                self.var_type = 'categorical'
+                self.data = self.data.astype('category')
+            else:
+                self.var_type = 'numeric'
         else:
+            # Handle bool, string and datetime data as categorical
             self.var_type = 'categorical'
 
     def get_summary_statictics(self):

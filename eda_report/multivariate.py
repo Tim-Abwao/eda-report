@@ -19,7 +19,8 @@ class MultiVariable:
     def _plot_joint_scatterplot(self):
         """Create a joint scatter-plot of all numeric columns."""
         fig = sns.pairplot(
-            self.data, height=1.75, plot_kws={'color': self.GRAPH_COLOUR},
+            self.data.select_dtypes(include='number'), height=1.75,
+            plot_kws={'color': self.GRAPH_COLOUR},
             diag_kws={'color': self.GRAPH_COLOUR}
         )
         fig.fig.suptitle('Scatter-plots of Numeric Columns', x=0.5, y=1.04,

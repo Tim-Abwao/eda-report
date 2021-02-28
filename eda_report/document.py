@@ -10,16 +10,14 @@ logging.basicConfig(
 )
 
 
-TABLE_STYLE = 'Table Grid'
-
-
 class ReportDocument:
     def __init__(self, data, title='Exploratory Data Analysis Report',
                  output_filename='basic-eda-report.docx',
-                 graph_colour='orangered'):
+                 graph_colour='orangered', table_style='Table Grid'):
         self.data = data
         self.TITLE = title
         self.GRAPH_COLOUR = graph_colour
+        self.TABLE_STYLE = table_style
         self.OUTPUT_FILENAME = output_filename
         self.document = Document()
         self.get_report()
@@ -115,13 +113,13 @@ class ReportDocument:
         """Create a table from the given data and add it to the document."""
         table = self.document.add_table(rows=len(data), cols=2)
         # Set table style
-        table.style = self.document.styles[TABLE_STYLE]
+        table.style = self.document.styles[self.TABLE_STYLE]
         # Set column dimensions
         table.columns[0].width = Inches(2.5)
         table.columns[1].width = Inches(2)
 
         # Get a list of tuples, each to be a row in the table
-        items = [(label, f'{val}') for label, val in data.items()]
+        items = [(f'{label}', f'{val}') for label, val in data.items()]
 
         for idx, row in enumerate(table.rows):
             label, value = items[idx]
