@@ -11,10 +11,13 @@ class MultiVariable:
         self.get_bivariate_analysis()
 
     def get_bivariate_analysis(self):
-        self.correlation_df = self.data.corr()
-        self._plot_joint_scatterplot()
-        self._plot_joint_correlation()
-        self._compare_variable_pairs()
+        numeric_cols = self.data.select_dtypes(include='number').columns
+
+        if numeric_cols.size > 1:
+            self.correlation_df = self.data.corr()
+            self._plot_joint_scatterplot()
+            self._plot_joint_correlation()
+            self._compare_variable_pairs()
 
     def _plot_joint_scatterplot(self):
         """Create a joint scatter-plot of all numeric columns."""

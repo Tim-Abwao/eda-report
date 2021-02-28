@@ -1,7 +1,6 @@
-import pandas as pd
 import seaborn as sns
 from eda_report.plotting import Fig, savefig
-from pandas.api.types import  is_numeric_dtype, is_bool_dtype
+from pandas.api.types import is_numeric_dtype, is_bool_dtype
 
 
 class Variable:

@@ -2,7 +2,7 @@ from docx import Document
 from docx.shared import Inches
 from eda_report.univariate import Variable
 from eda_report.multivariate import MultiVariable
-
+from eda_report.validate import validate_input_dtype
 import logging
 logging.basicConfig(
     format='[%(levelname)s %(asctime)s.%(msecs)03d] %(message)s',
@@ -14,7 +14,7 @@ class ReportDocument:
     def __init__(self, data, title='Exploratory Data Analysis Report',
                  output_filename='basic-eda-report.docx',
                  graph_colour='orangered', table_style='Table Grid'):
-        self.data = data
+        self.data = validate_input_dtype(data)
         self.TITLE = title
         self.GRAPH_COLOUR = graph_colour
         self.TABLE_STYLE = table_style
@@ -29,9 +29,12 @@ class ReportDocument:
         self.variables = MultiVariable(self.data,
                                        graph_colour=self.GRAPH_COLOUR)
         logging.info('Done. Summarising each variable...')
-        self._create_title_page()  # begin the report document       
+        self._create_title_page()  # begin the report document
         self._get_variable_info()  # summarise each variable
-        self._get_bivariate_analysis()  # summarise variable pairs
+
+        if hasattr(self.variables, 'var_pairs'):
+            self._get_bivariate_analysis()  # summarise variable pairs
+
         self._save_file()
         logging.info(f'Done. Results saved as {self.OUTPUT_FILENAME!r}')
 
@@ -44,16 +47,31 @@ class ReportDocument:
         num_rows, num_cols = self.data.shape
         num_numeric = self.data.select_dtypes(include='number').columns.size
 
-        if not num_numeric:  # if there are no numeric columns
-            num_numeric = "None"
+        if num_rows > 1:
+            rows = f'{num_rows} rows (observations)'
+        else:
+            rows = '1 row (observation)'
 
-        intro = f'The dataset consists of {num_rows} rows (observations) and'\
-            + f' {num_cols} columns (features), {num_numeric} of which are'\
-            + ' numeric:'
+        if num_cols > 1:
+            cols = f'{num_cols} columns (features)'
+        else:
+            cols = '1 column (feature)'
+
+        if num_numeric > 1:
+            numeric = f', {num_numeric} of which are numeric'
+        elif num_numeric == 1:
+            numeric = ', 1 of which is numeric'
+        else:
+            numeric = ''
+
+        intro = f'The dataset consists of {rows} and {cols}{numeric}.'
 
         self.document.add_paragraph(intro)
-        self.document.add_picture(self.variables.joint_scatterplot,
-                                  width=Inches(6.5))
+
+        if hasattr(self.variables, 'joint_scatterplot'):
+            self.document.add_picture(self.variables.joint_scatterplot,
+                                      width=Inches(6.5))
+            self.document.add_page_break()
 
     def _get_variable_info(self):
         """Get a brief introduction, summary statistics, and graphs for each
