@@ -1,4 +1,4 @@
-# Basic Exploratory Data Analysis Report
+# Automated Exploratory Data Analysis
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Tim-Abwao/auto-eda/main)
 [![PyPI version](https://badge.fury.io/py/eda-report.svg)](https://badge.fury.io/py/eda-report)
@@ -17,9 +17,46 @@ pip install eda-report
 
 ## Basic usage
 
+### 1. Command line interface
+
+To analyse a file named `input.csv`:
+
+```bash
+eda_report input.csv
+```
+
+Or even:
+
+```bash
+eda_report input.csv -o output.docx -c cyan --title 'EDA Report'
+```
+
+For more details on the optional arguments, pass the `-h` or `--help` flag to view the *help message*:
+
+```bash
+$ eda_report -h
+usage: eda_report [-h] [-o OUTFILE] [-t TITLE] [-c COLOUR] infile
+
+Get a basic EDA report in docx format.
+
+positional arguments:
+  infile                A .csv or .xlsx file to process.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -o OUTFILE, --outfile OUTFILE
+                        The output file (default: eda-report.docx)
+  -t TITLE, --title TITLE
+                        The top level heading in the report (default: Exploratory Data Analysis Report)
+  -c COLOUR, --colour COLOUR
+                        A valid matplotlib color specifier (default: orangered)
+```
+
+## 2. Interactive mode
+
 ```python
->>> import eda_report
->>> eda_report.get_word_report(df)
+>>> from eda_report import get_word_report
+>>> get_word_report(df)
 ```
 
 where `df` is a pandas `DataFrame`.
