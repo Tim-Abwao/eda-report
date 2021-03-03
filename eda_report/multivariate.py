@@ -2,6 +2,7 @@ import seaborn as sns
 import numpy as np
 from itertools import combinations
 from eda_report.plotting import Fig, savefig
+from tqdm import tqdm
 
 
 class MultiVariable:
@@ -103,6 +104,6 @@ class MultiVariable:
         self.corr_type = {}
         self.bivariate_scatterplots = {}
 
-        for var1, var2 in self.var_pairs:
+        for var1, var2 in tqdm(self.var_pairs, ncols=79):
             self._quantify_correlation(var1, var2)
             self._regression_plot(var1, var2)

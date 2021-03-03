@@ -3,7 +3,10 @@ from docx.shared import Inches
 from eda_report.univariate import Variable
 from eda_report.multivariate import MultiVariable
 from eda_report.validate import validate_input_dtype
+from tqdm import tqdm
 import logging
+
+
 logging.basicConfig(
     format='[%(levelname)s %(asctime)s.%(msecs)03d] %(message)s',
     level=logging.INFO, datefmt='%H:%M:%S'
@@ -76,7 +79,8 @@ class ReportDocument:
     def _get_variable_info(self):
         """Get a brief introduction, summary statistics, and graphs for each
         individual variable."""
-        for idx, col in enumerate(self.data.columns, start=1):
+        for idx, col in enumerate(tqdm(self.data.columns, ncols=79),
+                                  start=1):
             var = Variable(self.data[col], graph_colour=self.GRAPH_COLOUR)
             # Heading
             self.document.add_heading(f'{idx}. {col.title()}', level=2)
