@@ -2,6 +2,8 @@
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Tim-Abwao/auto-eda/main)
 [![PyPI version](https://badge.fury.io/py/eda-report.svg)](https://badge.fury.io/py/eda-report)
+[![Python 3.8](https://github.com/Tim-Abwao/auto-eda/actions/workflows/run-tests.yml/badge.svg)](https://github.com/Tim-Abwao/auto-eda/actions/workflows/run-tests.yml)
+[![Python 3.7 | 3.9](https://github.com/Tim-Abwao/auto-eda/actions/workflows/test-python3.7-3.9.yml/badge.svg)](https://github.com/Tim-Abwao/auto-eda/actions/workflows/test-python3.7-3.9.yml)
 
 A simple Python program to help automate EDA report generation.
 
