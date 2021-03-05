@@ -83,10 +83,10 @@ class ReportDocument:
                                   start=1):
             var = Variable(self.data[col], graph_colour=self.GRAPH_COLOUR)
             # Heading
-            self.document.add_heading(f'{idx}. {col.title()}', level=2)
+            self.document.add_heading(f'{idx}. {col}'.title(), level=2)
             # Introduction
             p = self.document.add_paragraph()
-            p.add_run(f'{col.capitalize()}').bold = True
+            p.add_run(f'{col}'.capitalize()).bold = True
             p.add_run(f' is a {var.var_type} variable ')
             p.add_run(f'with {var.num_unique} unique values. ')
             p.add_run(f'{var.missing} of its values are missing.')
@@ -112,13 +112,13 @@ class ReportDocument:
         for idx, var_pair in enumerate(self.variables.var_pairs, start=1):
             # Heading
             self.document.add_heading(
-                f'{idx}. {var_pair[0].title()} vs {var_pair[1].title()}',
+                f'{idx}. {var_pair[0]} vs {var_pair[1]}'.title(),
                 level=2)
             # Introductory text
             p = self.document.add_paragraph()
-            p.add_run(f'{var_pair[0].capitalize()}').bold = True
+            p.add_run(f'{var_pair[0]}'.capitalize()).bold = True
             p.add_run(' and ')
-            p.add_run(f'{var_pair[1].capitalize()}').bold = True
+            p.add_run(f'{var_pair[1]}'.capitalize()).bold = True
             p.add_run(f' have {self.variables.corr_type[var_pair]}.')
             # Scatter-plot
             self.document.add_picture(
