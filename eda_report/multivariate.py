@@ -29,7 +29,7 @@ class MultiVariable:
         self.categotical_cols = self._select_cols('object', 'bool')
         #: A ``DataFrame`` of correlation coefficients for the numeric columns
         self.correlation_df = self._get_correlation()
-        self.get_bivariate_analysis()
+        self._get_bivariate_analysis()
 
     def _get_bivariate_analysis(self):
         """Compare numeric variable pairs.
