@@ -2,28 +2,60 @@ import seaborn as sns
 import numpy as np
 from itertools import combinations
 from eda_report.plotting import Fig, savefig
+from eda_report.validate import validate_input_dtype
 from tqdm import tqdm
 
 
 class MultiVariable:
-    def __init__(self, data, graph_colour='cyan'):
-        self.data = data
+    """The blueprint for containers to hold data with multiple columns
+    (features).
+    """
+
+    def __init__(self, data, graph_colour='orangered'):
+        """Initialise an instance of :class:`MultiVariable`.
+
+        :param data: The data to process, ideally a ``pandas.DataFrame``
+            with mutliple columns.
+        :type data: An array-like, sequence, iterable or dict
+        :param graph_colour: The colour to apply to the graphs created,
+            defaults to 'orangered'.
+        :type graph_colour: str, optional
+        """
+        self.data = validate_input_dtype(data)
         self.GRAPH_COLOUR = graph_colour
+        #: A ``DataFrame`` of the numeric columns present in the data
+        self.numeric_cols = self._select_cols('number')
+        #: A ``DataFrame`` of the categorical columns present in the data
+        self.categotical_cols = self._select_cols('object', 'bool')
+        #: A ``DataFrame`` of correlation coefficients for the numeric columns
+        self.correlation_df = self._get_correlation()
         self.get_bivariate_analysis()
 
-    def get_bivariate_analysis(self):
-        numeric_cols = self.data.select_dtypes(include='number').columns
-
-        if numeric_cols.size > 1:
-            self.correlation_df = self.data.corr()
+    def _get_bivariate_analysis(self):
+        """Compare numeric variable pairs.
+        """
+        if self.numeric_cols.size > 1:
             self._plot_joint_scatterplot()
             self._plot_joint_correlation()
             self._compare_variable_pairs()
 
+    def _select_cols(self, *dtypes):
+        """Get a DataFrame of the numeric columns present.
+
+        :param dtype: The column data type to include.
+        :type dtype: str
+        :return: A ``DataFrame`` with columns of the specified data type, or
+            ``None`` if no column is of that data type.
+        :rtype: A ``DataFrame``, or ``None``
+        """
+        selected_cols = self.data.select_dtypes(include=dtypes)
+        return selected_cols if selected_cols.shape[1] > 0 else None
+
     def _plot_joint_scatterplot(self):
-        """Create a joint scatter-plot of all numeric columns."""
+        """Create a joint scatter-plot of all numeric columns.
+        """
         fig = sns.pairplot(
-            self.data.select_dtypes(include='number'), height=1.75,
+            self.numeric_cols, height=1.75,
             plot_kws={'color': self.GRAPH_COLOUR},
             diag_kws={'color': self.GRAPH_COLOUR}
         )
@@ -42,6 +74,12 @@ class MultiVariable:
         fig.suptitle('Correlation in Numeric Columns', size=15)
 
         self.joint_correlation_plot = savefig(fig)
+
+    def _get_correlation(self):
+        """Get a DataFrame of the correlation coefficients for numeric
+        columns.
+        """
+        return None if self.numeric_cols is None else self.data.corr()
 
     def _get_variable_pairs(self):
         """Get a list of unique pairings of the numeric variables"""
@@ -67,7 +105,7 @@ class MultiVariable:
         self.bivariate_scatterplots[(var1, var2)] = savefig(fig)
 
     def _quantify_correlation(self, var1, var2):
-        """Explain the magnitude of correlation.
+        """Explain the magnitude of correlation between variable pairs.
 
         Parameters:
         ----------

@@ -14,9 +14,28 @@ logging.basicConfig(
 
 
 class ReportDocument:
+    """The class with methods to create and populate the .docx report.
+    """
     def __init__(self, data, title='Exploratory Data Analysis Report',
-                 output_filename='basic-eda-report.docx',
+                 output_filename='eda-report.docx',
                  graph_colour='orangered', table_style='Table Grid'):
+        """Initialise an instance of :class:`ReportDocument`.
+
+        :param data: The data to analyse.
+        :type data: Array-like, sequence, iterable
+        :param title: The top level heading for the report, defaults to
+            'Exploratory Data Analysis Report'.
+        :type title: str, optional
+        :param output_filename: The name to give the generated report file,
+            defaults to 'eda-report.docx'.
+        :type output_filename: str, optional
+        :param graph_colour: A valid matplotlib colour specifier, defaults
+            to 'orangered'.
+        :type graph_colour: str, optional
+        :param table_style: *Microsoft Word* table style to apply to the
+            created tables, defaults to 'Table Grid'.
+        :type table_style: str, optional
+        """
         self.data = validate_input_dtype(data)
         self.TITLE = title
         self.GRAPH_COLOUR = graph_colour
@@ -26,7 +45,8 @@ class ReportDocument:
         self.get_report()
 
     def get_report(self):
-        """Calculate statistics, plot graphs, and save results as a .docx file.
+        """Calculate summary statistics, plot graphs, and save the results as
+        a .docx file.
         """
         logging.info('Assessing correlation in numeric variables...')
         self.variables = MultiVariable(self.data,
@@ -42,7 +62,8 @@ class ReportDocument:
         logging.info(f'Done. Results saved as {self.OUTPUT_FILENAME!r}')
 
     def _create_title_page(self):
-        """Add a title and a brief summary of the data."""
+        """Add a title and a brief summary of the data.
+        """
         # Title
         self.document.add_heading(self.TITLE, level=0)
 
@@ -78,7 +99,8 @@ class ReportDocument:
 
     def _get_variable_info(self):
         """Get a brief introduction, summary statistics, and graphs for each
-        individual variable."""
+        individual variable.
+        """
         for idx, col in enumerate(tqdm(self.data.columns, ncols=79),
                                   start=1):
             var = Variable(self.data[col], graph_colour=self.GRAPH_COLOUR)
@@ -102,7 +124,8 @@ class ReportDocument:
             self.document.add_page_break()
 
     def _get_bivariate_analysis(self):
-        """Get comparisons and scatterplots for pairs of numeric variables."""
+        """Get comparisons and scatterplots for pairs of numeric variables.
+        """
         self.document.add_heading('Bivariate Analysis (Correlation)', level=1)
         self.document.add_paragraph()
         self.document.add_picture(self.variables.joint_correlation_plot,
@@ -132,7 +155,8 @@ class ReportDocument:
                 self.document.add_page_break()
 
     def _create_table(self, data):
-        """Create a table from the given data and add it to the document."""
+        """Create a table from the given data and add it to the document.
+        """
         table = self.document.add_table(rows=len(data), cols=2)
         # Set table style
         table.style = self.document.styles[self.TABLE_STYLE]
@@ -150,5 +174,6 @@ class ReportDocument:
         self.document.add_paragraph()
 
     def _save_file(self):
-        """Save the document as a .docx file."""
+        """Save the document as a .docx file.
+        """
         self.document.save(self.OUTPUT_FILENAME)

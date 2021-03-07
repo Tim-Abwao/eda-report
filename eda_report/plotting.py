@@ -17,7 +17,14 @@ Fig = Figure
 
 
 def savefig(figure):
-    """Save a matplotlib figure in a file-like object, and return it."""
+    """Saves the contents of a matplotlib figure, in PNG format, as bytes in a
+    file-like object.
+
+    :param figure: A matplotlib figure with plotted axes.
+    :type figure: ``matplotlib.figure.Figure``
+    :return: A file-like object with the figure's contents.
+    :rtype: ``io.BytesIo``
+    """
     graph = BytesIO()
     figure.savefig(graph)
     return graph

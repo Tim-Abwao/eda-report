@@ -3,7 +3,15 @@ from eda_report.exceptions import InputError
 
 
 def df_from_file(filename):
-    """Load the file `filename` as a pandas DataFrame."""
+    """Read a csv or excel file and load its contents as a
+    ``pandas.DataFrame``.
+
+    :param filename: A file name, or the path to a file.
+    :type filename: str
+    :raises InputError: If the input file is not a valid csv or excel file.
+    :return: A pandas ``DataFrame``.
+    :rtype: ``pandas.DataFrame``
+    """
     file_extension = filename.rsplit('.')[-1]
 
     if file_extension == 'csv':

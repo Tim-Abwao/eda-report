@@ -3,8 +3,16 @@ from eda_report.exceptions import InputError
 
 
 def validate_input_dtype(data):
-    """Check if the data is a pandas DataFrame, and raise an InputError if it
-    isn't."""
+    """Ensures that the data is of type ``pandas.DataFrame``. If it isn't,
+    attempt to explicitly cast it as a ``DataFrame``.
+
+    :param data: The data to process.
+    :type data: An array-like, sequence, iterable or dict
+    :raises InputError: Raised if the data cannot be converted to a
+        ``DataFrame``, as required.
+    :return: The data as a pandas ``DataFrame``.
+    :rtype: ``pandas.DataFrame``
+    """
     if isinstance(data, DataFrame):
         return data
     else:

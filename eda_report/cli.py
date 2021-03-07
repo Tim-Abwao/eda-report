@@ -3,7 +3,13 @@ from eda_report.read_file import df_from_file
 
 
 def process_cli_args():
-    """Process command line arguments to analyse a file."""
+    """This function creates the positional and optional arguments for the
+    command line interface, and also parses input from the command line.
+
+    It uses the `argparse`_ module from the Python standard library.
+
+    .. _`argparse`: https://docs.python.org/3/library/argparse.html
+    """
     parser = argparse.ArgumentParser(
         prog='eda_report',
         description='Get a basic EDA report in docx format.')
@@ -30,7 +36,3 @@ def process_cli_args():
 
     # Parse the arguments
     return parser.parse_args()
-
-
-if __name__ == '__main__':
-    process_cli_args()
