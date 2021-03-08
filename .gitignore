@@ -9,3 +9,4 @@ build/
 eda_report.egg-info
 .coverage
 htmlcov/
+!setup.py
