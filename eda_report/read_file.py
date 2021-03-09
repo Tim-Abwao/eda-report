@@ -1,4 +1,5 @@
 import pandas as pd
+from pathlib import Path
 from eda_report.exceptions import InputError
 
 
@@ -12,11 +13,11 @@ def df_from_file(filename):
     :return: A pandas ``DataFrame``.
     :rtype: ``pandas.DataFrame``
     """
-    file_extension = filename.rsplit('.')[-1]
+    file = Path(filename)
 
-    if file_extension == 'csv':
-        return pd.read_csv(filename)
-    elif file_extension == 'xlsx':
-        return pd.read_excel(filename, engine='openpyxl')
+    if file.suffix == '.csv':
+        return pd.read_csv(file)
+    elif file.suffix == '.xlsx':
+        return pd.read_excel(file, engine='openpyxl')
     else:
         raise InputError(f'Invalid input file: {filename}')
