@@ -34,7 +34,7 @@ class MultiVariable:
     def _get_bivariate_analysis(self):
         """Compare numeric variable pairs.
         """
-        if self.numeric_cols.size > 1:
+        if self.numeric_cols is not None and self.numeric_cols.size > 1:
             self._plot_joint_scatterplot()
             self._plot_joint_correlation()
             self._compare_variable_pairs()
