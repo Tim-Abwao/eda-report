@@ -1,6 +1,6 @@
 import pandas as pd
 import unittest
-from eda_report.validate import validate_input_dtype
+from eda_report.validate import validate_input_dtype, clean_column_names
 
 
 class TestDataValidation(unittest.TestCase):
@@ -20,4 +20,10 @@ class TestDataValidation(unittest.TestCase):
         # Check if a sequence returns a dataframe
         self.assertIsInstance(
             validate_input_dtype(range(50)), pd.DataFrame
+        )
+
+    def test_column_cleaning(self):
+        self.assertEqual(
+            clean_column_names(self.data).columns.to_list(),
+            ['var_1']
         )
