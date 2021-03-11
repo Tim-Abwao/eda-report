@@ -11,7 +11,7 @@ def process_cli_args():
     .. _`argparse`: https://docs.python.org/3/library/argparse.html
     """
     parser = argparse.ArgumentParser(
-        prog='eda_report',
+        prog='eda_cli',
         description='Get a basic EDA report in docx format.')
 
     # Get the data from a file
