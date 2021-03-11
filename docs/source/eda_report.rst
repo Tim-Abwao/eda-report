@@ -30,6 +30,14 @@ eda\_report.exceptions module
    :show-inheritance:
    :special-members: __init__
 
+eda\_report.gui module
+-----------------------------
+
+.. automodule:: eda_report.gui
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 eda\_report.multivariate module
 -------------------------------
 
