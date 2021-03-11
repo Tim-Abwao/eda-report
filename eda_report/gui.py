@@ -61,7 +61,7 @@ class EDA_Gui(Frame):
         self.canvas.create_text(180, 80, text='eda_report', width=500,
                                 font=("Courier", 35, 'bold'), fill="black")
         self.canvas.create_text(300, 190, text=description, width=500,
-                                font=("Times", 14, 'italic'), fill="black")
+                                font=("Times", 13, 'italic'), fill="black")
 
         # Add a button
         self.button = Button(
