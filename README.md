@@ -4,6 +4,7 @@
 [![PyPI version](https://badge.fury.io/py/eda-report.svg)](https://badge.fury.io/py/eda-report)
 [![Python 3.8](https://github.com/Tim-Abwao/auto-eda/actions/workflows/run-tests.yml/badge.svg)](https://github.com/Tim-Abwao/auto-eda/actions/workflows/run-tests.yml)
 [![Python 3.7 | 3.9](https://github.com/Tim-Abwao/auto-eda/actions/workflows/test-python3.7-3.9.yml/badge.svg)](https://github.com/Tim-Abwao/auto-eda/actions/workflows/test-python3.7-3.9.yml)
+[![Documentation Status](https://readthedocs.org/projects/eda-report/badge/?version=latest)](https://eda-report.readthedocs.io/en/latest/?badge=latest)
 
 A simple Python program to help automate EDA report generation.
 
@@ -19,25 +20,35 @@ pip install eda-report
 
 ## Basic usage
 
-### 1. Command line interface
+### 1. Graphical User Interface
+
+Recommended. Use the command
+
+```bash
+eda_report
+```
+
+and select a file to analyse.
+
+### 2. Command line interface
 
 To analyse a file named `input.csv`:
 
 ```bash
-eda_report input.csv
+eda_cli input.csv
 ```
 
 Or even:
 
 ```bash
-eda_report input.csv -o output.docx -c cyan --title 'EDA Report'
+eda_cli input.csv -o output.docx -c cyan --title 'EDA Report'
 ```
 
 For more details on the optional arguments, pass the `-h` or `--help` flag to view the *help message*:
 
 ```bash
-$ eda_report -h
-usage: eda_report [-h] [-o OUTFILE] [-t TITLE] [-c COLOR] infile
+$ eda_cli -h
+usage: eda_cli [-h] [-o OUTFILE] [-t TITLE] [-c COLOR] infile
 
 Get a basic EDA report in docx format.
 
@@ -54,7 +65,7 @@ optional arguments:
                         A valid matplotlib color specifier (default: orangered)
 ```
 
-## 2. Interactive mode
+## 3. Interactive mode
 
 ```python
 >>> from eda_report import get_word_report
