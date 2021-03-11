@@ -20,6 +20,10 @@ def run_in_gui():
     """Starts a graphical user interface to the application.
     """
     root = Tk()
+    root.title('eda_report')
+    root.geometry('600x400')
+    root.resizable(0, 0)
+    root.wm_iconphoto(True, PhotoImage(file='eda_report/images/icon.png'))
     EDA_Gui(master=root)
     root.mainloop()
 
@@ -34,7 +38,6 @@ class EDA_Gui(Frame):
     def __init__(self, master=None, **kw):
         super().__init__(master)
         self.master = master
-        self.master.title('eda_report')
         self.configure(height=400, width=600)
         self.create_widgets()
         self.pack()
@@ -54,8 +57,8 @@ class EDA_Gui(Frame):
         # Add introductory text
         self.canvas.create_text(180, 80, text='eda_report', width=500,
                                 font=("Courier", 35, 'bold'), fill="black")
-        self.canvas.create_text(300, 170, text=description, width=500,
-                                font=("Times", 12, 'italic'), fill="black")
+        self.canvas.create_text(300, 190, text=description, width=500,
+                                font=("Times", 14, 'italic'), fill="black")
 
         # Add a button
         self.button = Button(
