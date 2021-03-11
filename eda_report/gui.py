@@ -32,10 +32,8 @@ def run_in_gui():
 
 
 class EDA_Gui(Frame):
-    """[summary]
-
-    :param Frame: [description]
-    :type Frame: [type]
+    """This is the blueprint for the graphical user interface to the
+    application.
     """
 
     def __init__(self, master=None, **kw):
