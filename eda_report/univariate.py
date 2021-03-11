@@ -8,14 +8,14 @@ class Variable:
         characteristics of each column(variable) in a dataset.
     """
 
-    def __init__(self, data, graph_colour='orangered', name=None):
+    def __init__(self, data, graph_color='orangered', name=None):
         """Initialise an instance of :class:`Variable`.
 
         :param data: The data to process.
         :type data: ``pandas.Series``
-        :param graph_colour: The colour to apply to the graphs created,
+        :param graph_color: The color to apply to the graphs created,
             defaults to 'orangered'.
-        :type graph_colour: str, optional
+        :type graph_color: str, optional
         :param name: The name to give the variable.
         :type name: str, optional
         """
@@ -32,8 +32,8 @@ class Variable:
         self.unique = self.data.unique()
         #: The number of missing values.
         self.missing = self._get_missing_values()
-        #: The colour to apply to the created graphs.
-        self.GRAPH_COLOUR = graph_colour
+        #: The color to apply to the created graphs.
+        self.GRAPH_COLOR = graph_color
         #: The graphs for the variable as bytes in a file-like object.
         self.graphs = self._plot_graphs()
 
@@ -112,7 +112,7 @@ class Variable:
         ax1.set_title(f'Box-plot of {self.name}', size=12)
         # Histogram
         ax2.set_title(f'Distribution plot of {self.name}', size=12)
-        sns.histplot(x=self.data, kde=True, ax=ax2, color=self.GRAPH_COLOUR)
+        sns.histplot(x=self.data, kde=True, ax=ax2, color=self.GRAPH_COLOR)
 
         return savefig(fig)
 
@@ -123,7 +123,7 @@ class Variable:
         ax = fig.subplots()
 
         self.data.value_counts().nlargest(10).plot.bar(
-            color=self.GRAPH_COLOUR, ax=ax
+            color=self.GRAPH_COLOR, ax=ax
         )
         ax.tick_params(axis='x', rotation=45)
         ax.set_title(f'Bar-plot of {self.name}', size=12)

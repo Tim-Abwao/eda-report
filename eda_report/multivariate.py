@@ -11,18 +11,18 @@ class MultiVariable:
     (features).
     """
 
-    def __init__(self, data, graph_colour='orangered'):
+    def __init__(self, data, graph_color='orangered'):
         """Initialise an instance of :class:`MultiVariable`.
 
         :param data: The data to process, ideally a ``pandas.DataFrame``
             with mutliple columns.
         :type data: An array-like, sequence, iterable or dict
-        :param graph_colour: The colour to apply to the graphs created,
+        :param graph_color: The color to apply to the graphs created,
             defaults to 'orangered'.
-        :type graph_colour: str, optional
+        :type graph_color: str, optional
         """
         self.data = validate_input_dtype(data)
-        self.GRAPH_COLOUR = graph_colour
+        self.GRAPH_COLOR = graph_color
         #: A ``DataFrame`` of the numeric columns present in the data
         self.numeric_cols = self._select_cols('number')
         #: A ``DataFrame`` of the categorical columns present in the data
@@ -56,8 +56,8 @@ class MultiVariable:
         """
         fig = sns.pairplot(
             self.numeric_cols, height=1.75,
-            plot_kws={'color': self.GRAPH_COLOUR},
-            diag_kws={'color': self.GRAPH_COLOUR}
+            plot_kws={'color': self.GRAPH_COLOR},
+            diag_kws={'color': self.GRAPH_COLOR}
         )
         fig.fig.suptitle('Scatter-plots of Numeric Columns', x=0.5, y=1.04,
                          size=20)
@@ -69,7 +69,7 @@ class MultiVariable:
         ax = fig.subplots()
         sns.heatmap(self.correlation_df, annot=True, yticklabels=True,
                     mask=np.triu(self.correlation_df), ax=ax,
-                    cmap=sns.light_palette(self.GRAPH_COLOUR, as_cmap=True))
+                    cmap=sns.light_palette(self.GRAPH_COLOR, as_cmap=True))
         ax.tick_params(rotation=45)
         fig.suptitle('Correlation in Numeric Columns', size=15)
 
@@ -96,9 +96,9 @@ class MultiVariable:
         fig = Fig(figsize=(8.2, 4))
         ax1, ax2 = fig.subplots(1, 2)
         sns.regplot(x=var1, y=var2, data=self.data, ax=ax1, truncate=False,
-                    color=self.GRAPH_COLOUR)
+                    color=self.GRAPH_COLOR)
         sns.regplot(x=var2, y=var1, data=self.data, ax=ax2, truncate=False,
-                    color=self.GRAPH_COLOUR)
+                    color=self.GRAPH_COLOR)
         ax1.set_title(f'Scatterplot - {var1} vs {var2}'.title(), size=9)
         ax2.set_title(f'Scatterplot - {var2} vs {var1}'.title(), size=9)
 

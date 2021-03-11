@@ -18,7 +18,7 @@ class ReportDocument:
     """
     def __init__(self, data, title='Exploratory Data Analysis Report',
                  output_filename='eda-report.docx',
-                 graph_colour='orangered', table_style='Table Grid'):
+                 graph_color='orangered', table_style='Table Grid'):
         """Initialise an instance of :class:`ReportDocument`.
 
         :param data: The data to analyse.
@@ -29,16 +29,16 @@ class ReportDocument:
         :param output_filename: The name to give the generated report file,
             defaults to 'eda-report.docx'.
         :type output_filename: str, optional
-        :param graph_colour: A valid matplotlib colour specifier, defaults
+        :param graph_color: A valid matplotlib color specifier, defaults
             to 'orangered'.
-        :type graph_colour: str, optional
+        :type graph_color: str, optional
         :param table_style: *Microsoft Word* table style to apply to the
             created tables, defaults to 'Table Grid'.
         :type table_style: str, optional
         """
         self.data = validate_input_dtype(data)
         self.TITLE = title
-        self.GRAPH_COLOUR = graph_colour
+        self.GRAPH_COLOR = graph_color
         self.TABLE_STYLE = table_style
         self.OUTPUT_FILENAME = output_filename
         self.document = Document()
@@ -50,7 +50,7 @@ class ReportDocument:
         """
         logging.info('Assessing correlation in numeric variables...')
         self.variables = MultiVariable(self.data,
-                                       graph_colour=self.GRAPH_COLOUR)
+                                       graph_color=self.GRAPH_COLOR)
         logging.info('Done. Summarising each variable...')
         self._create_title_page()  # begin the report document
         self._get_variable_info()  # summarise each variable
@@ -103,7 +103,7 @@ class ReportDocument:
         """
         for idx, col in enumerate(tqdm(self.data.columns, ncols=79),
                                   start=1):
-            var = Variable(self.data[col], graph_colour=self.GRAPH_COLOUR)
+            var = Variable(self.data[col], graph_color=self.GRAPH_COLOR)
             # Heading
             self.document.add_heading(f'{idx}. {col}'.title(), level=2)
             # Introduction

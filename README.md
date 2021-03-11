@@ -37,7 +37,7 @@ For more details on the optional arguments, pass the `-h` or `--help` flag to vi
 
 ```bash
 $ eda_report -h
-usage: eda_report [-h] [-o OUTFILE] [-t TITLE] [-c COLOUR] infile
+usage: eda_report [-h] [-o OUTFILE] [-t TITLE] [-c COLOR] infile
 
 Get a basic EDA report in docx format.
 
@@ -50,7 +50,7 @@ optional arguments:
                         The output file (default: eda-report.docx)
   -t TITLE, --title TITLE
                         The top level heading in the report (default: Exploratory Data Analysis Report)
-  -c COLOUR, --colour COLOUR
+  -c COLOR, --color COLOR
                         A valid matplotlib color specifier (default: orangered)
 ```
 

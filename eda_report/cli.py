@@ -29,9 +29,9 @@ def process_cli_args():
         '-t', '--title', default='Exploratory Data Analysis Report',
         help='The top level heading in the report (default: %(default)s)')
 
-    # Set the graph colour
+    # Set the graph color
     parser.add_argument(
-        '-c', '--colour', default='orangered',
+        '-c', '--color', default='orangered',
         help='A valid matplotlib color specifier (default: %(default)s)')
 
     # Parse the arguments
