@@ -5,8 +5,11 @@ from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter.simpledialog import askstring
 from tkinter.colorchooser import askcolor
 from tkinter.messagebox import showinfo
+import pkgutil
 
 
+background_image = pkgutil.get_data(__name__, "images/background.png")
+icon = pkgutil.get_data(__name__, "images/icon.png")
 description = """
 A simple application to help speed up exploratory data analysis and reporting.
 
@@ -23,7 +26,7 @@ def run_in_gui():
     root.title('eda_report')
     root.geometry('600x400')
     root.resizable(0, 0)
-    root.wm_iconphoto(True, PhotoImage(file='eda_report/images/icon.png'))
+    root.wm_iconphoto(True, PhotoImage(data=icon))
     EDA_Gui(master=root)
     root.mainloop()
 
@@ -50,7 +53,7 @@ class EDA_Gui(Frame):
         self.canvas = Canvas(self, width=600, height=400)
 
         # Set background image
-        self.bg_image = PhotoImage(file='eda_report/images/background.png')
+        self.bg_image = PhotoImage(data=background_image)
 
         self.canvas.create_image(0, 0, image=self.bg_image, anchor="nw")
 
