@@ -30,6 +30,8 @@ eda_report
 
 and select a file to analyse.
 
+![screencast of the gui](screen.png)
+
 ### 2. Command line interface
 
 To analyse a file named `input.csv`:
