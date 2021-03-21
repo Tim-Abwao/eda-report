@@ -1,11 +1,12 @@
 import seaborn as sns
 from eda_report.plotting import Fig, savefig
 from pandas.api.types import is_numeric_dtype, is_bool_dtype
+from PIL import Image
 
 
 class Variable:
     """This is the blueprint for structures to hold the contents and
-        characteristics of each column(variable) in a dataset.
+    characteristics of *individual columns/features*.
     """
 
     def __init__(self, data, graph_color='orangered', name=None):
@@ -16,26 +17,35 @@ class Variable:
         :param graph_color: The color to apply to the graphs created,
             defaults to 'orangered'.
         :type graph_color: str, optional
-        :param name: The name to give the variable.
+        :param name: The feature's name.
         :type name: str, optional
         """
         self.data = data
-        #: The name of the variable.
+        #: The name of the feature. If unspecified in the name argument
+        #: during instantiation, this will be taken as the value of the
+        #: ``name`` attribute of the input data.
         self.name = name if name is not None else self.data.name
-        #: The variable's type.
+        #: The feature's type; either *categorical* or *numeric*.
         self.var_type = self._get_variable_type()
-        #: Summary statistics for the variable, as a ``pandas.Series``.
+        #: Summary statistics for the feature, as a ``pandas.Series``.
         self.statistics = self._get_summary_statictics()
-        #: The number of unique values in the variable.
+        #: The number of unique values in the feature.
         self.num_unique = self.data.nunique()
-        #: Unique values in the variable.
+        #: The unique values in the feature.
         self.unique = self.data.unique()
-        #: The number of missing values.
+        #: The number of missing values (``NaN``, ``None``, ``NA``, ...).
         self.missing = self._get_missing_values()
-        #: The color to apply to the created graphs.
-        self.GRAPH_COLOR = graph_color
-        #: The graphs for the variable as bytes in a file-like object.
-        self.graphs = self._plot_graphs()
+        #: The color applied to the created graphs.
+        self.graph_color = graph_color
+        # The graphs for the feature as bytes in a file-like object.
+        self._graphs = self._plot_graphs()
+
+    def show_graphs(self):
+        """Display the graphs for the feature using the :class:`PIL.Image`
+        class.
+        """
+        image = Image.open(self._graphs)
+        image.show()
 
     def _get_missing_values(self):
         """Get the number of missing values in the data.
@@ -112,7 +122,7 @@ class Variable:
         ax1.set_title(f'Box-plot of {self.name}', size=12)
         # Histogram
         ax2.set_title(f'Distribution plot of {self.name}', size=12)
-        sns.histplot(x=self.data, kde=True, ax=ax2, color=self.GRAPH_COLOR)
+        sns.histplot(x=self.data, kde=True, ax=ax2, color=self.graph_color)
 
         return savefig(fig)
 
@@ -123,7 +133,7 @@ class Variable:
         ax = fig.subplots()
 
         self.data.value_counts().nlargest(10).plot.bar(
-            color=self.GRAPH_COLOR, ax=ax
+            color=self.graph_color, ax=ax
         )
         ax.tick_params(axis='x', rotation=45)
         ax.set_title(f'Bar-plot of {self.name}', size=12)

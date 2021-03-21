@@ -119,7 +119,7 @@ class ReportDocument:
                 self.document.add_heading('Most Common Values', level=4)
                 self._create_table(var.most_common_items)
             # Graphs
-            self.document.add_picture(var.graphs, width=Inches(5))
+            self.document.add_picture(var._graphs, width=Inches(5))
 
             self.document.add_page_break()
 
