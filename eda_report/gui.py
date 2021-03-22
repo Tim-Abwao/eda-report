@@ -8,8 +8,11 @@ from tkinter.messagebox import showinfo
 import pkgutil
 
 
+# Load background image and icon
 background_image = pkgutil.get_data(__name__, "images/background.png")
 icon = pkgutil.get_data(__name__, "images/icon.png")
+
+# Introductory text
 description = """
 A simple application to help speed up exploratory data analysis and reporting.
 
@@ -27,13 +30,13 @@ def run_in_gui():
     root.geometry('600x400')
     root.resizable(0, 0)
     root.wm_iconphoto(True, PhotoImage(data=icon))
-    EDA_Gui(master=root)
+    EDAGUI(master=root)
     root.mainloop()
 
 
-class EDA_Gui(Frame):
-    """This is the blueprint for the graphical user interface to the
-    application.
+class EDAGUI(Frame):
+    """This is the blueprint for the *graphical user interface* to the
+    package/application.
     """
 
     def __init__(self, master=None, **kw):
@@ -44,8 +47,9 @@ class EDA_Gui(Frame):
         self.pack()
 
     def create_widgets(self):
-        """Creates the widgets for the graphical user interface: A canvas with
-        introductory text, a button to select a file, and a background image.
+        """Creates the widgets for the graphical user interface: A *canvas*
+        with the a *background image*, *introductory text*, and a *button* to
+        select a file.
         """
         # Create the canvas
         self.canvas = Canvas(self, width=600, height=400)
@@ -71,8 +75,8 @@ class EDA_Gui(Frame):
         self.canvas.pack()
 
     def create_report(self):
-        """Collect input from the graphical user interface, and use the
-        :func:`eda_report.get_word_report` function to generate a report.
+        """Collects input from the graphical user interface, and uses the
+        :func:`~eda_report.get_word_report` function to generate a report.
         """
         self.get_data_from_file()
         self.get_report_title()

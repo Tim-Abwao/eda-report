@@ -75,4 +75,4 @@ class TestVariableProperties(unittest.TestCase):
         self.assertEqual(self.variable.missing, '3 (6.00%)')
 
     def test_graph_plotted(self):
-        self.assertIn(b'\x89PNG', self.variable.graphs.getvalue())
+        self.assertIn(b'\x89PNG', self.variable._graphs.getvalue())
