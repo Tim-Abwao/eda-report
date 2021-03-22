@@ -30,7 +30,7 @@ Use ``eda_cli -h`` to view the *help message*, which presents all the available 
 From an Interactive Session
 ---------------------------
 
-You can analyse an array-like, iterable or sequence object while in interactive mode using the function :func:`eda_report.get_word_report`::
+You can analyse an array-like, iterable or sequence object while in interactive mode using the function :func:`~eda_report.get_word_report`::
 
     >>> from eda_report import get_word_report
     >>> get_word_report(data)

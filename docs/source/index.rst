@@ -4,7 +4,7 @@
 Simplify the `exploratory data analysis`_ and reporting process. ``eda_report``:
 
 #. Automatically analyses a dataset using `pandas`_' built-in methods. 
-      Summary statistics for both numeric and categorical variables are computed and packaged as tables.
+      *Summary statistics* for both **numeric** and **categorical** variables are computed and packaged as tables.
 #. Plots visualisations using `matplotlib`_ and `seaborn`_.
       Box-plots, histograms and scatter-plots for numeric variables. Bar-plots for categorical variables.
 #. Generates a basic report in .docx format using `python-docx`_.
@@ -26,7 +26,7 @@ Simplify the `exploratory data analysis`_ and reporting process. ``eda_report``:
 
    installation
    quickstart
-   eda_report
+   modules
 
 Indices and tables
 ==================
