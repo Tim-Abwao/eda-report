@@ -22,34 +22,35 @@ class Variable:
         :type name: str, optional
         """
         self.data = validate_univariate_input(data)
-        #: The name of the feature. If unspecified in the name argument
-        #: during instantiation, this will be taken as the value of the
-        #: ``name`` attribute of the input data.
+        #: The *name* of the *column/feature*. If unspecified in the name
+        #: argument during instantiation, this will be taken as the value of
+        #: the ``name`` attribute of the input data.
         self.name = name if name is not None else self.data.name
-        #: The feature's type; either *categorical* or *numeric*.
+        #: The *column/feature*'s *type*; either *categorical* or *numeric*.
         self.var_type = self._get_variable_type()
-        #: Summary statistics for the feature, as a ``pandas.Series``.
+        #: *Summary statistics* for the *column/feature*, as a
+        #: ``pandas.Series``.
         self.statistics = self._get_summary_statictics()
-        #: The number of unique values in the feature.
+        #: The *number of unique values* in the *column/feature*.
         self.num_unique = self.data.nunique()
-        #: The unique values in the feature.
+        #: The *unique values* in the *column/feature*.
         self.unique = self.data.unique()
-        #: The number of missing values (``NaN``, ``None``, ``NA``, ...).
+        #: The number of *missing values* (``NaN``, ``None``, ``NA``, ...).
         self.missing = self._get_missing_values()
-        #: The color applied to the created graphs.
+        #: The *color* applied to the created graphs.
         self.graph_color = graph_color
-        # The graphs for the feature as bytes in a file-like object.
+        # The *graphs* for the *column/feature* as bytes in a file-like object.
         self._graphs = self._plot_graphs()
 
     def show_graphs(self):
-        """Display the graphs for the feature using the :class:`PIL.Image`
+        """Display the graphs for the *column/feature* using the :class:`PIL.Image`
         class.
         """
         image = Image.open(self._graphs)
         image.show()
 
     def _get_missing_values(self):
-        """Get the number of missing values in the data.
+        """Get the number of missing values in the **column/feature**.
         """
         missing_values = self.data.isna().sum()
         if missing_values == 0:
@@ -71,7 +72,7 @@ class Variable:
             return 'categorical'
 
     def _get_summary_statictics(self):
-        """Get summary statistics for the variable as a pandas Series.
+        """Get summary statistics for the column/feature as a pandas Series.
         """
         if self.var_type == 'numeric':
             return self._numeric_summary_statictics()
@@ -79,7 +80,7 @@ class Variable:
             return self._categorical_summary_statictics()
 
     def _plot_graphs(self):
-        """Plot graphs for the variable, based on variable type.
+        """Plot graphs for the column/feature, based on variable type.
         """
         if self.var_type == 'numeric':
             return self._plot_numeric()
@@ -87,7 +88,7 @@ class Variable:
             return self._plot_categorical()
 
     def _numeric_summary_statictics(self):
-        """Get summary statistics for a numeric variable.
+        """Get summary statistics for a numeric column/feature.
         """
         summary = self.data.describe()
         summary.index = [
@@ -99,7 +100,7 @@ class Variable:
         return summary.round(7)
 
     def _categorical_summary_statictics(self):
-        """Get summary statistics for a categorical variable.
+        """Get summary statistics for a categorical column/feature.
         """
         summary = self.data.describe()[['count', 'unique', 'top']]
         summary.index = ['Number of observations', 'Unique values',
@@ -112,7 +113,7 @@ class Variable:
         return summary
 
     def _plot_numeric(self):
-        """Get a boxplot and a histogram for a numeric variable.
+        """Get a boxplot and a histogram for a numeric column/feature.
         """
         fig = Fig(figsize=(6, 6), linewidth=1)
         ax1, ax2 = fig.subplots(2, 1)
@@ -128,7 +129,7 @@ class Variable:
         return savefig(fig)
 
     def _plot_categorical(self, color='cyan'):
-        """Get a bar-plot for a categorical variable.
+        """Get a bar-plot for a categorical column/feature.
         """
         fig = Fig(figsize=(6, 4), linewidth=1)
         ax = fig.subplots()

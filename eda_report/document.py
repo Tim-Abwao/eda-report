@@ -13,12 +13,25 @@ logging.basicConfig(
 
 
 class ReportDocument:
-    """The class with methods to create and populate the .docx report.
+    """The blueprint for objects with methods to create and populate *.docx*
+    files.
+
+    The *input data as a whole* is processed as an instance of
+    :class:`~eda_report.multivariate.MultiVariable` to get *group statistics
+    and plots*. *Individual columns/features* are processed as instances of
+    :class:`~eda_report.univariate.Variable` to get statistics and plots for
+    *each feature*.
+
+    The `python-docx`_ module is then used to write the results as a *Word*
+    document.
+
+    .. _python-docx: https://python-docx.readthedocs.io/en/latest/
     """
     def __init__(self, data, title='Exploratory Data Analysis Report',
                  output_filename='eda-report.docx',
                  graph_color='orangered', table_style='Table Grid'):
-        """Initialise an instance of :class:`ReportDocument`.
+        """Initialise an instance of
+        :class:`~eda_report.document.ReportDocument`.
 
         :param data: The data to analyse.
         :type data: Array-like, sequence, iterable
@@ -41,9 +54,9 @@ class ReportDocument:
         self.TABLE_STYLE = table_style
         self.OUTPUT_FILENAME = output_filename
         self.document = Document()
-        self.get_report()
+        self._get_report()
 
-    def get_report(self):
+    def _get_report(self):
         """Calculate summary statistics, plot graphs, and save the results as
         a .docx file.
         """

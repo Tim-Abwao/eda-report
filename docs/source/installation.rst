@@ -12,7 +12,9 @@ Virtual environments are a great way to ensure that you have the correct verison
 
 In UNIX-like operating systems, you can create and activate a virtual environment using::
 
+    # Create a virtual environment named eda_env
     python3 -m venv eda_env
+    # Activate the virtual environment
     source eda_env/bin/activate
 
 For windows, the commands for the same are::
@@ -20,10 +22,16 @@ For windows, the commands for the same are::
     python3 -m venv eda_env
     eda_env\Scripts\activate
 
-You can then install ``eda_report`` from `PyPI`_ using::
+You can then install ``eda_report`` from `The Python Package Index`_ using ``pip``::
 
     pip install eda-report
 
+Afterwards, head on over to :doc:`quickstart` to help you get started.
+
+.. tip::
+    For a more comprehensive report, in HTML format, consider using `pandas_profiling`_.
 
 .. _Learn more: https://docs.python.org/3/tutorial/venv.html#virtual-environments-and-packages
-.. _PyPI: https://pypi.org/project/eda-report/
+.. _The Python Package Index: https://pypi.org/project/eda-report/
+.. _pandas_profiling: https://pandas-profiling.github.io/pandas-profiling/docs/master/index.html
+

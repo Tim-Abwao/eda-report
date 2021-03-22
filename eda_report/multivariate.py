@@ -12,17 +12,18 @@ class MultiVariable:
     *multiple columns/features*.
 
     The input data is expected to be a ``pandas.DataFrame``. If the data is of
-    any other type, then there'll be an attempt to explicitly convert it a
+    any other type, then there'll be an attempt to explicitly convert it to a
     ``DataFrame``. If this fails, an :class:`~eda_report.exceptions.InputError`
     is raised.
     """
 
     def __init__(self, data, graph_color='orangered'):
-        """Initialise an instance of :class:`MultiVariable`.
+        """Initialise an instance of
+        :class:`~eda_report.multivariate.MultiVariable`.
 
         :param data: The data to process, ideally a ``pandas.DataFrame``
             with several columns.
-        :type data: An array-like, sequence, iterable or dict
+        :type data: array-like, sequence, iterable, dict
         :param graph_color: The color to apply to the graphs created,
             defaults to 'orangered'.
         :type graph_color: str, optional
@@ -30,19 +31,20 @@ class MultiVariable:
         self.data = validate_multivariate_input(data)
         #: The color applied to the created graphs.
         self.graph_color = graph_color
-        #: A ``DataFrame`` of all the numeric columns/features.
+        #: A ``DataFrame`` of all the *numeric columns/features*.
         self.numeric_cols = self._select_cols('number')
-        #: A ``DataFrame`` of all the categorical columns/features. Please
-        #: note that boolean features are also considered categorical here.
+        #: A ``DataFrame`` of all the *categorical columns/features*. Please
+        #: note that **boolean features** are also **considered categorical**
+        #: here.
         self.categotical_cols = self._select_cols('object', 'bool')
-        #: A ``DataFrame`` of Pearson correlation coefficients for the numeric
-        #: columns/features.
+        #: A ``DataFrame`` of Pearson correlation coefficients for the
+        #: *numeric columns/features*.
         self.correlation_df = self._get_correlation()
         self._get_bivariate_analysis()
 
     def show_correlation_heatmap(self):
         """Display a heatmap of Pearson correlation coefficients for all
-        numeric columns/features present.
+        *numeric columns/features* present.
         """
         if hasattr(self, 'joint_correlation_plot'):
             image = Image.open(self.joint_correlation_plot)
@@ -51,7 +53,7 @@ class MultiVariable:
             print('Not enough numeric variables to compare.')
 
     def show_joint_scatterplot(self):
-        """Display a joint scatterplot of all the numeric columns/features.
+        """Display a joint scatterplot of all the *numeric columns/features*.
         """
         if hasattr(self, 'joint_scatterplot'):
             image = Image.open(self.joint_scatterplot)
