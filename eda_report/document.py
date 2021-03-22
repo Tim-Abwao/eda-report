@@ -2,7 +2,6 @@ from docx import Document
 from docx.shared import Inches
 from eda_report.univariate import Variable
 from eda_report.multivariate import MultiVariable
-from eda_report.validate import validate_input_dtype
 from tqdm import tqdm
 import logging
 
@@ -36,7 +35,7 @@ class ReportDocument:
             created tables, defaults to 'Table Grid'.
         :type table_style: str, optional
         """
-        self.data = validate_input_dtype(data)
+        self.data = data
         self.TITLE = title
         self.GRAPH_COLOR = graph_color
         self.TABLE_STYLE = table_style

@@ -2,7 +2,7 @@ import seaborn as sns
 import numpy as np
 from itertools import combinations
 from eda_report.plotting import Fig, savefig
-from eda_report.validate import validate_input_dtype
+from eda_report.validate import validate_multivariate_input
 from tqdm import tqdm
 from PIL import Image
 
@@ -27,7 +27,7 @@ class MultiVariable:
             defaults to 'orangered'.
         :type graph_color: str, optional
         """
-        self.data = validate_input_dtype(data)
+        self.data = validate_multivariate_input(data)
         #: The color applied to the created graphs.
         self.graph_color = graph_color
         #: A ``DataFrame`` of all the numeric columns/features.

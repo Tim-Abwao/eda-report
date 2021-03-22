@@ -1,5 +1,6 @@
 import seaborn as sns
 from eda_report.plotting import Fig, savefig
+from eda_report.validate import validate_univariate_input
 from pandas.api.types import is_numeric_dtype, is_bool_dtype
 from PIL import Image
 
@@ -20,7 +21,7 @@ class Variable:
         :param name: The feature's name.
         :type name: str, optional
         """
-        self.data = data
+        self.data = validate_univariate_input(data)
         #: The name of the feature. If unspecified in the name argument
         #: during instantiation, this will be taken as the value of the
         #: ``name`` attribute of the input data.

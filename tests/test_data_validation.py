@@ -1,29 +1,44 @@
 import pandas as pd
 import unittest
-from eda_report.validate import validate_input_dtype, clean_column_names
+from eda_report.validate import (
+    validate_multivariate_input,
+    validate_univariate_input,
+    clean_column_names
+)
 
 
 class TestDataValidation(unittest.TestCase):
 
     def setUp(self):
-        self.data = pd.DataFrame(range(50))
+        self.dataframe = pd.DataFrame(range(50))
+        self.series = self.dataframe.squeeze()
 
-    def test_data_type_validation(self):
+    def test_multivariate_input_validation(self):
         # Check if a dataframe is returned as a dataframe
         self.assertIsInstance(
-            validate_input_dtype(self.data), pd.DataFrame
+            validate_multivariate_input(self.dataframe), pd.DataFrame
         )
         # Check if a series returns a dataframe
         self.assertIsInstance(
-            validate_input_dtype(self.data.squeeze()), pd.DataFrame
+            validate_multivariate_input(self.series), pd.DataFrame
         )
-        # Check if a sequence returns a dataframe
+        # Check if a sequence-like returns a dataframe
         self.assertIsInstance(
-            validate_input_dtype(range(50)), pd.DataFrame
+            validate_multivariate_input(range(50)), pd.DataFrame
+        )
+
+    def test_univariate_input_validation(self):
+        # Check if a series is returned as a series
+        self.assertIsInstance(
+            validate_univariate_input(self.series), pd.Series
+        )
+        # Check if a sequence-like returns a series
+        self.assertIsInstance(
+            validate_univariate_input(range(50)), pd.Series
         )
 
     def test_column_cleaning(self):
         self.assertEqual(
-            clean_column_names(self.data).columns.to_list(),
+            clean_column_names(self.dataframe).columns.to_list(),
             ['var_1']
         )
