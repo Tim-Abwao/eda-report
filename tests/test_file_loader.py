@@ -1,6 +1,7 @@
-import pandas as pd
 import os
 import unittest
+
+import pandas as pd
 from eda_report.exceptions import InputError
 from eda_report.read_file import df_from_file
 

@@ -1,10 +1,12 @@
-import seaborn as sns
-import numpy as np
 from itertools import combinations
+
+import numpy as np
+import seaborn as sns
+from PIL import Image
+from tqdm import tqdm
+
 from eda_report.plotting import Fig, savefig
 from eda_report.validate import validate_multivariate_input
-from tqdm import tqdm
-from PIL import Image
 
 
 class MultiVariable:

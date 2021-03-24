@@ -1,7 +1,7 @@
-import matplotlib
 from io import BytesIO
-from matplotlib.figure import Figure
 
+import matplotlib
+from matplotlib.figure import Figure
 
 # Matplotlib configuration
 matplotlib.rcParams['figure.dpi'] = 150  # resolution (dots per inch)

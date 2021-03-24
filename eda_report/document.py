@@ -1,9 +1,11 @@
+import logging
+
 from docx import Document
 from docx.shared import Inches
-from eda_report.univariate import Variable
-from eda_report.multivariate import MultiVariable
 from tqdm import tqdm
-import logging
+
+from eda_report.multivariate import MultiVariable
+from eda_report.univariate import Variable
 
 
 logging.basicConfig(

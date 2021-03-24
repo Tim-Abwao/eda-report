@@ -1,7 +1,8 @@
-import subprocess
-import pandas as pd
 import os
+import subprocess
 import unittest
+
+import pandas as pd
 from docx import Document
 
 

@@ -1,8 +1,9 @@
 import seaborn as sns
+from pandas.api.types import is_bool_dtype, is_numeric_dtype
+from PIL import Image
+
 from eda_report.plotting import Fig, savefig
 from eda_report.validate import validate_univariate_input
-from pandas.api.types import is_numeric_dtype, is_bool_dtype
-from PIL import Image
 
 
 class Variable:

@@ -1,7 +1,8 @@
 
-import pandas as pd
 import os
 import unittest
+
+import pandas as pd
 from docx import Document
 from eda_report import get_word_report
 

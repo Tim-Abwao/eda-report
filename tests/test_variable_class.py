@@ -1,5 +1,6 @@
-import pandas as pd
 import unittest
+
+import pandas as pd
 from eda_report.univariate import Variable
 
 

@@ -1,4 +1,5 @@
-from pandas import DataFrame, Series, RangeIndex
+from pandas import DataFrame, RangeIndex, Series
+
 from eda_report.exceptions import InputError
 
 

@@ -1,12 +1,12 @@
-from eda_report.read_file import df_from_file
-from eda_report import get_word_report
-from tkinter import Tk, Button, Frame, Canvas, PhotoImage
-from tkinter.filedialog import askopenfilename, asksaveasfilename
-from tkinter.simpledialog import askstring
-from tkinter.colorchooser import askcolor
-from tkinter.messagebox import showinfo
 import pkgutil
+from tkinter import Button, Canvas, Frame, PhotoImage, Tk
+from tkinter.colorchooser import askcolor
+from tkinter.filedialog import askopenfilename, asksaveasfilename
+from tkinter.messagebox import showinfo
+from tkinter.simpledialog import askstring
 
+from eda_report import get_word_report
+from eda_report.read_file import df_from_file
 
 # Load background image and icon
 background_image = pkgutil.get_data(__name__, "images/background.png")

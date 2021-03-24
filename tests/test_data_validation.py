@@ -1,10 +1,9 @@
-import pandas as pd
 import unittest
-from eda_report.validate import (
-    validate_multivariate_input,
-    validate_univariate_input,
-    clean_column_names
-)
+
+import pandas as pd
+from eda_report.validate import (clean_column_names,
+                                 validate_multivariate_input,
+                                 validate_univariate_input)
 
 
 class TestDataValidation(unittest.TestCase):
