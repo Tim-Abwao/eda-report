@@ -22,7 +22,7 @@ copyright = '2021, Abwao'
 author = 'Abwao'
 
 # The full version, including alpha/beta/rc tags
-release = '1.1.0'
+release = '1.1.2'
 
 
 # -- General configuration ---------------------------------------------------
@@ -48,6 +48,8 @@ exclude_patterns = []
 #
 html_theme = 'alabaster'
 html_theme_options = {
+    'description': 'Simplify EDA reporting',
+    'description_font_style': 'italic',
     'show_relbars': True,
 }
 # Add any paths that contain custom static files (such as style sheets) here,
