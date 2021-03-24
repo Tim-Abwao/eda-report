@@ -30,7 +30,7 @@ eda_report
 
 and select a file to analyse.
 
-![screencast of the gui](screen.png)
+![screencast of the gui][screencast]
 
 ### 2. Command line interface
 
@@ -82,3 +82,4 @@ where `df` is a pandas `DataFrame`.
 [4]: https://seaborn.pydata.org/
 [5]: https://python-docx.readthedocs.io/en/latest/
 [6]: https://pypi.org/project/eda_report/
+[screencast]: https://raw.githubusercontent.com/Tim-Abwao/auto-eda/main/docs/source/_static/gui.png
