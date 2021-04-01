@@ -105,11 +105,50 @@ class ReportDocument:
         intro = f'The dataset consists of {rows} and {cols}{numeric}.'
 
         self.document.add_paragraph(intro)
+        self.document.add_paragraph()
+
+        # Add overview of the data
+        self._get_numeric_overview_table()
+        self._get_categorical_overview_table()
 
         if hasattr(self.variables, 'joint_scatterplot'):
             self.document.add_picture(self.variables.joint_scatterplot,
                                       width=Inches(6.5))
             self.document.add_page_break()
+
+    def _get_numeric_overview_table(self):
+        """Create a table with the overview for numeric features.
+        """
+        if self.variables.numeric_cols is not None:
+            self.document.add_heading('Overview of Numeric Features', level=2)
+            self.document.add_paragraph()
+            # Get summary statistics for all columns, round the values to 4
+            # decimal places, and set the feature names as the index by
+            # transposing.
+            summary = self.variables.numeric_cols.describe([0.5]).round(4).T
+            # Create a table with 9 columns
+            self._create_table(
+                data=summary, header=True,
+                column_widths=(1.5,) + (0.9,)*6, style='Normal Table'
+            )
+
+    def _get_categorical_overview_table(self):
+        """Create a table with the overview for categorical features.
+        """
+        if self.variables.categotical_cols is not None:
+            self.document.add_heading(
+                'Overview of Categorical Features', level=2
+            )
+            self.document.add_paragraph()
+            # Get summary statistics for all columns, round the values to 4
+            # decimal places, and set the feature names as the index by
+            # transposing.
+            summary = self.variables.categotical_cols.describe().round(4).T
+            # Create a table with 5 columns
+            self._create_table(
+                data=summary, header=True,
+                column_widths=(1.2,) + (0.8,)*4, style='Normal Table'
+            )
 
     def _get_variable_info(self):
         """Get a brief introduction, summary statistics, and graphs for each
