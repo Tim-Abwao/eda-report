@@ -128,10 +128,11 @@ class ReportDocument:
             p.add_run(f'{var.missing} of its values are missing.')
             # Summary statistics
             self.document.add_heading('Summary Statistics', level=4)
-            self._create_table(var.statistics)
+            self._create_table(var.statistics, column_widths=[2.5, 2])
             if hasattr(var, 'most_common_items'):
                 self.document.add_heading('Most Common Values', level=4)
-                self._create_table(var.most_common_items)
+                self._create_table(var.most_common_items,
+                                   column_widths=(2.5, 2))
             # Graphs
             for graph in var._graphs.values():  # var._graphs is a dict
                 self.document.add_picture(graph, width=Inches(5.4))
@@ -169,23 +170,50 @@ class ReportDocument:
                 # Add page break after every 2 pairs
                 self.document.add_page_break()
 
-    def _create_table(self, data):
+    def _create_table(self, data, column_widths=(), style=None, header=False):
         """Create a table from the given data and add it to the document.
+
+
+        :param data: The data to put into a table.
+        :type data: ``pandas.DataFrame``
+        :param column_widths: The desired table column widths, defaults to ().
+        :type column_widths: tuple, optional
+        :param style: *Word* table style to apply, defaults to None.
+        :type style: str, optional
+        :param header: Whether or not to include column names as the first row
+            in the table, defaults to False.
+        :type header: bool, optional
         """
-        table = self.document.add_table(rows=len(data), cols=2)
+        if header:
+            # Add the column names as a row. Placing it at index '' takes it
+            # to the top after sorting.
+            data.loc['', :] = data.columns
+
+        # Sort the index in ascending order.
+        data.sort_index(inplace=True)
+
+        # Create the table
+        table = self.document.add_table(
+            rows=len(data),  # A row for each row in the data
+            cols=len(column_widths)  # As many columns as column-widths given
+        )
         # Set table style
-        table.style = self.document.styles[self.TABLE_STYLE]
+        if style is None:
+            table.style = self.document.styles[self.TABLE_STYLE]
+        else:
+            table.style = self.document.styles[style]
+
         # Set column dimensions
-        table.columns[0].width = Inches(2.5)
-        table.columns[1].width = Inches(2)
+        for idx, width in enumerate(column_widths):
+            table.columns[idx].width = Inches(width)
 
-        # Get a list of tuples, each to be a row in the table
-        items = [(f'{label}', f'{val}') for label, val in data.items()]
+        # Populate the table with the data
+        for idx, row_data in enumerate(data.itertuples()):
+            table_row = table.rows[idx]
+            # Populate the row's cells
+            for cell, datum in zip(table_row.cells, row_data):
+                cell.text = f'{datum}'
 
-        for idx, row in enumerate(table.rows):
-            label, value = items[idx]
-            row.cells[0].text = label
-            row.cells[1].text = value
         self.document.add_paragraph()
 
     def _save_file(self):
