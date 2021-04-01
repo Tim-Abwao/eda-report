@@ -2,7 +2,6 @@ venv
 .ipynb_checkpoints
 __pycache__
 *.docx
-!basic-report.docx
 .~lock*
 dist/
 build/
