@@ -134,7 +134,7 @@ class ReportDocument:
                 self._create_table(var.most_common_items)
             # Graphs
             for graph in var._graphs.values():  # var._graphs is a dict
-                self.document.add_picture(graph, width=Inches(5))
+                self.document.add_picture(graph, width=Inches(5.4))
 
             self.document.add_page_break()
 
