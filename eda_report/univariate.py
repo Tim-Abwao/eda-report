@@ -1,6 +1,7 @@
 import seaborn as sns
 from pandas.api.types import is_bool_dtype, is_numeric_dtype
 from PIL import Image
+from scipy.stats import probplot
 
 from eda_report.plotting import Fig, savefig
 from eda_report.validate import validate_univariate_input
@@ -40,7 +41,7 @@ class Variable:
         self.missing = self._get_missing_values()
         #: The *color* applied to the created graphs.
         self.graph_color = graph_color
-        # The *graphs* for the *column/feature* as bytes in a file-like object.
+        # Get graphs for the column/feature as a dict of file-like objects.
         self._graphs = self._plot_graphs()
 
     def show_graphs(self):
@@ -84,9 +85,14 @@ class Variable:
         """Plot graphs for the column/feature, based on variable type.
         """
         if self.var_type == 'numeric':
-            return self._plot_numeric()
+            return {
+                'hist_and_boxplot': self._plot_histogram_and_boxplot(),
+                'qq_plot': self._plot_qq_plot()
+            }
         elif self.var_type == 'categorical':
-            return self._plot_categorical()
+            return {
+                'bar_plot': self._plot_bar()
+            }
 
     def _numeric_summary_statictics(self):
         """Get summary statistics for a numeric column/feature.
@@ -113,7 +119,7 @@ class Variable:
             most_common_items.apply(lambda x: f'{x} ({x / n:.2%})')
         return summary
 
-    def _plot_numeric(self):
+    def _plot_histogram_and_boxplot(self):
         """Get a boxplot and a histogram for a numeric column/feature.
         """
         fig = Fig(figsize=(6, 6), linewidth=1)
@@ -129,7 +135,28 @@ class Variable:
 
         return savefig(fig)
 
-    def _plot_categorical(self, color='cyan'):
+    def _plot_qq_plot(self):
+        """Get a quantile-quantile probability plot for a numeric column/
+        feature.
+        """
+        # Create a figure and axes
+        fig = Fig(figsize=(6, 4))
+        ax = fig.subplots()
+        # Get quantile data.
+        theoretical_quantiles, ordered_values = probplot(
+            self.data,
+            fit=False  # The OLS line of best fit will be plotted in regplot
+        )
+        # Plot the data and a line of best fit
+        sns.regplot(x=theoretical_quantiles, y=ordered_values, ax=ax,
+                    color=self.graph_color)
+        ax.set_title('Q-Q Plot (Probability Plot)', size=12)
+        ax.set_xlabel('Theoretical Quantiles (~ Standard Normal)')
+        ax.set_ylabel('Ordered Values')
+
+        return savefig(fig)
+
+    def _plot_bar(self, color='cyan'):
         """Get a bar-plot for a categorical column/feature.
         """
         fig = Fig(figsize=(6, 4), linewidth=1)
