@@ -87,7 +87,8 @@ class Variable:
         if self.var_type == 'numeric':
             return {
                 'hist_and_boxplot': self._plot_histogram_and_boxplot(),
-                'qq_plot': self._plot_qq_plot()
+                'qq_plot': self._plot_qq_plot(),
+                'run_plot': self._plot_run_plot()
             }
         elif self.var_type == 'categorical':
             return {
@@ -140,7 +141,7 @@ class Variable:
         feature.
         """
         # Create a figure and axes
-        fig = Fig(figsize=(6, 4))
+        fig = Fig(figsize=(6, 4), linewidth=1)
         ax = fig.subplots()
         # Get quantile data.
         theoretical_quantiles, ordered_values = probplot(
@@ -153,6 +154,35 @@ class Variable:
         ax.set_title('Q-Q Plot (Probability Plot)', size=12)
         ax.set_xlabel('Theoretical Quantiles (~ Standard Normal)')
         ax.set_ylabel('Ordered Values')
+
+        return savefig(fig)
+
+    def _plot_run_plot(self):
+        """Get a run sequence plot / line plot for a numeric column/feature.
+        """
+        # Create a figure and axes
+        fig = Fig(figsize=(6, 4), linewidth=1)
+        ax = fig.subplots()
+        # Get a line plot of the data
+        ax.plot(self.data, marker='.', color=self.graph_color)
+
+        xmin = self.data.index[0]
+        xmax = self.data.index[-1]
+        p5, p95 = self.data.quantile(0.05), self.data.quantile(0.95)
+        # Plot a horizontal line at the 50th percentile
+        ax.hlines(self.statistics['Median'], xmin, xmax, 'grey', '--')
+        ax.text(xmax, self.statistics['Median'], ' Median')
+        # Plot a horizontal line at the 5th percentile
+        ax.hlines(p5, xmin, xmax, 'grey', '--')
+        ax.text(xmax, p5, ' $5^{th}$ Percentile')
+        # Plot a horizontal lines at the 95th percentile
+        ax.hlines(p95, xmin, xmax, 'grey', '--')
+        ax.text(xmax, p95, ' $95^{th}$ Percentile')
+
+        ax.tick_params(axis='x', rotation=45)  # rotate x-labels by 45°
+        ax.set_title('Line Plot (Run Plot)', size=12)
+        ax.set_ylabel('Observed Value')
+        ax.set_xlabel('Index')
 
         return savefig(fig)
 
