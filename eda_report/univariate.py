@@ -31,7 +31,7 @@ class Variable:
         #: The *column/feature*'s *type*; either *categorical* or *numeric*.
         self.var_type = self._get_variable_type()
         #: *Summary statistics* for the *column/feature*, as a
-        #: ``pandas.Series``.
+        #: ``pandas.DataFrame``.
         self.statistics = self._get_summary_statictics()
         #: The *number of unique values* in the *column/feature*.
         self.num_unique = self.data.nunique()
@@ -105,7 +105,7 @@ class Variable:
         ]
         summary['Skewness'] = self.data.skew()
         summary['Kurtosis'] = self.data.kurt()
-        return summary.round(7)
+        return summary.round(7).to_frame()
 
     def _categorical_summary_statictics(self):
         """Get summary statistics for a categorical column/feature.
@@ -117,8 +117,8 @@ class Variable:
         most_common_items = self.data.value_counts().head()
         n = len(self.data)
         self.most_common_items = \
-            most_common_items.apply(lambda x: f'{x} ({x / n:.2%})')
-        return summary
+            most_common_items.apply(lambda x: f'{x} ({x / n:.2%})').to_frame()
+        return summary.to_frame()
 
     def _plot_histogram_and_boxplot(self):
         """Get a boxplot and a histogram for a numeric column/feature.
@@ -168,10 +168,11 @@ class Variable:
 
         xmin = self.data.index[0]
         xmax = self.data.index[-1]
+        p50 = self.data.quantile(0.5)
         p5, p95 = self.data.quantile(0.05), self.data.quantile(0.95)
         # Plot a horizontal line at the 50th percentile
-        ax.hlines(self.statistics['Median'], xmin, xmax, 'grey', '--')
-        ax.text(xmax, self.statistics['Median'], ' Median')
+        ax.hlines(p50, xmin, xmax, 'grey', '--')
+        ax.text(xmax, p50, ' Median')
         # Plot a horizontal line at the 5th percentile
         ax.hlines(p5, xmin, xmax, 'grey', '--')
         ax.text(xmax, p5, ' $5^{th}$ Percentile')
