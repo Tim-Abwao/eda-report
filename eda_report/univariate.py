@@ -48,8 +48,9 @@ class Variable:
         """Display the graphs for the *column/feature* using the :class:`PIL.Image`
         class.
         """
-        image = Image.open(self._graphs)
-        image.show()
+        for graph in self._graphs.values():
+            image = Image.open(graph)
+            image.show()
 
     def _get_missing_values(self):
         """Get the number of missing values in the **column/feature**.
