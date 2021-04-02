@@ -22,16 +22,21 @@ For windows, the commands for the same are::
     python3 -m venv eda_env
     eda_env\Scripts\activate
 
-You can then install ``eda_report`` from `The Python Package Index`_ using ``pip``::
+You can then install ``eda_report`` from the `Python Package Index`_ using ``pip``::
 
     pip install eda-report
 
-Afterwards, head on over to :doc:`quickstart` to help you get started.
+
+You could also install the latest version right from the `GitHub repository`_ using::
+
+    pip install https://github.com/tim-abwao/auto-eda/archive/master.tar.gz
+
+Afterwards, head on over to :doc:`quickstart` for help getting started.
 
 .. tip::
     For a more comprehensive report, in HTML format, consider using `pandas_profiling`_.
 
 .. _Learn more: https://docs.python.org/3/tutorial/venv.html#virtual-environments-and-packages
-.. _The Python Package Index: https://pypi.org/project/eda-report/
+.. _Python Package Index: https://pypi.org/project/eda-report/
 .. _pandas_profiling: https://pandas-profiling.github.io/pandas-profiling/docs/master/index.html
-
+.. _GitHub repository: https://github.com/Tim-Abwao/auto-eda
