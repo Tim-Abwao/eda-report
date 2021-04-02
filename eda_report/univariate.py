@@ -151,7 +151,7 @@ class Variable:
         # Plot the data and a line of best fit
         sns.regplot(x=theoretical_quantiles, y=ordered_values, ax=ax,
                     color=self.graph_color)
-        ax.set_title('Q-Q Plot (Probability Plot)', size=12)
+        ax.set_title(f'Q-Q Plot (Probability Plot) of {self.name}', size=12)
         ax.set_xlabel('Theoretical Quantiles (~ Standard Normal)')
         ax.set_ylabel('Ordered Values')
 
@@ -181,7 +181,7 @@ class Variable:
         ax.text(xmax, p95, ' $95^{th}$ Percentile')
 
         ax.tick_params(axis='x', rotation=45)  # rotate x-labels by 45°
-        ax.set_title('Line Plot (Run Plot)', size=12)
+        ax.set_title(f'Line Plot (Run Plot) of {self.name}', size=12)
         ax.set_ylabel('Observed Value')
         ax.set_xlabel('Index')
 
