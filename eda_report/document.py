@@ -229,12 +229,11 @@ class ReportDocument:
         :type header: bool, optional
         """
         if header:
-            # Add the column names as a row. Placing it at index '' takes it
-            # to the top after sorting.
+            # Add the column names as a row.
             data.loc['', :] = data.columns
-
-        # Sort the index in ascending order.
-        data.sort_index(inplace=True)
+            # Sort the index in ascending order. Placing the column names at
+            # index '' takes them to the top after sorting.
+            data.sort_index(inplace=True)
 
         # Create the table
         table = self.document.add_table(
