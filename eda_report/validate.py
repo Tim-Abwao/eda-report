@@ -37,12 +37,12 @@ def validate_multivariate_input(data):
     else:
         try:
             # Cast the data as a dataframe
-            data = DataFrame(data).infer_objects()
-
+            data = DataFrame(data)
         except Exception:
             raise InputError(
                 f'Expected a pandas.Dataframe object, but got {type(data)}.'
             )
+        data = data.infer_objects()
     return clean_column_names(data)
 
 
