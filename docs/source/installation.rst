@@ -29,7 +29,7 @@ You can then install ``eda_report`` from the `Python Package Index`_ using ``pip
 
 You could also install the latest version right from the `GitHub repository`_ using::
 
-    pip install https://github.com/tim-abwao/auto-eda/archive/master.tar.gz
+    pip install https://github.com/tim-abwao/auto-eda/archive/main.tar.gz
 
 Afterwards, head on over to :doc:`quickstart` for help getting started.
 
