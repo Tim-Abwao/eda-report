@@ -112,6 +112,9 @@ class ReportDocument:
         self._get_categorical_overview_table()
 
         if hasattr(self.variables, 'joint_scatterplot'):
+            # Add a joint scatterplot of the numeric features
+            self.document.add_heading(
+                'Joint Scatter-plot of Numeric Columns', level=2)
             self.document.add_picture(self.variables.joint_scatterplot,
                                       width=Inches(6.5))
             self.document.add_page_break()
@@ -154,6 +157,7 @@ class ReportDocument:
         """Get a brief introduction, summary statistics, and graphs for each
         individual variable.
         """
+        self.document.add_heading('A. Univariate Analysis', level=1)
         for idx, col in enumerate(tqdm(self.data.columns, ncols=79),
                                   start=1):
             var = Variable(self.data[col], graph_color=self.GRAPH_COLOR)
@@ -181,7 +185,8 @@ class ReportDocument:
     def _get_bivariate_analysis(self):
         """Get comparisons and scatterplots for pairs of numeric variables.
         """
-        self.document.add_heading('Bivariate Analysis (Correlation)', level=1)
+        self.document.add_heading(
+            'B. Bivariate Analysis (Correlation)', level=1)
         self.document.add_paragraph()
         self.document.add_picture(self.variables.joint_correlation_plot,
                                   width=Inches(6.7))
