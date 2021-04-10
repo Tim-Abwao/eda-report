@@ -17,7 +17,7 @@ In UNIX-like operating systems, you can create and activate a virtual environmen
     # Activate the virtual environment
     source eda_env/bin/activate
 
-For windows, the commands for the same are::
+In windows, the commands for the same are::
     
     python3 -m venv eda_env
     eda_env\Scripts\activate

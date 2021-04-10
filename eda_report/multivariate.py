@@ -19,7 +19,7 @@ class MultiVariable:
     is raised.
     """
 
-    def __init__(self, data, graph_color='orangered'):
+    def __init__(self, data, *, graph_color='orangered'):
         """Initialise an instance of
         :class:`~eda_report.multivariate.MultiVariable`.
 
@@ -27,21 +27,29 @@ class MultiVariable:
             with several columns.
         :type data: array-like, sequence, iterable, dict
         :param graph_color: The color to apply to the graphs created,
-            defaults to 'orangered'.
+            defaults to 'orangered'. See the *matplotlib* `list of named
+            colors`_ for all available options.
         :type graph_color: str, optional
+
+        .. _`list of named colors`:
+            https://matplotlib.org/stable/gallery/color/named_colors.html
         """
         self.data = validate_multivariate_input(data)
         #: The color applied to the created graphs.
         self.graph_color = graph_color
-        #: A ``DataFrame`` of all the *numeric columns/features*.
+        #: A ``DataFrame`` with all the *numeric columns/features* present.
         self.numeric_cols = self._select_cols('number')
-        #: A ``DataFrame`` of all the *categorical columns/features*. Please
-        #: note that **boolean features** are also **considered categorical**
-        #: here.
-        self.categotical_cols = self._select_cols('object', 'bool')
+        #: A ``DataFrame`` with all the *categorical columns/features*
+        #: present. Please note that **boolean features** are also
+        #: **considered categorical** in this context.
+        self.categorical_cols = self._select_cols('object', 'bool')
         #: A ``DataFrame`` of Pearson correlation coefficients for the
         #: *numeric columns/features*.
         self.correlation_df = self._get_correlation()
+        #: Get brief descriptions of the nature of correlation between
+        #: numerical feature pairs.
+        self.corr_type = {}
+        self.bivariate_scatterplots = {}
         self._get_bivariate_analysis()
 
     def show_correlation_heatmap(self):
@@ -55,7 +63,8 @@ class MultiVariable:
             print('Not enough numeric variables to compare.')
 
     def show_joint_scatterplot(self):
-        """Display a joint scatterplot of all the *numeric columns/features*.
+        """Display a joint scatter-plot of all the *numeric columns/features*
+        present.
         """
         if hasattr(self, 'joint_scatterplot'):
             image = Image.open(self.joint_scatterplot)
@@ -172,8 +181,6 @@ class MultiVariable:
         numeric variables.
         """
         self._get_variable_pairs()
-        self.corr_type = {}
-        self.bivariate_scatterplots = {}
 
         for var1, var2 in tqdm(self.var_pairs, ncols=79):
             self._quantify_correlation(var1, var2)

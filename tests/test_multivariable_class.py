@@ -20,7 +20,7 @@ class TestGeneralMultiVariableProperties(unittest.TestCase):
             self.variables.numeric_cols.columns.to_list(), ['A', 'D']
         )
         self.assertEqual(
-            self.variables.categotical_cols.columns.to_list(), ['B', 'C']
+            self.variables.categorical_cols.columns.to_list(), ['B', 'C']
         )
 
     def test_correlation_df(self):

@@ -8,7 +8,7 @@ from eda_report.validate import validate_univariate_input
 
 
 class Variable:
-    """This is the blueprint for structures to hold the contents and
+    """This is the blueprint for containers to hold the contents and
     characteristics of *individual columns/features*.
     """
 
@@ -28,14 +28,14 @@ class Variable:
         #: argument during instantiation, this will be taken as the value of
         #: the ``name`` attribute of the input data.
         self.name = name if name is not None else self.data.name
-        #: The *column/feature*'s *type*; either *categorical* or *numeric*.
+        #: The *type* of feature; either *categorical* or *numeric*.
         self.var_type = self._get_variable_type()
         #: *Summary statistics* for the *column/feature*, as a
         #: ``pandas.DataFrame``.
         self.statistics = self._get_summary_statictics()
-        #: The *number of unique values* in the *column/feature*.
+        #: The *number of unique values* present in the *column/feature*.
         self.num_unique = self.data.nunique()
-        #: The *unique values* in the *column/feature*.
+        #: The *unique values* present in the *column/feature*.
         self.unique = self.data.unique()
         #: The number of *missing values* (``NaN``, ``None``, ``NA``, ...).
         self.missing = self._get_missing_values()
@@ -45,8 +45,7 @@ class Variable:
         self._graphs = self._plot_graphs()
 
     def show_graphs(self):
-        """Display the graphs for the *column/feature* using the :class:`PIL.Image`
-        class.
+        """Display the plotted graphs for the *column/feature*.
         """
         for graph in self._graphs.values():
             image = Image.open(graph)

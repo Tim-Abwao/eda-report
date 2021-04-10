@@ -4,10 +4,8 @@ from eda_report.read_file import df_from_file
 
 
 def process_cli_args():
-    """Captures and parses input from the command line interface.
-
-    The `argparse`_ module from the Python standard library is used to define
-    the *positional* and *optional arguments*.
+    """Captures and parses input from the command line interface using the
+    `argparse`_ module from the Python standard library.
 
     Available options are::
 

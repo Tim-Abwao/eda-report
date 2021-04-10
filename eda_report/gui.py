@@ -23,7 +23,10 @@ Select a file to analyse, and it will be automatically summarised. The result\
 
 
 def run_in_gui():
-    """Starts a graphical user interface to the application.
+    """Starts the *graphical user interface* to the application.
+
+    This provides the entry point for the ``eda_report`` console script
+    (command).
     """
     root = Tk()
     root.title('eda_report')
@@ -35,18 +38,33 @@ def run_in_gui():
 
 
 class EDAGUI(Frame):
-    """This is the blueprint for the *graphical user interface* to the
-    package/application.
+    """This is the blueprint for the `tkinter`_ - based *graphical user
+    interface* to the package/application.
+
+    The graphical window is a *tkinter* ``Frame``, with a *button* that
+    opens a *file-dialog* to navigate to and select a file to analyse.
+
+    Once a file is selected, a *text-input widget* and *color-picker tool* pop
+    up to help set the report's *title* and *graph color* respectively.
+    Finally, a file-dialog to set the desired location and name for the report
+    is shown.
+
+    The collected *input file-path*, *title*, *color* and *output file-path*
+    are then passed to the :func:`~eda_report.get_word_report` function to
+    create the exploratory data analysis report document. A message-box will
+    be shown when the report is ready, or when an exception occurs.
+
+    .. _`tkinter`: https://docs.python.org/3/library/tkinter.html
     """
 
     def __init__(self, master=None, **kw):
         super().__init__(master)
         self.master = master
         self.configure(height=400, width=600)
-        self.create_widgets()
+        self._create_widgets()
         self.pack()
 
-    def create_widgets(self):
+    def _create_widgets(self):
         """Creates the widgets for the graphical user interface: A *canvas*
         with the a *background image*, *introductory text*, and a *button* to
         select a file.
@@ -78,10 +96,10 @@ class EDAGUI(Frame):
         """Collects input from the graphical user interface, and uses the
         :func:`~eda_report.get_word_report` function to generate a report.
         """
-        self.get_data_from_file()
-        self.get_report_title()
-        self.get_graph_color()
-        self.get_save_as_name()
+        self._get_data_from_file()
+        self._get_report_title()
+        self._get_graph_color()
+        self._get_save_as_name()
 
         # Generate the report using the provided arguments
         get_word_report(self.data, title=self.report_title,
@@ -90,7 +108,7 @@ class EDAGUI(Frame):
         # Pop up message to declare that the report is finished
         showinfo(message=f'Done! Report saved as {self.save_name!r}.')
 
-    def get_data_from_file(self):
+    def _get_data_from_file(self):
         """Creates a file dialog to help navigate to and select a file to
         analyse.
         """
@@ -100,11 +118,11 @@ class EDAGUI(Frame):
         )
         if not file_name:
             showinfo(message='Please select a file to continue')
-            file_name = self.get_data_from_file()
+            file_name = self._get_data_from_file()
         else:
             self.data = df_from_file(file_name)
 
-    def get_report_title(self):
+    def _get_report_title(self):
         """Creates a simple dialog to capture text input for the desired
         report title.
         """
@@ -117,7 +135,7 @@ class EDAGUI(Frame):
         self.report_title = report_title if report_title else \
             'Exploratory Data Analysis Report'
 
-    def get_graph_color(self):
+    def _get_graph_color(self):
         """Creates a graphical color picking tool to help set the desired
         color for the generated graphs.
         """
@@ -128,7 +146,7 @@ class EDAGUI(Frame):
         )[-1]
         self.graph_color = color if color is not None else 'orangered'
 
-    def get_save_as_name(self):
+    def _get_save_as_name(self):
         """Create a file dialog to help select a destination folder and file
         name for the generated report.
         """

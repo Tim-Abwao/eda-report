@@ -15,23 +15,30 @@ logging.basicConfig(
 
 
 class ReportDocument:
-    """The blueprint for objects with methods to create and populate *.docx*
-    files.
+    """The blueprint for objects containing methods to create and populate
+    reports in *.docx* format.
 
-    The *input data as a whole* is processed as an instance of
-    :class:`~eda_report.multivariate.MultiVariable` to get *group statistics
-    and plots*. *Individual columns/features* are processed as instances of
-    :class:`~eda_report.univariate.Variable` to get statistics and plots for
-    *each feature*.
+    The *input data as a whole* is used to create an instance of
+    :class:`~eda_report.multivariate.MultiVariable`, which will compute the
+    data's *statistics*, plot *graphs*, and save them all as attributes.
 
-    The `python-docx`_ module is then used to write the results as a *Word*
-    document.
+    *Individual columns/features* are likewise processed as instances of
+    :class:`~eda_report.univariate.Variable`, so as to obtain *statistics* &
+    *plots* for each feature.
+
+    The `python-docx`_ module is then used to write the analysis results as a
+    *Word* document. The report is organised into 3 sections:
+
+    #. An *Overview* of the shape of the data and its columns/features
+    #. *Univariate Analysis*: Summary statistics and graphs for each column/
+        feature.
+    #. *Bivariate Analysis*: Pairwise comparisons of all numerical columns.
 
     .. _python-docx: https://python-docx.readthedocs.io/en/latest/
     """
-    def __init__(self, data, title='Exploratory Data Analysis Report',
-                 output_filename='eda-report.docx',
-                 graph_color='orangered', table_style='Table Grid'):
+    def __init__(self, data, *, title='Exploratory Data Analysis Report',
+                 graph_color='orangered', output_filename='eda-report.docx',
+                 table_style='Table Grid'):
         """Initialise an instance of
         :class:`~eda_report.document.ReportDocument`.
 
@@ -40,15 +47,20 @@ class ReportDocument:
         :param title: The top level heading for the report, defaults to
             'Exploratory Data Analysis Report'.
         :type title: str, optional
-        :param output_filename: The name to give the generated report file,
-            defaults to 'eda-report.docx'.
-        :type output_filename: str, optional
-        :param graph_color: A valid matplotlib color specifier, defaults
-            to 'orangered'.
+        :param graph_color: The color to apply to the generated graphs,
+            defaults to 'orangered'. See the *matplotlib* `list of named
+            colors`_ for all available options.
         :type graph_color: str, optional
+        :param output_filename: The name and path to use in saving the
+            generated report file, defaults to 'eda-report.docx' in the
+            current directory.
+        :type output_filename: str, optional
         :param table_style: *Microsoft Word* table style to apply to the
             created tables, defaults to 'Table Grid'.
         :type table_style: str, optional
+
+        .. _`list of named colors`:
+            https://matplotlib.org/stable/gallery/color/named_colors.html
         """
         self.data = data
         self.TITLE = title
@@ -138,7 +150,7 @@ class ReportDocument:
     def _get_categorical_overview_table(self):
         """Create a table with the overview for categorical features.
         """
-        if self.variables.categotical_cols is not None:
+        if self.variables.categorical_cols is not None:
             self.document.add_heading(
                 'Overview of Categorical Features', level=2
             )
@@ -146,7 +158,7 @@ class ReportDocument:
             # Get summary statistics for all columns, round the values to 4
             # decimal places, and set the feature names as the index by
             # transposing.
-            summary = self.variables.categotical_cols.describe().round(4).T
+            summary = self.variables.categorical_cols.describe().round(4).T
             # Create a table with 5 columns
             self._create_table(
                 data=summary, header=True,

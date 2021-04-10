@@ -6,10 +6,12 @@ from eda_report.exceptions import InputError
 def clean_column_names(data):
     """Makes sure that *columns/features* have *meaningful* names.
 
-    If the input data has columns that are range-like (``RangeIndex`` e.g.
-    [0, 1, 2, ...]), as is the case if an array/sequence/iterable is used to
-    create a ``DataFrame`` but no column names are specified, then these
-    columns will be renamed to ['var_1', 'var_2, ...]
+    When an array/sequence/iterable/scalar is used to create a ``DataFrame``
+    but no column names are specified, ``pandas`` by default names the columns
+    by index as [0, 1, 2, ...] (``RangeIndex``).
+
+    This function renames such columns to ['var_1', 'var_2, 'var_3', ...],
+    making references and comparisons much more intuitive.
 
     :param data: The data whose columns are checked
     :type data: ``pandas.DataFrame``
@@ -22,7 +24,8 @@ def clean_column_names(data):
 
 
 def validate_multivariate_input(data):
-    """Ensures that mutlivariate input data is of type ``pandas.DataFrame``.
+    """Ensures that *multivariate input data* is of type ``pandas.DataFrame``.
+
     If it isn't, this attempts to explicitly cast it as a ``DataFrame``.
 
     :param data: The data to process.
@@ -47,7 +50,8 @@ def validate_multivariate_input(data):
 
 
 def validate_univariate_input(data):
-    """Ensures that univariate input data is of type ``pandas.Series``.
+    """Ensures that *univariate input data* is of type ``pandas.Series``.
+
     If it isn't, this attempts to explicitly cast it as a ``Series``.
 
     :param data: The data to process.

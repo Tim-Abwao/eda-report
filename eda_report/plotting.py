@@ -28,7 +28,7 @@ def savefig(figure):
     saved as *attributes* in ``io.BytesIO`` objects, allowing convenient and
     rapid in-memory access.
 
-    :param figure: A matplotlib figure with plotted axes.
+    :param figure: A *matplotlib figure* with plotted axes.
     :type figure: ``matplotlib.figure.Figure``
     :return: A file-like object with the figure's contents.
     :rtype: ``io.BytesIo``
