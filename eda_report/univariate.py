@@ -14,7 +14,7 @@ class Variable:
     characteristics of *individual columns/features*.
     """
 
-    def __init__(self, data, graph_color='orangered', name=None):
+    def __init__(self, data, *, graph_color='orangered', name=None):
         """Initialise an instance of :class:`Variable`.
 
         :param data: The data to process.
@@ -26,7 +26,7 @@ class Variable:
         :type name: str, optional
         """
         self.data = validate_univariate_input(data)
-        #: The *name* of the *column/feature*. If unspecified in the name
+        #: The *name* of the *column/feature*. If unspecified in the ``name``
         #: argument during instantiation, this will be taken as the value of
         #: the ``name`` attribute of the input data.
         self.name = self._get_name(name)
@@ -37,8 +37,8 @@ class Variable:
         self.statistics = self._get_summary_statictics()
         #: The *number of unique values* present in the *column/feature*.
         self.num_unique = self.data.nunique()
-        #: The *unique values* present in the *column/feature*.
-        self.unique = self.data.unique()
+        #: The set of *unique values* present in the *column/feature*.
+        self.unique = set(self.data.unique())
         #: The number of *missing values* (``NaN``, ``None``, ``NA``, ...).
         self.missing = self._get_missing_values()
         #: The *color* applied to the created graphs.
@@ -47,7 +47,7 @@ class Variable:
         self._graphs = self._plot_graphs()
 
     def __repr__(self):
-        """Creates the string representation of :class:`Variable` objects.
+        """Creates the string representation for :class:`Variable` objects.
         """
         return f"""\
             Overview
@@ -80,49 +80,24 @@ Missing Values: {self.missing}
 
         return self.data.name
 
-    def _get_missing_values(self):
-        """Get the number of missing values in the **column/feature**.
-        """
-        missing_values = self.data.isna().sum()
-        if missing_values == 0:
-            return "None"
-        else:
-            return f"{missing_values} ({missing_values / len(self.data):.2%})"
-
     def _get_variable_type(self):
         """Get the variable type: 'categorical' or 'numeric'.
         """
-        if is_numeric_dtype(self.data):
-            if is_bool_dtype(self.data):
-                self.data = self.data.astype('category')
-                return 'categorical'
-            else:
-                return 'numeric'
+        if is_numeric_dtype(self.data) and not is_bool_dtype(self.data):
+            # Only int and float types
+            return 'numeric'
         else:
-            # Handle bool, string and datetime data as categorical
+            # Handle bool, string, datetime, etc as categorical
+            self.data = self.data.astype('category')
             return 'categorical'
 
     def _get_summary_statictics(self):
-        """Get summary statistics for the column/feature as a pandas Series.
+        """Get summary statistics for the column/feature.
         """
         if self.var_type == 'numeric':
             return self._numeric_summary_statictics()
         elif self.var_type == 'categorical':
             return self._categorical_summary_statictics()
-
-    def _plot_graphs(self):
-        """Plot graphs for the column/feature, based on variable type.
-        """
-        if self.var_type == 'numeric':
-            return {
-                'hist_and_boxplot': self._plot_histogram_and_boxplot(),
-                'qq_plot': self._plot_qq_plot(),
-                'run_plot': self._plot_run_plot()
-            }
-        elif self.var_type == 'categorical':
-            return {
-                'bar_plot': self._plot_bar()
-            }
 
     def _numeric_summary_statictics(self):
         """Get summary statistics for a numeric column/feature.
@@ -143,25 +118,50 @@ Missing Values: {self.missing}
         summary.index = ['Number of observations', 'Unique values',
                          'Mode (Highest occurring value)']
 
+        # Get most common items and their relative frequency (%)
         most_common_items = self.data.value_counts().head()
         n = len(self.data)
         self.most_common_items = \
             most_common_items.apply(lambda x: f'{x} ({x / n:.2%})').to_frame()
+
         return summary.to_frame()
+
+    def _get_missing_values(self):
+        """Get the number of missing values in the column/feature.
+        """
+        missing_values = self.data.isna().sum()
+        if missing_values == 0:
+            return "None"
+        else:
+            return f"{missing_values} ({missing_values / len(self.data):.2%})"
+
+    def _plot_graphs(self):
+        """Plot graphs for the column/feature, based on variable type.
+        """
+        if self.var_type == 'numeric':
+            return {
+                'hist_and_boxplot': self._plot_histogram_and_boxplot(),
+                'qq_plot': self._plot_qq_plot(),
+                'run_plot': self._plot_run_plot()
+            }
+        elif self.var_type == 'categorical':
+            return {
+                'bar_plot': self._plot_bar()
+            }
 
     def _plot_histogram_and_boxplot(self):
         """Get a boxplot and a histogram for a numeric column/feature.
         """
         fig = Fig(figsize=(6, 6), linewidth=1)
-        ax1, ax2 = fig.subplots(2, 1)
+        ax1, ax2 = fig.subplots(nrows=2, ncols=1)
         # Box-plot
         ax1.boxplot(self.data.dropna(), vert=False, notch=True)
-        ax1.set_yticklabels([''])
+        ax1.set_yticklabels([''])  # Remove y-tick labels
         ax1.set_xlabel(f'{self.name}')
         ax1.set_title(f'Box-plot of {self.name}', size=12)
         # Histogram
-        ax2.set_title(f'Distribution plot of {self.name}', size=12)
         sns.histplot(x=self.data, kde=True, ax=ax2, color=self.graph_color)
+        ax2.set_title(f'Distribution plot of {self.name}', size=12)
 
         return savefig(fig)
 
@@ -187,7 +187,7 @@ Missing Values: {self.missing}
         return savefig(fig)
 
     def _plot_run_plot(self):
-        """Get a run sequence plot / line plot for a numeric column/feature.
+        """Get a run-sequence-plot/line-plot for a numeric column/feature.
         """
         # Create a figure and axes
         fig = Fig(figsize=(6, 4), linewidth=1)
