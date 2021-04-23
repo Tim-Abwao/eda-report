@@ -52,6 +52,39 @@ class MultiVariable:
         self.bivariate_scatterplots = {}
         self._get_bivariate_analysis()
 
+    def __repr__(self):
+        """Create string representation for :class:`Multivariable` objects.
+        """
+        if self.numeric_cols is None:
+            numeric_cols = ''
+        else:
+            numeric_cols = self.numeric_cols.columns.to_list()
+
+        if self.categorical_cols is None:
+            categorical_cols = ''
+        else:
+            categorical_cols = self.categorical_cols.columns.to_list()
+
+        return f"""
+        Overview
+        ========
+Numeric features: {', '.join(numeric_cols)}
+Categorical features: {', '.join(categorical_cols)}
+
+
+        Summary Statistics (Numeric features)
+        =====================================
+{self.numeric_cols.describe() if numeric_cols != '' else 'N/A'}
+
+        Summary Statistics (Categorical features)
+        =========================================
+{self.categorical_cols.describe() if categorical_cols != '' else 'N/A'}
+
+        Bivariate Analysis (Correlation)
+        ================================
+{self._corr_description if hasattr(self, '_corr_description') else 'N/A'}
+"""
+
     def show_correlation_heatmap(self):
         """Display a heatmap of Pearson correlation coefficients for all
         *numeric columns/features* present.
@@ -97,8 +130,12 @@ class MultiVariable:
             self._plot_joint_scatterplot()
             self._plot_joint_correlation()
             self._compare_variable_pairs()
+            self._corr_description = '\n'.join(
+                [f'{var_pair[0]} & {var_pair[1]} --> {corr_description}'
+                 for var_pair, corr_description in self.corr_type.items()])
         else:
-            print('Not enough numeric variables to compare.')
+            print('Skipped Bivariate Analysis:',
+                  'Not enough numeric variables to compare.')
 
     def _plot_joint_scatterplot(self):
         """Create a joint scatter-plot of all numeric columns.
