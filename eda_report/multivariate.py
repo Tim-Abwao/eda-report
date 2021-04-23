@@ -139,10 +139,10 @@ class MultiVariable:
         ax1, ax2 = fig.subplots(1, 2)
         sns.regplot(x=var1, y=var2, data=self.data, ax=ax1, truncate=False,
                     color=self.graph_color)
-        sns.regplot(x=var2, y=var1, data=self.data, ax=ax2, truncate=False,
-                    color=self.graph_color)
-        ax1.set_title(f'Scatterplot - {var1} vs {var2}'.title(), size=9)
-        ax2.set_title(f'Scatterplot - {var2} vs {var1}'.title(), size=9)
+        sns.ecdfplot(data=self.data.loc[:, [var1, var2]], ax=ax2,
+                     color=self.graph_color)
+        ax1.set_title(f'Scatter-plot - {var1} vs {var2}'.title(), size=9)
+        ax2.set_title('Empirical Cummulative Distribution Functions', size=9)
 
         self.bivariate_scatterplots[(var1, var2)] = savefig(fig)
 
