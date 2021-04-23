@@ -72,6 +72,24 @@ class MultiVariable:
         else:
             print('Not enough numeric variables to compare.')
 
+    def _select_cols(self, *dtypes):
+        """Get a DataFrame including only the data types specified.
+
+        :param dtypes: The column data type(s) to include.
+        :type dtypes: str
+        :return: A ``DataFrame`` with columns of the specified data type(s), or
+            ``None`` if no column is of that data type.
+        :rtype: A ``DataFrame``, or ``None``
+        """
+        selected_cols = self.data.select_dtypes(include=dtypes)
+        return selected_cols if selected_cols.shape[1] > 0 else None
+
+    def _get_correlation(self):
+        """Get a DataFrame of the correlation coefficients for numeric
+        columns.
+        """
+        return None if self.numeric_cols is None else self.data.corr()
+
     def _get_bivariate_analysis(self):
         """Compare numeric variable pairs.
         """
@@ -81,18 +99,6 @@ class MultiVariable:
             self._compare_variable_pairs()
         else:
             print('Not enough numeric variables to compare.')
-
-    def _select_cols(self, *dtypes):
-        """Get a DataFrame of the numeric columns present.
-
-        :param dtype: The column data type to include.
-        :type dtype: str
-        :return: A ``DataFrame`` with columns of the specified data type, or
-            ``None`` if no column is of that data type.
-        :rtype: A ``DataFrame``, or ``None``
-        """
-        selected_cols = self.data.select_dtypes(include=dtypes)
-        return selected_cols if selected_cols.shape[1] > 0 else None
 
     def _plot_joint_scatterplot(self):
         """Create a joint scatter-plot of all numeric columns.
@@ -117,34 +123,20 @@ class MultiVariable:
 
         self.joint_correlation_plot = savefig(fig)
 
-    def _get_correlation(self):
-        """Get a DataFrame of the correlation coefficients for numeric
-        columns.
+    def _compare_variable_pairs(self):
         """
-        return None if self.numeric_cols is None else self.data.corr()
+        Get a brief summary of the nature of correlation between pairs of
+        numeric variables.
+        """
+        self._get_variable_pairs()
+
+        for var1, var2 in tqdm(self.var_pairs, ncols=79):
+            self._quantify_correlation(var1, var2)
+            self._regression_plot(var1, var2)
 
     def _get_variable_pairs(self):
         """Get a list of unique pairings of the numeric variables"""
         self.var_pairs = set(combinations(self.correlation_df.columns, r=2))
-
-    def _regression_plot(self, var1, var2):
-        """Create a scatterplot with a fitted linear regression line.
-
-        Parameters:
-        ----------
-        var1, var2: string
-            A pair of numeric column(variable) names.
-        """
-        fig = Fig(figsize=(8.2, 4))
-        ax1, ax2 = fig.subplots(1, 2)
-        sns.regplot(x=var1, y=var2, data=self.data, ax=ax1, truncate=False,
-                    color=self.graph_color)
-        sns.ecdfplot(data=self.data.loc[:, [var1, var2]], ax=ax2,
-                     color=self.graph_color)
-        ax1.set_title(f'Scatter-plot - {var1} vs {var2}'.title(), size=9)
-        ax2.set_title('Empirical Cummulative Distribution Functions', size=9)
-
-        self.bivariate_scatterplots[(var1, var2)] = savefig(fig)
 
     def _quantify_correlation(self, var1, var2):
         """Explain the magnitude of correlation between variable pairs.
@@ -175,13 +167,21 @@ class MultiVariable:
         self.corr_type[(var1, var2)] = \
             f'{strength}{ nature} correlation ({correlation:.2f})'
 
-    def _compare_variable_pairs(self):
-        """
-        Get a brief summary of the nature of correlation between pairs of
-        numeric variables.
-        """
-        self._get_variable_pairs()
+    def _regression_plot(self, var1, var2):
+        """Create a scatterplot with a fitted linear regression line.
 
-        for var1, var2 in tqdm(self.var_pairs, ncols=79):
-            self._quantify_correlation(var1, var2)
-            self._regression_plot(var1, var2)
+        Parameters:
+        ----------
+        var1, var2: string
+            A pair of numeric column(variable) names.
+        """
+        fig = Fig(figsize=(8.2, 4))
+        ax1, ax2 = fig.subplots(nrows=1, ncols=2)
+        sns.regplot(x=var1, y=var2, data=self.data, ax=ax1, truncate=False,
+                    color=self.graph_color)
+        sns.ecdfplot(data=self.data.loc[:, [var1, var2]], ax=ax2,
+                     color=self.graph_color)
+        ax1.set_title(f'Scatter-plot - {var1} vs {var2}'.title(), size=9)
+        ax2.set_title('Empirical Cummulative Distribution Functions', size=9)
+
+        self.bivariate_scatterplots[(var1, var2)] = savefig(fig)
