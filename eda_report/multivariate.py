@@ -130,7 +130,8 @@ class MultiVariable:
         """
         self._get_variable_pairs()
 
-        for var1, var2 in tqdm(self.var_pairs, ncols=79):
+        for var1, var2 in tqdm(self.var_pairs, ncols=99,
+                               desc='Bivariate analysis'):
             self._quantify_correlation(var1, var2)
             self._regression_plot(var1, var2)
 

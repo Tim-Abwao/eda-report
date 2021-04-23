@@ -170,8 +170,9 @@ class ReportDocument:
         individual variable.
         """
         self.document.add_heading('A. Univariate Analysis', level=1)
-        for idx, col in enumerate(tqdm(self.data.columns, ncols=79),
-                                  start=1):
+        for idx, col in enumerate(
+                tqdm(self.data.columns, ncols=99, desc='Univariate analysis'),
+                start=1):
             var = Variable(self.data[col], graph_color=self.GRAPH_COLOR)
             # Heading
             self.document.add_heading(f'{idx}. {col}'.title(), level=2)
