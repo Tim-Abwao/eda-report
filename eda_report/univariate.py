@@ -1,3 +1,5 @@
+from textwrap import shorten
+
 import seaborn as sns
 from pandas.api.types import is_bool_dtype, is_numeric_dtype
 from PIL import Image
@@ -43,6 +45,22 @@ class Variable:
         self.graph_color = graph_color
         # Get graphs for the column/feature as a dict of file-like objects.
         self._graphs = self._plot_graphs()
+
+    def __repr__(self):
+        """Creates the string representation of :class:`Variable` objects.
+        """
+        return f"""\
+            Overview
+            ========
+Name: {self.name},
+Type: {self.var_type},
+Unique Values: {shorten(f'{self.num_unique} -> {self.unique}', 60)},
+Missing Values: {self.missing}
+
+        Summary Statistics
+        ==================
+{self.statistics}
+"""
 
     def show_graphs(self):
         """Display the plotted graphs for the *column/feature*.
