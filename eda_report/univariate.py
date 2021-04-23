@@ -29,7 +29,7 @@ class Variable:
         #: The *name* of the *column/feature*. If unspecified in the name
         #: argument during instantiation, this will be taken as the value of
         #: the ``name`` attribute of the input data.
-        self.name = name if name is not None else self.data.name
+        self.name = self._get_name(name)
         #: The *type* of feature; either *categorical* or *numeric*.
         self.var_type = self._get_variable_type()
         #: *Summary statistics* for the *column/feature*, as a
@@ -68,6 +68,17 @@ Missing Values: {self.missing}
         for graph in self._graphs.values():
             image = Image.open(graph)
             image.show()
+
+    def _get_name(self, name=None):
+        """Set the feature's name.
+
+        :param name: The name to give the feature, defaults to None
+        :type name: str, optional
+        """
+        if name:
+            self.data = self.data.rename(name)
+
+        return self.data.name
 
     def _get_missing_values(self):
         """Get the number of missing values in the **column/feature**.
