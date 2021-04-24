@@ -35,7 +35,7 @@ class TestGeneralMultiVariableProperties(unittest.TestCase):
     def test_graphs_plotted(self):
         # Check if the joint correlation plot is present
         self.assertIn(b'\x89PNG',
-                      self.variables.joint_correlation_plot.getvalue())
+                      self.variables.joint_correlation_heatmap.getvalue())
         # Check if the joint scatterplot is present
         self.assertIn(b'\x89PNG', self.variables.joint_scatterplot.getvalue())
         # Check if numerical variable pairwise scatterplots are present

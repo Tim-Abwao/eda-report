@@ -88,8 +88,8 @@ Categorical features: {', '.join(categorical_cols)}
         """Display a heatmap of Pearson correlation coefficients for all
         *numeric columns/features* present.
         """
-        if hasattr(self, 'joint_correlation_plot'):
-            image = Image.open(self.joint_correlation_plot)
+        if hasattr(self, 'joint_correlation_heatmap'):
+            image = Image.open(self.joint_correlation_heatmap)
             image.show()
         else:
             print('Not enough numeric variables to compare.')
@@ -157,7 +157,7 @@ Categorical features: {', '.join(categorical_cols)}
         ax.tick_params(rotation=45)
         fig.suptitle('Correlation in Numeric Columns', size=15)
 
-        self.joint_correlation_plot = savefig(fig)
+        self.joint_correlation_heatmap = savefig(fig)
 
     def _compare_variable_pairs(self):
         """

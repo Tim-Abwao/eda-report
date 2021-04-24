@@ -141,7 +141,7 @@ Missing Values: {self.missing}
         if self.var_type == 'numeric':
             return {
                 'hist_and_boxplot': self._plot_histogram_and_boxplot(),
-                'qq_plot': self._plot_qq_plot(),
+                'prob_plot': self._plot_prob_plot(),
                 'run_plot': self._plot_run_plot()
             }
         elif self.var_type == 'categorical':
@@ -165,9 +165,8 @@ Missing Values: {self.missing}
 
         return savefig(fig)
 
-    def _plot_qq_plot(self):
-        """Get a quantile-quantile probability plot for a numeric column/
-        feature.
+    def _plot_prob_plot(self):
+        """Get a probability plot for a numeric column/feature.
         """
         # Create a figure and axes
         fig = Fig(figsize=(6, 4), linewidth=1)
@@ -180,7 +179,7 @@ Missing Values: {self.missing}
         # Plot the data and a line of best fit
         sns.regplot(x=theoretical_quantiles, y=ordered_values, ax=ax,
                     color=self.graph_color)
-        ax.set_title(f'Q-Q Plot (Probability Plot) of {self.name}', size=12)
+        ax.set_title(f'Probability Plot of {self.name}', size=12)
         ax.set_xlabel('Theoretical Quantiles (~ Standard Normal)')
         ax.set_ylabel('Ordered Values')
 

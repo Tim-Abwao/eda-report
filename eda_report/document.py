@@ -93,20 +93,21 @@ class ReportDocument:
         # Title
         self.document.add_heading(self.TITLE, level=0)
 
-        # Brief summary
+        # Get row and column info
         num_rows, num_cols = self.data.shape
-        num_numeric = self.data.select_dtypes(include='number').columns.size
 
-        if num_rows > 1:
-            rows = f'{num_rows} rows (observations)'
-        else:
+        if num_rows == 1:
             rows = '1 row (observation)'
-
-        if num_cols > 1:
-            cols = f'{num_cols} columns (features)'
         else:
-            cols = '1 column (feature)'
+            rows = f'{num_rows} rows (observations)'
 
+        if num_cols == 1:
+            cols = '1 column (feature)'
+        else:
+            cols = f'{num_cols} columns (features)'
+
+        # Get numeric column info
+        num_numeric = self.data.select_dtypes(include='number').columns.size
         if num_numeric > 1:
             numeric = f', {num_numeric} of which are numeric'
         elif num_numeric == 1:
@@ -114,9 +115,9 @@ class ReportDocument:
         else:
             numeric = ''
 
-        intro = f'The dataset consists of {rows} and {cols}{numeric}.'
-
-        self.document.add_paragraph(intro)
+        # Add introductory paragraph
+        intro_text = f'The dataset consists of {rows} and {cols}{numeric}.'
+        self.document.add_paragraph(intro_text)
         self.document.add_paragraph()
 
         # Add overview of the data
@@ -140,8 +141,10 @@ class ReportDocument:
             # Get summary statistics for all columns, round the values to 4
             # decimal places, and set the feature names as the index by
             # transposing.
-            summary = self.variables.numeric_cols.describe([0.5]).round(4).T
-            # Create a table with 9 columns
+            summary = self.variables.numeric_cols.describe(percentiles=[0.5])
+            summary = summary.round(4).T
+            # Create a table with 7 columns: column-names, count, mean, std,
+            # min, 50% and max.
             self._create_table(
                 data=summary, header=True,
                 column_widths=(1.5,) + (0.9,)*6, style='Normal Table'
@@ -159,10 +162,11 @@ class ReportDocument:
             # decimal places, and set the feature names as the index by
             # transposing.
             summary = self.variables.categorical_cols.describe().round(4).T
-            # Create a table with 5 columns
+            # Create a table with 5 columns: column-names, count, unique, top
+            # and freq
             self._create_table(
                 data=summary, header=True,
-                column_widths=(1.2,) + (0.8,)*4, style='Normal Table'
+                column_widths=(1.4,) + (1,)*4, style='Normal Table'
             )
 
     def _get_variable_info(self):
@@ -170,53 +174,59 @@ class ReportDocument:
         individual variable.
         """
         self.document.add_heading('A. Univariate Analysis', level=1)
+
         for idx, col in enumerate(
                 tqdm(self.data.columns, ncols=99, desc='Univariate analysis'),
                 start=1):
+            # Perform univariate analysis using the Variable class
             var = Variable(self.data[col], graph_color=self.GRAPH_COLOR)
-            # Heading
+            # Add a heading for the feature/column
             self.document.add_heading(f'{idx}. {col}'.title(), level=2)
-            # Introduction
+            # Add a brief introduction of the feature/column
             p = self.document.add_paragraph()
             p.add_run(f'{col}'.capitalize()).bold = True
             p.add_run(f' is a {var.var_type} variable ')
             p.add_run(f'with {var.num_unique} unique values. ')
             p.add_run(f'{var.missing} of its values are missing.')
-            # Summary statistics
+            # Add a table of summary statistics
             self.document.add_heading('Summary Statistics', level=4)
             self._create_table(var.statistics, column_widths=[2.5, 2])
+            # Add most-common-items, if they were recorded
             if hasattr(var, 'most_common_items'):
                 self.document.add_heading('Most Common Values', level=4)
                 self._create_table(var.most_common_items,
                                    column_widths=(2.5, 2))
-            # Graphs
+            # Add graphs
             for graph in var._graphs.values():  # var._graphs is a dict
                 self.document.add_picture(graph, width=Inches(5.4))
 
             self.document.add_page_break()
 
     def _get_bivariate_analysis(self):
-        """Get comparisons and scatterplots for pairs of numeric variables.
+        """Get comparisons, scatterplots and ecdf plots for pairs of numeric
+        variables.
         """
         self.document.add_heading(
             'B. Bivariate Analysis (Correlation)', level=1)
         self.document.add_paragraph()
-        self.document.add_picture(self.variables.joint_correlation_plot,
+        # Add joint correlation heatmap
+        self.document.add_picture(self.variables.joint_correlation_heatmap,
                                   width=Inches(6.7))
         self.document.add_page_break()
 
+        # Compare numeric variable pairs
         for idx, var_pair in enumerate(self.variables.var_pairs, start=1):
-            # Heading
+            # Add heading
             self.document.add_heading(
                 f'{idx}. {var_pair[0]} vs {var_pair[1]}'.title(),
                 level=2)
-            # Introductory text
+            # Add introductory text
             p = self.document.add_paragraph()
             p.add_run(f'{var_pair[0]}'.capitalize()).bold = True
             p.add_run(' and ')
             p.add_run(f'{var_pair[1]}'.capitalize()).bold = True
             p.add_run(f' have {self.variables.corr_type[var_pair]}.')
-            # Scatter-plot
+            # Add graphs
             self.document.add_picture(
                 self.variables.bivariate_scatterplots[var_pair],
                 width=Inches(6)
@@ -242,10 +252,9 @@ class ReportDocument:
         :type header: bool, optional
         """
         if header:
-            # Add the column names as a row.
+            # Add the column names as a row at index '', then sort the index
+            # in ascending order, so that the column names end up at the top.
             data.loc['', :] = data.columns
-            # Sort the index in ascending order. Placing the column names at
-            # index '' takes them to the top after sorting.
             data.sort_index(inplace=True)
 
         # Create the table
@@ -265,9 +274,8 @@ class ReportDocument:
 
         # Populate the table with the data
         for idx, row_data in enumerate(data.itertuples()):
-            table_row = table.rows[idx]
             # Populate the row's cells
-            for cell, datum in zip(table_row.cells, row_data):
+            for cell, datum in zip(table.rows[idx].cells, row_data):
                 cell.text = f'{datum}'
 
         self.document.add_paragraph()

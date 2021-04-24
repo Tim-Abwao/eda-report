@@ -75,13 +75,13 @@ class TestNumericVariables(unittest.TestCase):
 
     def test_graph_plotted(self):
         self.assertEqual(
-            ['hist_and_boxplot', 'qq_plot', 'run_plot'], 
+            ['hist_and_boxplot', 'prob_plot', 'run_plot'],
             list(self.variable._graphs)
         )
         self.assertIn(
             b'\x89PNG', self.variable._graphs['hist_and_boxplot'].getvalue())
         self.assertIn(
-            b'\x89PNG', self.variable._graphs['qq_plot'].getvalue())
+            b'\x89PNG', self.variable._graphs['prob_plot'].getvalue())
         self.assertIn(
             b'\x89PNG', self.variable._graphs['run_plot'].getvalue())
 
