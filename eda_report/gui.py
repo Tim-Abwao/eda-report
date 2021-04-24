@@ -86,9 +86,10 @@ class EDAGUI(Frame):
         # Add a button
         self.button = Button(
             self, text='Select a file', default='active', bg='teal',
-            fg='white', width=30, command=self.create_report, relief='flat',
+            fg='white', command=self.create_report, relief='flat',
         )
-        self.canvas.create_window(170, 270, anchor='nw', window=self.button)
+        self.canvas.create_window(170, 270, anchor='nw', height=40, width=250,
+                                  window=self.button)
 
         self.canvas.pack()
 
@@ -97,18 +98,20 @@ class EDAGUI(Frame):
         :func:`~eda_report.get_word_report` function to generate a report.
         """
         self._get_data_from_file()
-        self._get_report_title()
-        self._get_graph_color()
-        self._get_save_as_name()
 
-        # Generate the report using the provided arguments
-        get_word_report(self.data, title=self.report_title,
-                        graph_color=self.graph_color,
-                        output_filename=self.save_name)
-        # Pop up message to declare that the report is finished
-        showinfo(message=f'Done! Report saved as {self.save_name!r}.')
+        if hasattr(self, 'data'):
+            self._get_report_title()
+            self._get_graph_color()
+            self._get_save_as_name()
 
-    def _get_data_from_file(self):
+            # Generate the report using the provided arguments
+            get_word_report(self.data, title=self.report_title,
+                            graph_color=self.graph_color,
+                            output_filename=self.save_name)
+            # Pop up message to declare that the report is finished
+            showinfo(message=f'Done! Report saved as {self.save_name!r}.')
+
+    def _get_data_from_file(self, retries=2):
         """Creates a file dialog to help navigate to and select a file to
         analyse.
         """
@@ -118,7 +121,10 @@ class EDAGUI(Frame):
         )
         if not file_name:
             showinfo(message='Please select a file to continue')
-            file_name = self._get_data_from_file()
+            if retries > 0:
+                file_name = self._get_data_from_file(retries - 1)
+            else:
+                self.master.quit()
         else:
             self.data = df_from_file(file_name)
 
