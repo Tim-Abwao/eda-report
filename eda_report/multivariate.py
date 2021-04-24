@@ -65,12 +65,11 @@ class MultiVariable:
         else:
             categorical_cols = self.categorical_cols.columns.to_list()
 
-        return f"""
+        return f"""\
         Overview
         ========
 Numeric features: {', '.join(numeric_cols)}
 Categorical features: {', '.join(categorical_cols)}
-
 
         Summary Statistics (Numeric features)
         =====================================
