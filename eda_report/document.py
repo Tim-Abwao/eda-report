@@ -1,7 +1,7 @@
 import logging
 
 from docx import Document
-from docx.shared import Inches
+from docx.shared import Inches, Pt
 from tqdm import tqdm
 
 from eda_report.multivariate import MultiVariable
@@ -173,7 +173,9 @@ class ReportDocument:
         """Get a brief introduction, summary statistics, and graphs for each
         individual variable.
         """
-        self.document.add_heading('A. Univariate Analysis', level=1)
+        univariate_heading = self.document.add_heading(
+            'A. Univariate Analysis', level=1)
+        univariate_heading.paragraph_format.space_before = Pt(0)
 
         for idx, col in enumerate(
                 tqdm(self.data.columns, ncols=99, desc='Univariate analysis'),
@@ -206,8 +208,10 @@ class ReportDocument:
         """Get comparisons, scatterplots and ecdf plots for pairs of numeric
         variables.
         """
-        self.document.add_heading(
+        bivariate_heading = self.document.add_heading(
             'B. Bivariate Analysis (Correlation)', level=1)
+        bivariate_heading.paragraph_format.space_before = Pt(0)
+
         self.document.add_paragraph()
         # Add joint correlation heatmap
         self.document.add_picture(self.variables.joint_correlation_heatmap,
