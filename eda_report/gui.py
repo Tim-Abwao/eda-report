@@ -1,5 +1,5 @@
 import pkgutil
-from tkinter import Button, Canvas, Frame, PhotoImage, Tk
+from tkinter import Button, Canvas, Frame, PhotoImage, Tk, Label
 from tkinter.colorchooser import askcolor
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter.messagebox import showinfo
@@ -90,6 +90,11 @@ class EDAGUI(Frame):
         )
         self.canvas.create_window(170, 270, anchor='nw', height=40, width=250,
                                   window=self.button)
+        # Display current action
+        self.current_action = Label(font=("Courier", 10, 'italic'))
+        self.canvas.create_window(
+            140, 350, anchor='nw', window=self.current_action,
+        )
 
         self.canvas.pack()
 
@@ -97,18 +102,25 @@ class EDAGUI(Frame):
         """Collects input from the graphical user interface, and uses the
         :func:`~eda_report.get_word_report` function to generate a report.
         """
+        self.current_action['text'] = 'Waiting for input file...'
         self._get_data_from_file()
 
         if hasattr(self, 'data'):
+            self.current_action['text'] = 'Waiting for report title...'
             self._get_report_title()
+            self.current_action['text'] = 'Waiting for graph color...'
             self._get_graph_color()
+            self.current_action['text'] = \
+                'Analysing data & compiling the report...'
             self._get_save_as_name()
 
             # Generate the report using the provided arguments
             get_word_report(self.data, title=self.report_title,
                             graph_color=self.graph_color,
                             output_filename=self.save_name)
+
             # Pop up message to declare that the report is finished
+            self.current_action['text'] = ''
             showinfo(message=f'Done! Report saved as {self.save_name!r}.')
 
     def _get_data_from_file(self, retries=2):
