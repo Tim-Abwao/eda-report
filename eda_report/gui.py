@@ -91,7 +91,8 @@ class EDAGUI(Frame):
         self.canvas.create_window(170, 270, anchor='nw', height=40, width=250,
                                   window=self.button)
         # Display current action
-        self.current_action = Label(font=("Courier", 10, 'italic'))
+        self.current_action = Label(font=("Courier", 10, 'italic'),
+                                    bg='#dfddde')
         self.canvas.create_window(
             140, 350, anchor='nw', window=self.current_action,
         )
