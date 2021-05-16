@@ -21,9 +21,9 @@ def df_from_file(filename):
     """
     file = Path(filename)
 
-    if file.suffix == '.csv':
+    if file.suffix == ".csv":
         return pd.read_csv(file)
-    elif file.suffix == '.xlsx':
-        return pd.read_excel(file, engine='openpyxl')
+    elif file.suffix == ".xlsx":
+        return pd.read_excel(file, engine="openpyxl")
     else:
-        raise InputError(f'Invalid input file: {filename}')
+        raise InputError(f"Invalid input file: {filename}")

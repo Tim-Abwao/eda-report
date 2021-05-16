@@ -1,5 +1,5 @@
 import pkgutil
-from tkinter import Button, Canvas, Frame, PhotoImage, Tk, Label
+from tkinter import Button, Canvas, Frame, Label, PhotoImage, Tk
 from tkinter.colorchooser import askcolor
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter.messagebox import showinfo
@@ -29,10 +29,10 @@ def run_in_gui():
     (command).
     """
     root = Tk()
-    root.title('eda_report')
-    root.geometry('600x400')
-    root.resizable(0, 0)
-    root.wm_iconphoto(True, PhotoImage(data=icon))
+    root.title("eda_report")
+    root.geometry("600x360")
+    root.resizable(0, 0)  # Fix window size
+    root.wm_iconphoto(True, PhotoImage(data=icon))  # Add icon
     EDAGUI(master=root)
     root.mainloop()
 
@@ -57,7 +57,7 @@ class EDAGUI(Frame):
     .. _`tkinter`: https://docs.python.org/3/library/tkinter.html
     """
 
-    def __init__(self, master=None, **kw):
+    def __init__(self, master=None, **kwargs):
         super().__init__(master)
         self.master = master
         self.configure(height=400, width=600)
@@ -74,27 +74,48 @@ class EDAGUI(Frame):
 
         # Set background image
         self.bg_image = PhotoImage(data=background_image)
+        self.canvas.create_image((0, 0), image=self.bg_image, anchor="nw")
 
-        self.canvas.create_image(0, 0, image=self.bg_image, anchor="nw")
+        # Add title
+        self.canvas.create_text(
+            (180, 80),
+            text="eda_report",
+            width=500,
+            font=("Courier", 35, "bold"),
+            fill="black",
+        )
 
         # Add introductory text
-        self.canvas.create_text(180, 80, text='eda_report', width=500,
-                                font=("Courier", 35, 'bold'), fill="black")
-        self.canvas.create_text(300, 190, text=description, width=500,
-                                font=("Times", 13, 'italic'), fill="black")
-
-        # Add a button
-        self.button = Button(
-            self, text='Select a file', default='active', bg='teal',
-            fg='white', command=self.create_report, relief='flat',
+        self.canvas.create_text(
+            (300, 190),
+            text=description,
+            width=500,
+            font=("Times", 13, "italic"),
+            fill="black",
         )
-        self.canvas.create_window(170, 270, anchor='nw', height=40, width=250,
-                                  window=self.button)
-        # Display current action
-        self.current_action = Label(font=("Courier", 10, 'italic'),
-                                    bg='#dfddde')
+
+        # Add a button to select input files
+        self.button = Button(
+            self,
+            text="Select a file",
+            default="active",
+            bg="teal",
+            fg="white",
+            command=self.create_report,
+            relief="flat",
+        )
         self.canvas.create_window(
-            140, 350, anchor='nw', window=self.current_action,
+            (170, 260), anchor="nw", height=40, width=250, window=self.button
+        )
+
+        # Display current action
+        self.current_action = Label(
+            font=("Courier", 10, "italic"), bg="#dfddde"
+        )
+        self.canvas.create_window(
+            (140, 325),
+            anchor="nw",
+            window=self.current_action,
         )
 
         self.canvas.pack()
@@ -103,42 +124,52 @@ class EDAGUI(Frame):
         """Collects input from the graphical user interface, and uses the
         :func:`~eda_report.get_word_report` function to generate a report.
         """
-        self.current_action['text'] = 'Waiting for input file...'
+        self.current_action["text"] = "Waiting for input file..."
         self._get_data_from_file()
 
-        if hasattr(self, 'data'):
-            self.current_action['text'] = 'Waiting for report title...'
+        if hasattr(self, "data"):
+            self.current_action["text"] = "Waiting for report title..."
             self._get_report_title()
-            self.current_action['text'] = 'Waiting for graph color...'
+            self.current_action["text"] = "Waiting for graph color..."
             self._get_graph_color()
-            self.current_action['text'] = \
-                'Analysing data & compiling the report...'
+            self.current_action[
+                "text"
+            ] = "Analysing data & compiling the report..."
             self._get_save_as_name()
 
             # Generate the report using the provided arguments
-            get_word_report(self.data, title=self.report_title,
-                            graph_color=self.graph_color,
-                            output_filename=self.save_name)
+            get_word_report(
+                self.data,
+                title=self.report_title,
+                graph_color=self.graph_color,
+                output_filename=self.save_name,
+            )
 
             # Pop up message to declare that the report is finished
-            self.current_action['text'] = ''
-            showinfo(message=f'Done! Report saved as {self.save_name!r}.')
+            self.current_action["text"] = ""
+            showinfo(message=f"Done! Report saved as {self.save_name!r}.")
 
     def _get_data_from_file(self, retries=2):
         """Creates a file dialog to help navigate to and select a file to
         analyse.
         """
         file_name = askopenfilename(
-            title='Select a file to analyse',
-            filetypes=(('csv', '*.csv'), ('excel', '*.xlsx'))
+            title="Select a file to analyse",
+            filetypes=(
+                ("All supported formats", ("*.csv", "*.xlsx")),
+                ("csv", "*.csv"),
+                ("excel", "*.xlsx"),
+            ),
         )
-        if not file_name:
-            showinfo(message='Please select a file to continue')
+        if not file_name:  # If no file is selected
+            showinfo(message="Please select a file to continue")
+            # Allow 3 retries, then quit the program
             if retries > 0:
                 file_name = self._get_data_from_file(retries - 1)
             else:
                 self.master.quit()
         else:
+            # Load the file's data as a DataFrame
             self.data = df_from_file(file_name)
 
     def _get_report_title(self):
@@ -147,12 +178,16 @@ class EDAGUI(Frame):
         """
         # Prompt user for report title
         report_title = askstring(
-            title='Report Title',
-            prompt='Please enter your preferred title for the report:',
-            initialvalue='Exploratory Data Analysis Report')
+            title="Report Title",
+            prompt="Please enter your preferred title for the report:",
+            initialvalue="Exploratory Data Analysis Report",
+        )
 
-        self.report_title = report_title if report_title else \
-            'Exploratory Data Analysis Report'
+        self.report_title = (
+            report_title
+            if report_title
+            else "Exploratory Data Analysis Report"
+        )
 
     def _get_graph_color(self):
         """Creates a graphical color picking tool to help set the desired
@@ -160,10 +195,9 @@ class EDAGUI(Frame):
         """
         # Returns a tuple e.g ((255.99609375, 69.26953125, 0.0), '#ff4500').
         color = askcolor(
-            color='orangered',
-            title='Please select a color for the graphs'
+            color="orangered", title="Please select a color for the graphs"
         )[-1]
-        self.graph_color = color if color is not None else 'orangered'
+        self.graph_color = color if color is not None else "orangered"
 
     def _get_save_as_name(self):
         """Create a file dialog to help select a destination folder and file
@@ -171,7 +205,8 @@ class EDAGUI(Frame):
         """
         # Propmt user for desired output-file name
         save_name = asksaveasfilename(
-            initialfile='eda-report.docx', filetypes=(('.docx', '*.docx'),),
-            title='Please select Save As file name'
+            initialfile="eda-report.docx",
+            filetypes=(("Word document", "*.docx"),),
+            title="Please select Save As file name",
         )
-        self.save_name = save_name if save_name else 'eda-report.docx'
+        self.save_name = save_name if save_name else "eda-report.docx"

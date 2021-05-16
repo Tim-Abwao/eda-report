@@ -18,7 +18,7 @@ def clean_column_names(data):
     """
     # Ensure the data has meaningful column names
     if isinstance(data.columns, RangeIndex):
-        data.columns = [f'var_{i+1}' for i in data.columns]
+        data.columns = [f"var_{i+1}" for i in data.columns]
 
     return data
 
@@ -43,7 +43,7 @@ def validate_multivariate_input(data):
             data = DataFrame(data)
         except Exception:
             raise InputError(
-                f'Expected a pandas.Dataframe object, but got {type(data)}.'
+                f"Expected a pandas.Dataframe object, but got {type(data)}."
             )
         data = data.infer_objects()
     return clean_column_names(data)
@@ -69,6 +69,6 @@ def validate_univariate_input(data):
             data = Series(data)
         except Exception:
             raise InputError(
-                f'Expected a pandas.Series object, but got {type(data)}.'
+                f"Expected a pandas.Series object, but got {type(data)}."
             )
     return data

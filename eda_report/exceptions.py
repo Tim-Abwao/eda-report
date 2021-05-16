@@ -1,5 +1,6 @@
 class Error(Exception):
     """The base class for exceptions in this package."""
+
     pass
 
 
