@@ -12,8 +12,18 @@
 #
 import os
 import sys
+
+from sphinx.builders.html import StandaloneHTMLBuilder
+
 sys.path.insert(0, os.path.abspath('../../'))
 
+# Modify supported image order
+StandaloneHTMLBuilder.supported_image_types = [
+    'image/svg+xml',
+    'image/gif',
+    'image/png',
+    'image/jpeg'
+]
 
 # -- Project information -----------------------------------------------------
 

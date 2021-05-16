@@ -1,12 +1,24 @@
 Quickstart
 ==========
 
-First, install ``eda_report`` using the guidelines in :doc:`installation` (if you haven't yet).
+Using the Graphical User Interface
+----------------------------------
+
+The command ``eda_report`` launches a graphical window to help you select a *csv* or *excel* file to analyse::
+
+    eda_report
+
+.. figure:: _static/screencast.*
+   :alt: an image of the graphical user interface
+
+   A ``tkinter``-based graphical user interface to the application
+
+You will be prompted to provide a *report title*, *graph color* & *output file-name*; then a report document will be generated, as specified, from the contents of the selected file.
 
 From an Interactive Session
 ---------------------------
 
-You can obtain a summary for a *single feature (univariate)* using::
+You can obtain a summary for a *single feature (univariate)* using the :class:`~eda_report.univariate.Variable` class::
 
     >>> from eda_report.univariate import Variable
     >>> x = Variable(range(50), name='1 to 50')
@@ -35,10 +47,11 @@ You can obtain a summary for a *single feature (univariate)* using::
     >>> x.show_graphs()
 
 
-You can obtain statistics for a *set of features (multivariate)* using::
+You can obtain statistics for a *set of features (multivariate)* using the :class:`~eda_report.multivariate.MultiVariable` class::
 
-    >>> import seaborn as sns
     >>> from eda_report.multivariate import MultiVariable
+    >>> # Get a dataset
+    >>> import seaborn as sns
     >>> data = sns.load_dataset('iris')
     >>> X = MultiVariable(data)
     Bivariate analysis: 100%|████████████████████████████████████████████| 6/6 [00:01<00:00,  3.85it/s]
@@ -87,32 +100,15 @@ You can obtain statistics for a *set of features (multivariate)* using::
     Univariate analysis: 100%|███████████████████████████████████████████| 5/5 [00:01<00:00,  2.52it/s]
     [INFO 10:56:56.007] Done. Results saved as 'eda-report.docx'
 
-Using the Graphical User Interface
-----------------------------------
-Use the command::
-
-    eda_report
-
-This launches a graphical window to help you select a **csv** or **excel** file to analyse.
-
-.. figure:: _static/gui.png
-   :alt: an image of the graphical user interface
-
-   A ``tkinter``-based graphical user interface to the application
-
-You will be prompted to configure some options (*report title*, *graph color* & *output file-name*), and a report document will be generated, as specified, from the contents of the selected file.
-
 
 Using the Command Line Interface
 --------------------------------
 
-You can open and analyse **csv** or **excel** files by passing their name/path to the ``eda_cli`` command.
-
-To process the file ``data.csv``, and save the results as ``eda-report.docx`` (*default*), use::
+The command ``eda_cli`` takes input form the command-line. You can open and analyse *csv* or *excel* files by supplying their path. For instance, to process a file named ``data.csv`` in the current directory, use::
     
     eda_cli data.csv
 
-You can specify the output file's name and location using the ``-o`` option::
+You can specify the output file-name and location using the ``-o`` option::
 
     eda_cli data.csv -o some_name.docx
 
