@@ -6,9 +6,9 @@
 [![Python 3.7 | 3.9](https://github.com/Tim-Abwao/auto-eda/actions/workflows/test-python3.7-3.9.yml/badge.svg)](https://github.com/Tim-Abwao/auto-eda/actions/workflows/test-python3.7-3.9.yml)
 [![Documentation Status](https://readthedocs.org/projects/eda-report/badge/?version=latest)](https://eda-report.readthedocs.io/en/latest/?badge=latest)
 
-A simple Python program to help automate the EDA process.
+A Python program to help automate the EDA process.
 
-The data is analysed using [pandas][1]' built-in methods, and graphs are plotted using [matplotlib][3] & [seaborn][4]. The results are then packaged as a *.docx* file using [python-docx][5].
+Data is analysed using [pandas][1]' built-in methods, and graphs are plotted using [matplotlib][3] & [seaborn][4]. The results are then nicely packaged as a *.docx* file using [python-docx][5].
 
 ## Installation
 
@@ -20,13 +20,25 @@ pip install eda-report
 
 ## Basic Usage
 
-### 1. Interactive Mode
+### 1. Graphical User Interface
 
-You can obtain a summary for a *single feature (univariate)* using:
+The `eda_report` command launches a graphical window to help select and analyse a `csv`/`excel` file:
+
+```bash
+eda_report
+```
+
+![screencast of the gui][screencast]
+
+You will be prompted to set a *report title*, *graph color* and *output filename*, after which the contents of the input file will be analysed, and the results will be saved in *.docx* format.
+
+### 2. Interactive Mode
+
+You can obtain a summary for a *single feature (univariate)* using the `Variable` class:
 
 ```python
 >>> from eda_report.univariate import Variable
->>> x = Variable(range(50), name='1 to 50')
+>>> x = Variable(data=range(50), name='1 to 50')
 >>> x
             Overview
             ========
@@ -52,11 +64,12 @@ Kurtosis                -1.20000
 >>> x.show_graphs()
 ```
 
-You can obtain statistics for a *set of features (multivariate)* using:
+You can obtain statistics for a *set of features (multivariate)* using the `MultiVariable` class:
 
 ```python
->>> import seaborn as sns
 >>> from eda_report.multivariate import MultiVariable
+>>> # Get a dataset
+>>> import seaborn as sns
 >>> data = sns.load_dataset('iris')
 >>> X = MultiVariable(data)
 Bivariate analysis: 100%|████████████████████████████████████████████| 6/6 [00:01<00:00,  3.85it/s]
@@ -106,18 +119,6 @@ Univariate analysis: 100%|██████████████████
 [INFO 10:56:56.007] Done. Results saved as 'eda-report.docx' 
 ```
 
-### 2. Graphical User Interface
-
-Use the `eda_report` command to launch a graphical window to help select and analyse a `csv`/`excel` file:
-
-```bash
-eda_report
-```
-
-![screencast of the gui][screencast]
-
-You will be prompted to set a *report title*, *graph color* and *output filename*, after which the contents of the input file will be analysed, and the results will be saved in *.docx* format.
-
 ### 3. Command Line Interface
 
 To analyse a file named `input.csv`, just supply its path to the `eda_cli` command:
@@ -135,7 +136,12 @@ eda_cli input.csv -o output.docx -c cyan --title 'EDA Report'
 For more details on the optional arguments, pass the `-h` or `--help` flag to view the *help message*:
 
 ```bash
-$ eda_cli -h
+eda_cli -h
+```
+
+<details>
+
+```bash
 usage: eda_cli [-h] [-o OUTFILE] [-t TITLE] [-c COLOR] infile
 
 Get a basic EDA report in docx format.
@@ -153,6 +159,8 @@ optional arguments:
                         A valid matplotlib color specifier (default: orangered)
 ```
 
+</details>
+
 Visit the [official documentation][docs] for more details.
 
 [1]: https://pandas.pydata.org/
@@ -161,5 +169,5 @@ Visit the [official documentation][docs] for more details.
 [4]: https://seaborn.pydata.org/
 [5]: https://python-docx.readthedocs.io/en/latest/
 [6]: https://pypi.org/project/eda_report/
-[screencast]: https://raw.githubusercontent.com/Tim-Abwao/auto-eda/main/docs/source/_static/gui.png
+[screencast]: https://raw.githubusercontent.com/Tim-Abwao/auto-eda/dev/docs/source/_static/screencast.gif
 [docs]: https://eda-report.readthedocs.io/
