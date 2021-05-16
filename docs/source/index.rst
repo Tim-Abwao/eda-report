@@ -10,6 +10,9 @@ Simplify the `exploratory data analysis`_ and reporting process:
 #. Generate a report in *.docx* format.
       An overview of the characteristics of the input data; summary statistics & plots for each variable; and pair-wise comparisons for all numerical variables present. Produced with `python-docx`_. You can afterwards easily edit the report to your liking.
 
+.. image:: https://mybinder.org/badge_logo.svg
+   :target: https://mybinder.org/v2/gh/Tim-Abwao/auto-eda/HEAD?filepath=eda_report%20basics.ipynb
+
 .. _exploratory data analysis: https://en.wikipedia.org/wiki/Exploratory_data_analysis
 .. _pandas: https://pandas.pydata.org/
 .. _matplotlib: https://matplotlib.org/
