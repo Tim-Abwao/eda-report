@@ -25,4 +25,4 @@ class TestFileLoader(unittest.TestCase):
 
     def tearDown(self):
         for filename in {"data.csv", "data.xlsx"}:
-            Path(filename).unlink(missing_ok=True)  # Delete the file
+            Path(filename).unlink()  # Delete the file

@@ -35,4 +35,4 @@ class TestCLI(unittest.TestCase):
 
     def tearDown(self):
         for filename in {"test-data.csv", "cli-test-report.docx"}:
-            Path(filename).unlink(missing_ok=True)  # Delete the file
+            Path(filename).unlink()  # Delete the file

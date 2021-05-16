@@ -13,7 +13,9 @@ class TestDocumentProperties(unittest.TestCase):
 
     def test_document_creation(self):
         # Delete the report file if it already exists
-        Path(self.doc_filename).unlink(missing_ok=True)
+        file = Path(self.doc_filename)
+        if file.exists():
+            file.unlink()
         # Generate the report
         get_word_report(
             self.data, title="Test Report", output_filename=self.doc_filename
@@ -26,4 +28,4 @@ class TestDocumentProperties(unittest.TestCase):
         )
 
     def tearDown(self):
-        Path(self.doc_filename).unlink(missing_ok=True)  # Delete the file
+        Path(self.doc_filename).unlink()  # Delete the file
