@@ -1,7 +1,7 @@
 from eda_report.cli import process_cli_args
 from eda_report.document import ReportDocument
 
-__version__ = "1.3.1"
+__version__ = "1.3.2"
 
 
 def get_word_report(
