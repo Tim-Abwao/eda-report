@@ -1,12 +1,15 @@
 from itertools import combinations
-
+import logging
 import numpy as np
 import seaborn as sns
 from PIL import Image
 from tqdm import tqdm
 
 from eda_report.plotting import Fig, savefig
-from eda_report.validate import validate_multivariate_input
+from eda_report.validate import (
+    validate_multivariate_input,
+    validate_target_variable,
+)
 
 
 class MultiVariable:
@@ -19,7 +22,7 @@ class MultiVariable:
     is raised.
     """
 
-    def __init__(self, data, *, graph_color="orangered"):
+    def __init__(self, data, *, graph_color="orangered", target_variable=None):
         """Initialise an instance of
         :class:`~eda_report.multivariate.MultiVariable`.
 
@@ -30,6 +33,10 @@ class MultiVariable:
             defaults to 'orangered'. See the *matplotlib* `list of named
             colors`_ for all available options.
         :type graph_color: str, optional
+        :param target_variable: The target variable (dependent feature). An
+            *integer value* is treated as a *column index*, whereas a *string*
+            is treated as a *column label*.
+        :type target_variable: int, str, optional
 
         .. _`list of named colors`:
             https://matplotlib.org/stable/gallery/color/named_colors.html
@@ -37,6 +44,9 @@ class MultiVariable:
         self.data = validate_multivariate_input(data)
         #: The color applied to the created graphs.
         self.graph_color = graph_color
+        self.TARGET_VARIABLE = validate_target_variable(
+            data=self.data, target_variable=target_variable
+        )
         #: A ``DataFrame`` with all the *numeric columns/features* present.
         self.numeric_cols = self._select_cols("number")
         #: A ``DataFrame`` with all the *categorical columns/features*
@@ -141,14 +151,66 @@ Categorical features: {', '.join(categorical_cols)}
                 "Not enough numeric variables to compare.",
             )
 
+    def _create_palette(self, n_colors=10):
+        """Get a color palette based on the set graph color."""
+        return sns.light_palette(self.graph_color, n_colors=n_colors + 1,)[
+            1:  # Discard the first, which is too light
+        ]
+
     def _plot_joint_scatterplot(self):
         """Create a joint scatter-plot of all numeric columns."""
-        fig = sns.pairplot(
-            self.numeric_cols,
-            plot_kws={"color": self.graph_color},
-            diag_kws={"color": self.graph_color},
+        if self.TARGET_VARIABLE is not None:
+            target_data = self.data[self.TARGET_VARIABLE]
+
+            if target_data.nunique() > 10:
+                # Too many levels in target variable would clutter the graph
+                logging.warning(
+                    f"Target variable '{target_data.name}' not used to group "
+                    "values in joint scatterplot. It has too many levels "
+                    f"({target_data.nunique()}), and would clutter the graph."
+                )
+                # Treat target variable as if None
+                plot_params = {"data": self.numeric_cols}
+                subplot_params = {"color": self.graph_color}
+
+            elif target_data.nunique() in range(1, 11):
+                # Color-code plotted values by target variable
+                if self.TARGET_VARIABLE in self.numeric_cols:
+                    numeric_cols_with_target = self.numeric_cols
+                else:  # Combine the numeric data and target data
+                    numeric_cols_with_target = self.numeric_cols.merge(
+                        target_data,
+                        left_index=True,
+                        right_index=True,
+                    )
+                plot_params = {
+                    "data": numeric_cols_with_target,
+                    "hue": self.TARGET_VARIABLE,
+                    "palette": self._create_palette(
+                        n_colors=self.data[self.TARGET_VARIABLE].nunique()
+                    ),
+                }
+                subplot_params = {}
+
+        else:  # When self.TARGET_VARIABLE is None
+            plot_params = {"data": self.numeric_cols}
+            subplot_params = {"color": self.graph_color}
+
+        fig = sns.PairGrid(**plot_params)
+        fig.map_upper(  # Plot scatterplots in upper half
+            sns.scatterplot, **subplot_params
         )
-        fig.fig.suptitle("Scatter-plots of Numeric Columns", size=20)
+        fig.map_lower(  # Plot scatterplots in upper half
+            sns.kdeplot, **subplot_params
+        )
+        fig.map_diag(  # Plot scatterplots in diagonal
+            sns.histplot, kde=True, **subplot_params
+        )
+
+        if fig.legend is not None:
+            # position the legend at top right
+            fig.legend.set_bbox_to_anchor((1.05, 1))
+
         self.joint_scatterplot = savefig(fig)
 
     def _plot_joint_correlation(self):
@@ -161,7 +223,7 @@ Categorical features: {', '.join(categorical_cols)}
             yticklabels=True,
             mask=np.triu(self.correlation_df),
             ax=ax,
-            cmap=sns.light_palette(self.graph_color, as_cmap=True),
+            cmap=self._create_palette(n_colors=self.correlation_df.shape[1]),
         )
         ax.tick_params(rotation=45)
         fig.suptitle("Correlation in Numeric Columns", size=15)
@@ -235,7 +297,9 @@ Categorical features: {', '.join(categorical_cols)}
         )
         # Empirical cummulative distribution function plots
         sns.ecdfplot(
-            data=self.data.loc[:, [var1, var2]], ax=ax2, color=self.graph_color
+            data=self.data.loc[:, [var1, var2]],
+            ax=ax2,
+            palette=self._create_palette(n_colors=2),
         )
         ax1.set_title(f"Scatter-plot - {var1} vs {var2}".title(), size=9)
         ax2.set_title("Empirical Cummulative Distribution Functions", size=9)
