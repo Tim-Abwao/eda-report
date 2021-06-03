@@ -45,6 +45,7 @@ class ReportDocument:
         graph_color="orangered",
         output_filename="eda-report.docx",
         table_style="Table Grid",
+        target_variable=None,
     ):
         """Initialise an instance of
         :class:`~eda_report.document.ReportDocument`.
@@ -65,6 +66,10 @@ class ReportDocument:
         :param table_style: *Microsoft Word* table style to apply to the
             created tables, defaults to 'Table Grid'.
         :type table_style: str, optional
+        :param target_variable: The target variable (dependent feature). An
+            *integer value* is treated as a *column index*, whereas a *string*
+            is treated as a *column label*.
+        :type target_variable: int, str, optional
 
         .. _`list of named colors`:
             https://matplotlib.org/stable/gallery/color/named_colors.html
@@ -73,6 +78,7 @@ class ReportDocument:
         self.TITLE = title
         self.GRAPH_COLOR = graph_color
         self.TABLE_STYLE = table_style
+        self.TARGET_VARIABLE = target_variable
         self.OUTPUT_FILENAME = output_filename
         self.document = Document()
         self._get_report()
@@ -82,7 +88,11 @@ class ReportDocument:
         a .docx file.
         """
         logging.info("Assessing correlation in numeric variables...")
-        self.variables = MultiVariable(self.data, graph_color=self.GRAPH_COLOR)
+        self.variables = MultiVariable(
+            self.data,
+            graph_color=self.GRAPH_COLOR,
+            target_variable=self.TARGET_VARIABLE,
+        )
 
         logging.info("Done. Summarising each variable...")
         self._create_title_page()  # begin the report document
@@ -201,7 +211,11 @@ class ReportDocument:
             start=1,
         ):
             # Perform univariate analysis using the Variable class
-            var = Variable(self.data[col], graph_color=self.GRAPH_COLOR)
+            var = Variable(
+                self.data[col],
+                graph_color=self.GRAPH_COLOR,
+                target_data=self.data.get(self.TARGET_VARIABLE),
+            )
 
             # Add a heading for the feature/column
             self.document.add_heading(f"{idx}. {col}".title(), level=2)

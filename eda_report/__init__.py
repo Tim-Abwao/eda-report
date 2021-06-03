@@ -1,7 +1,7 @@
 from eda_report.cli import process_cli_args
 from eda_report.document import ReportDocument
 
-__version__ = "1.3.2"
+__version__ = "1.4.0b"
 
 
 def get_word_report(
@@ -9,7 +9,8 @@ def get_word_report(
     *,
     title="Exploratory Data Analysis Report",
     graph_color="orangered",
-    output_filename="eda-report.docx"
+    output_filename="eda-report.docx",
+    target_variable=None
 ):
     """Analyses the input data, and generates a report in *.docx* format.
 
@@ -29,6 +30,10 @@ def get_word_report(
     :param output_filename: The name and path to use in saving the generated
         report file, defaults to 'eda-report.docx' in the current directory.
     :type output_filename: str, optional
+    :param target_variable: The target variable (dependent feature). An
+            *integer value* is treated as a *column index*, whereas a *string*
+            is treated as a *column label*.
+    :type target_variable: int, str, optional
 
     .. _`list of named colors`:
         https://matplotlib.org/stable/gallery/color/named_colors.html
@@ -39,6 +44,7 @@ def get_word_report(
         title=title,
         graph_color=graph_color,
         output_filename=output_filename,
+        target_variable=target_variable,
     )
 
 
@@ -62,4 +68,5 @@ def run_from_cli():
         title=args.title,
         graph_color=args.color,
         output_filename=args.outfile,
+        target_variable=args.target,
     )
