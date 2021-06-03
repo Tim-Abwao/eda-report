@@ -103,7 +103,7 @@ Categorical features: {', '.join(categorical_cols)}
             image = Image.open(self.joint_correlation_heatmap)
             image.show()
         else:
-            print("Not enough numeric variables to compare.")
+            logging.info("Not enough numeric variables to compare.")
 
     def show_joint_scatterplot(self):
         """Display a joint scatter-plot of all the *numeric columns/features*
@@ -113,7 +113,7 @@ Categorical features: {', '.join(categorical_cols)}
             image = Image.open(self.joint_scatterplot)
             image.show()
         else:
-            print("Not enough numeric variables to compare.")
+            logging.info("Not enough numeric variables to compare.")
 
     def _select_cols(self, *dtypes):
         """Get a DataFrame including only the data types specified.
@@ -146,9 +146,9 @@ Categorical features: {', '.join(categorical_cols)}
                 ]
             )
         else:
-            print(
-                "Skipped Bivariate Analysis:",
-                "Not enough numeric variables to compare.",
+            logging.warning(
+                "Skipped Bivariate Analysis: "
+                "Not enough numeric variables to compare."
             )
 
     def _create_palette(self, n_colors=10):
