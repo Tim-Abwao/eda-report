@@ -65,6 +65,8 @@ def validate_univariate_input(data):
     """
     if isinstance(data, Series):
         return data
+    elif data is None or len(data) == 0:
+        return Series([], dtype='object')
     else:
         try:
             # Cast the data as a series
