@@ -62,5 +62,17 @@ def process_cli_args():
         help="A valid matplotlib color specifier (default: %(default)s)",
     )
 
+    # Set the target variable
+    parser.add_argument(
+        "-T",
+        "--target",
+        default=None,
+        help=(
+            "The target variable (dependent feature). An integer value is "
+            "treated as a column index, whereas a string is treated as a "
+            "column label. (Default: %(default)s)"
+        )
+    )
+
     # Parse the arguments
     return parser.parse_args()
