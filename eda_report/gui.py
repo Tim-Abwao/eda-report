@@ -1,12 +1,14 @@
 import pkgutil
-from tkinter import Button, Canvas, Frame, Label, PhotoImage, Tk
+from tkinter import Button, Canvas, Frame, Label, PhotoImage
 from tkinter.colorchooser import askcolor
 from tkinter.filedialog import askopenfilename, asksaveasfilename
-from tkinter.messagebox import showinfo
+from tkinter.messagebox import askretrycancel, askyesno, showinfo, showwarning
 from tkinter.simpledialog import askstring
 
 from eda_report import get_word_report
+from eda_report.exceptions import InputError
 from eda_report.read_file import df_from_file
+from eda_report.validate import validate_target_variable
 
 # Load background image and icon
 background_image = pkgutil.get_data(__name__, "images/background.png")
@@ -18,7 +20,6 @@ A simple application to help speed up exploratory data analysis and reporting.
 
 Select a file to analyse, and it will be automatically summarised. The result\
  is a report in .docx format, complete with summary statistics and graphs.
-
 """
 
 
@@ -28,13 +29,8 @@ def run_in_gui():
     This provides the entry point for the ``eda_report`` console script
     (command).
     """
-    root = Tk()
-    root.title("eda_report")
-    root.geometry("600x360")
-    root.resizable(0, 0)  # Fix window size
-    root.wm_iconphoto(True, PhotoImage(data=icon))  # Add icon
-    EDAGUI(master=root)
-    root.mainloop()
+    app = EDAGUI()
+    app.mainloop()
 
 
 class EDAGUI(Frame):
@@ -59,8 +55,10 @@ class EDAGUI(Frame):
 
     def __init__(self, master=None, **kwargs):
         super().__init__(master)
-        self.master = master
-        self.configure(height=400, width=600)
+        self.master.title("eda_report")
+        self.master.geometry("600x360")
+        self.master.resizable(False, False)  # Fix window size
+        self.master.wm_iconphoto(True, PhotoImage(data=icon))  # Add icon
         self._create_widgets()
         self.pack()
 
@@ -110,7 +108,7 @@ class EDAGUI(Frame):
 
         # Display current action
         self.current_action = Label(
-            font=("Courier", 10, "italic"), bg="#dfddde"
+            self, font=("Courier", 10, "italic"), bg="#dfddde"
         )
         self.canvas.create_window(
             (140, 325),
@@ -126,10 +124,11 @@ class EDAGUI(Frame):
         """
         self.current_action["text"] = "Waiting for input file..."
         self._get_data_from_file()
-
         if hasattr(self, "data"):
             self.current_action["text"] = "Waiting for report title..."
             self._get_report_title()
+            self.current_action["text"] = "Waiting for target variable..."
+            self._get_target_variable()
             self.current_action["text"] = "Waiting for graph color..."
             self._get_graph_color()
             self.current_action[
@@ -137,19 +136,20 @@ class EDAGUI(Frame):
             ] = "Analysing data & compiling the report..."
             self._get_save_as_name()
 
-            # Generate the report using the provided arguments
+            # Generate the report using the collected arguments
             get_word_report(
                 self.data,
                 title=self.report_title,
                 graph_color=self.graph_color,
                 output_filename=self.save_name,
+                target_variable=self.target_variable,
             )
 
-            # Pop up message to declare that the report is finished
             self.current_action["text"] = ""
             showinfo(message=f"Done! Report saved as {self.save_name!r}.")
+            del self.data  # Clear stale data
 
-    def _get_data_from_file(self, retries=2):
+    def _get_data_from_file(self, retries=1):
         """Creates a file dialog to help navigate to and select a file to
         analyse.
         """
@@ -161,16 +161,17 @@ class EDAGUI(Frame):
                 ("excel", "*.xlsx"),
             ),
         )
-        if not file_name:  # If no file is selected
-            showinfo(message="Please select a file to continue")
-            # Allow 3 retries, then quit the program
-            if retries > 0:
-                file_name = self._get_data_from_file(retries - 1)
-            else:
-                self.master.quit()
-        else:
+        if file_name:
             # Load the file's data as a DataFrame
             self.data = df_from_file(file_name)
+        elif not file_name and retries > 0:  # If no file is selected
+            # Ask the user whether they'd like to retry
+            if askretrycancel(message="Please select a file to continue"):
+                self._get_data_from_file(retries - 1)
+            else:
+                self.master.quit()  # Quit if the user turns down retry prompt
+        else:
+            self.master.quit()  # Quit if no file selected and retry is spent
 
     def _get_report_title(self):
         """Creates a simple dialog to capture text input for the desired
@@ -189,6 +190,27 @@ class EDAGUI(Frame):
             else "Exploratory Data Analysis Report"
         )
 
+    def _get_target_variable(self):
+        """Inquire about the target variable, and create a text box to
+        collect input.
+        """
+        if askyesno(message="Would you like to specify a target variable?"):
+            target_variable = askstring(
+                title="Target Variable",
+                prompt="Please enter the name of the target variable:",
+            )
+            try:
+                self.target_variable = validate_target_variable(
+                    data=self.data, target_variable=target_variable
+                )
+            except InputError as error:
+                self.target_variable = None
+                showwarning(
+                    title="Invalid Target Variable", message=error.message
+                )
+        else:  # If user doesn't wish to supply a target variable
+            self.target_variable = None
+
     def _get_graph_color(self):
         """Creates a graphical color picking tool to help set the desired
         color for the generated graphs.
@@ -203,7 +225,7 @@ class EDAGUI(Frame):
         """Create a file dialog to help select a destination folder and file
         name for the generated report.
         """
-        # Propmt user for desired output-file name
+        # Propmt user for desired output file-name
         save_name = asksaveasfilename(
             initialfile="eda-report.docx",
             filetypes=(("Word document", "*.docx"),),
