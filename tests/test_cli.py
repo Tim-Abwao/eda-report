@@ -9,9 +9,9 @@ from docx import Document
 class TestCLI(unittest.TestCase):
     def setUp(self):
         # Create a dummy input file
-        pd.DataFrame(range(50)).to_csv("test-data.csv")
+        pd.DataFrame(range(50)).to_csv("test-data.csv", index=False)
 
-    def test_command_line_interface(self):
+    def test_cli_with_all_args(self):
         # Run the program through the command-line interface
         subprocess.run(
             [
@@ -20,19 +20,45 @@ class TestCLI(unittest.TestCase):
                 "eda_report",
                 "test-data.csv",
                 "-o",
-                "cli-test-report.docx",
+                "cli-test-1.docx",
                 "-t",
                 "CLI Test",
+                "-T",
+                "0",
             ]
         )
         # Check if a report is generated as specified
-        self.assertTrue(Path("cli-test-report.docx").is_file())
+        self.assertTrue(Path("cli-test-1.docx").is_file())
         self.assertTrue(
             # Check if the title is as specified
-            Document("cli-test-report.docx").paragraphs[0].text,
+            Document("cli-test-1.docx").paragraphs[0].text,
             "CLI Test",
         )
 
+    def test_cli_with_default_args(self):
+        # Run the program through the command-line interface
+        subprocess.run(
+            [
+                "python",
+                "-m",
+                "eda_report",
+                "test-data.csv",
+            ]
+        )
+        # Check if a report is generated with the default output file-name
+        self.assertTrue(Path("eda-report.docx").is_file())
+        self.assertTrue(
+            # Check if the default title was set
+            Document("eda-report.docx").paragraphs[0].text,
+            "Exploratory Data Analysis Report",
+        )
+
     def tearDown(self):
-        for filename in {"test-data.csv", "cli-test-report.docx"}:
-            Path(filename).unlink()  # Delete the file
+        for filename in {
+            "test-data.csv",
+            "cli-test-1.docx",
+            "eda-report.docx",
+        }:
+            file = Path(filename)
+            if file.is_file():
+                file.unlink()  # Delete the file
