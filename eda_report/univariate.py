@@ -14,7 +14,9 @@ class Variable:
     characteristics of *individual columns/features*.
     """
 
-    def __init__(self, data, *, graph_color="orangered", name=None):
+    def __init__(
+        self, data, *, graph_color="orangered", name=None, target_data=None
+    ):
         """Initialise an instance of :class:`Variable`.
 
         :param data: The data to process.
@@ -24,6 +26,9 @@ class Variable:
         :type graph_color: str, optional
         :param name: The feature's name.
         :type name: str, optional
+        :param target_data: The data for the target variable (dependent
+            feature).
+        :type target_data: array-like, optional
         """
         self.data = validate_univariate_input(data)
         #: The *name* of the *column/feature*. If unspecified in the ``name``
@@ -43,6 +48,7 @@ class Variable:
         self.missing = self._get_missing_values()
         #: The *color* applied to the created graphs.
         self.graph_color = graph_color
+        self.TARGET_DATA = validate_univariate_input(target_data)
         # Get graphs for the column/feature as a dict of file-like objects.
         self._graphs = self._plot_graphs()
 
@@ -139,6 +145,12 @@ Missing Values: {self.missing}
         else:
             return f"{missing_values} ({missing_values / len(self.data):.2%})"
 
+    def _color_palette(self, n_colors):
+        """Get a color palette based on the set graph color."""
+        return sns.light_palette(self.graph_color, n_colors=n_colors + 1,)[
+            1:  # Discard the first, which is too light
+        ]
+
     def _plot_graphs(self):
         """Plot graphs for the column/feature, based on variable type."""
         if self.var_type == "numeric":
@@ -155,13 +167,29 @@ Missing Values: {self.missing}
         # Create a figure and axes
         fig = Fig(figsize=(6, 6), linewidth=1)
         ax1, ax2 = fig.subplots(nrows=2, ncols=1)
-        # Box-plot
-        ax1.boxplot(self.data.dropna(), vert=False, notch=True)
-        ax1.set_yticklabels([""])  # Remove y-tick labels
-        ax1.set_xlabel(f"{self.name}")
+
+        if self.TARGET_DATA.nunique() in range(1, 11):
+            palette = list(
+                self._color_palette(n_colors=self.TARGET_DATA.nunique()),
+            )
+            sns.boxplot(
+                y=self.data, x=self.TARGET_DATA, palette=palette, ax=ax1
+            )
+            sns.histplot(
+                x=self.data,
+                hue=self.TARGET_DATA,
+                palette=palette,
+                kde=True,
+                ax=ax2,
+            )
+        else:
+            ax1.boxplot(self.data.dropna(), vert=False, notch=True)
+            ax1.set_yticklabels([""])  # Remove y-tick labels
+            ax1.set_xlabel(f"{self.name}")
+
+            sns.histplot(x=self.data, kde=True, ax=ax2, color=self.graph_color)
+
         ax1.set_title(f"Box-plot of {self.name}", size=12)
-        # Histogram
-        sns.histplot(x=self.data, kde=True, ax=ax2, color=self.graph_color)
         ax2.set_title(f"Distribution plot of {self.name}", size=12)
 
         return savefig(fig)
@@ -195,7 +223,17 @@ Missing Values: {self.missing}
         fig = Fig(figsize=(6, 4), linewidth=1)
         ax = fig.subplots()
         # Get a line plot of the data
-        ax.plot(self.data, marker=".", color=self.graph_color)
+        if self.TARGET_DATA.nunique() in range(1, 11):
+            sns.lineplot(
+                x=self.data.index,
+                y=self.data,
+                hue=self.TARGET_DATA,
+                palette=self._color_palette(self.TARGET_DATA.nunique()),
+                ax=ax,
+            )
+        else:
+            ax.plot(self.data, marker=".", color=self.graph_color)
+
         # Get boundaries of x-axis
         xmin = self.data.index[0]
         xmax = self.data.index[-1]
@@ -219,16 +257,28 @@ Missing Values: {self.missing}
 
         return savefig(fig)
 
-    def _plot_bar(self, color="cyan"):
+    def _plot_bar(self):
         """Get a bar-plot for a categorical column/feature."""
         # Create a figure and axes
         fig = Fig(figsize=(6, 4), linewidth=1)
         ax = fig.subplots()
 
-        # Include no more than 10 of the most common values
-        self.data.value_counts().nlargest(10).plot.bar(
-            color=self.graph_color, ax=ax
-        )
+        if self.TARGET_DATA.nunique() in range(1, 11):
+            sns.countplot(
+                x=self.data,
+                hue=self.TARGET_DATA,
+                color=self.graph_color,
+                ax=ax,
+            )
+        else:
+            # Include no more than 10 of the most common values
+            top_10 = self.data.value_counts().nlargest(10)
+            sns.barplot(
+                x=top_10.index,
+                y=top_10,
+                palette=self._color_palette(n_colors=top_10.shape[0] + 1),
+            )
+
         ax.tick_params(axis="x", rotation=45)
         ax.set_title(f"Bar-plot of {self.name}", size=12)
 
