@@ -1,3 +1,5 @@
+import logging
+
 from pandas import DataFrame, RangeIndex, Series
 
 from eda_report.exceptions import InputError
@@ -72,3 +74,49 @@ def validate_univariate_input(data):
                 f"Expected a pandas.Series object, but got {type(data)}."
             )
     return data
+
+
+def validate_target_variable(*, data, target_variable):
+    """Ensures that the supplied *target variable* (column label or index) is
+    present in the data.
+
+    :param target_variable: The column label or index of the target
+        variable.
+    :type target_variable: int, str, optional
+
+    :raises InputError: Raised if a provided *column label* is *not in the
+        data*, or a provided *column index* is *out of bounds*.
+
+    :return: The name of the target variable, or None.
+    :rtype: str, None
+    """
+    if target_variable is None:
+        return None
+
+    elif isinstance(target_variable, int):
+        try:
+            target_variable = data.columns[target_variable]
+        except IndexError:
+            raise InputError(
+                f"Column index {target_variable} is not in the range"
+                f" [0, {data.columns.size}]."
+            )
+
+        return target_variable
+
+    elif isinstance(target_variable, str):
+        try:
+            data.columns.get_loc(key=target_variable)
+        except KeyError:
+            raise InputError(
+                f"{target_variable!r} is not in {data.columns.to_list()}"
+            )
+
+        return target_variable
+
+    else:
+        logging.warning(
+            f"Target variable specifier '{target_variable}' ignored."
+            " Not a valid column(feature) index or label."
+        )
+        return None
