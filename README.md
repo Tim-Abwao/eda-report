@@ -6,9 +6,9 @@
 [![Python 3.7 | 3.9](https://github.com/Tim-Abwao/auto-eda/actions/workflows/test-python3.7-3.9.yml/badge.svg)](https://github.com/Tim-Abwao/auto-eda/actions/workflows/test-python3.7-3.9.yml)
 [![Documentation Status](https://readthedocs.org/projects/eda-report/badge/?version=latest)](https://eda-report.readthedocs.io/en/latest/?badge=latest)
 
-A Python program to help automate the EDA process.
+A Python program to help automate the exploratory data analysis and reporting process.
 
-Data is analysed using [pandas][1]' built-in methods, and graphs are plotted using [matplotlib][3] & [seaborn][4]. The results are then nicely packaged as a *.docx* file using [python-docx][5].
+Input data is processed and analysed using [pandas][1]' built-in methods, and graphs are plotted using [matplotlib][3] & [seaborn][4]. The results are then nicely packaged as a *Word (.docx)* document using [python-docx][5].
 
 ## Installation
 
@@ -30,7 +30,7 @@ eda_report
 
 ![screencast of the gui][screencast]
 
-You will be prompted to set a *report title*, *graph color* and *output filename*, after which the contents of the input file will be analysed, and the results will be saved in *.docx* format.
+You will be prompted to set a *report title*, *target variable (optional)*, *graph color* and *output filename*, after which the contents of the input file will be analysed, and the results will be saved in a *Word (.docx)* document.
 
 ### 2. Interactive Mode
 
@@ -142,7 +142,7 @@ eda_cli -h
 <details>
 
 ```bash
-usage: eda_cli [-h] [-o OUTFILE] [-t TITLE] [-c COLOR] infile
+usage: eda_cli [-h] [-o OUTFILE] [-t TITLE] [-c COLOR] [-T TARGET] infile
 
 Get a basic EDA report in docx format.
 
@@ -154,9 +154,16 @@ optional arguments:
   -o OUTFILE, --outfile OUTFILE
                         The output file (default: eda-report.docx)
   -t TITLE, --title TITLE
-                        The top level heading in the report (default: Exploratory Data Analysis Report)
+                        The top level heading in the report (default:
+                        Exploratory Data Analysis Report)
   -c COLOR, --color COLOR
-                        A valid matplotlib color specifier (default: orangered)
+                        A valid matplotlib color specifier (default:
+                        orangered)
+  -T TARGET, --target TARGET
+                        The target variable (dependent feature), used to
+                        color-code plotted values. An integer value is treated
+                        as a column index, whereas a string is treated as a
+                        column label. (Default: None)
 ```
 
 </details>
