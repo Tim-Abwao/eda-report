@@ -1,5 +1,6 @@
 from eda_report.cli import process_cli_args
 from eda_report.document import ReportDocument
+from eda_report.gui import EDAGUI
 
 __version__ = "1.4.0b"
 
@@ -30,9 +31,9 @@ def get_word_report(
     :param output_filename: The name and path to use in saving the generated
         report file, defaults to 'eda-report.docx' in the current directory.
     :type output_filename: str, optional
-    :param target_variable: The target variable (dependent feature). An
-            *integer value* is treated as a *column index*, whereas a *string*
-            is treated as a *column label*.
+    :param target_variable: The target variable (dependent feature), used to
+        color-code plotted values. An *integer value* is treated as a *column
+        index*, whereas a *string* is treated as a *column label*.
     :type target_variable: int, str, optional
 
     .. _`list of named colors`:
@@ -58,15 +59,25 @@ def run_from_cli():
 
     Arguments passed from the command line are captured using the
     :func:`~eda_report.cli.process_cli_args` function, and then supplied to the
-    :func:`~eda_report.get_word_report` function to generate the report.
+    :class:`~eda_report.document.ReportDocument` object to generate the report.
     """
     # Collect parameters from the command line interface
     args = process_cli_args()
     # Generate a report
-    get_word_report(
+    ReportDocument(
         args.infile,
         title=args.title,
         graph_color=args.color,
         output_filename=args.outfile,
         target_variable=args.target,
     )
+
+
+def run_in_gui():
+    """Starts the *graphical user interface* to the application.
+
+    This provides the entry point for the ``eda_report`` console script
+    (command).
+    """
+    app = EDAGUI()
+    app.mainloop()

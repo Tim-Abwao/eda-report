@@ -7,7 +7,7 @@ from eda_report.exceptions import InputError
 
 def df_from_file(filename):
     """Reads a *csv* or *excel* file, and loads its contents as a
-    ``pandas.DataFrame``.
+    :class:`pandas.DataFrame`.
 
     This is basically a wrapper around the
     :func:`pandas.read_csv` and :func:`pandas.read_excel` methods
@@ -16,8 +16,8 @@ def df_from_file(filename):
     :param filename: A file name, or the path to a file.
     :type filename: str
     :raises InputError: If the input file is not a valid csv or excel file.
-    :return: A pandas ``DataFrame``.
-    :rtype: ``pandas.DataFrame``
+    :return: A pandas ``DataFrame`` with the file's contents.
+    :rtype: :class:`pandas.DataFrame`
     """
     file = Path(filename)
 

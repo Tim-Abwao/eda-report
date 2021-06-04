@@ -5,7 +5,7 @@ from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter.messagebox import askretrycancel, askyesno, showinfo, showwarning
 from tkinter.simpledialog import askstring
 
-from eda_report import get_word_report
+from eda_report.document import ReportDocument
 from eda_report.exceptions import InputError
 from eda_report.read_file import df_from_file
 from eda_report.validate import validate_target_variable
@@ -23,34 +23,22 @@ Select a file to analyse, and it will be automatically summarised. The result\
 """
 
 
-def run_in_gui():
-    """Starts the *graphical user interface* to the application.
-
-    This provides the entry point for the ``eda_report`` console script
-    (command).
-    """
-    app = EDAGUI()
-    app.mainloop()
-
-
 class EDAGUI(Frame):
-    """This is the blueprint for the `tkinter`_ - based *graphical user
-    interface* to the package/application.
+    """This is the blueprint for the :mod:`tkinter` - based *graphical user
+    interface* to the application.
 
-    The graphical window is a *tkinter* ``Frame``, with a *button* that
-    opens a *file-dialog* to navigate to and select a file to analyse.
+    The graphical window is a ``tkinter.Frame``, with a brief description of
+    what the application does, and a *button*. Once you click on the button,
+    it launches a *file-dialog* to navigate to and select a file to analyse.
 
-    Once a file is selected, a *text-input widget* and *color-picker tool* pop
-    up to help set the report's *title* and *graph color* respectively.
-    Finally, a file-dialog to set the desired location and name for the report
-    is shown.
+    If a valid file is selected, *text-input widgets* and a *color-picker
+    tool* pop up to help set the report's *title*, *target variable(optional)*
+    and *graph color* respectively. Finally, a file-dialog to set the desired
+    location and name for the report is shown.
 
-    The collected *input file-path*, *title*, *color* and *output file-path*
-    are then passed to the :func:`~eda_report.get_word_report` function to
-    create the exploratory data analysis report document. A message-box will
-    be shown when the report is ready, or when an exception occurs.
-
-    .. _`tkinter`: https://docs.python.org/3/library/tkinter.html
+    After collecting all the necessary inputs, the
+    :class:`~eda_report.document.ReportDocument` object is used to create the
+    exploratory data analysis report.
     """
 
     def __init__(self, master=None, **kwargs):
@@ -137,7 +125,7 @@ class EDAGUI(Frame):
             self._get_save_as_name()
 
             # Generate the report using the collected arguments
-            get_word_report(
+            ReportDocument(
                 self.data,
                 title=self.report_title,
                 graph_color=self.graph_color,

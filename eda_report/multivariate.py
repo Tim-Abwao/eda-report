@@ -13,20 +13,20 @@ from eda_report.validate import (
 
 
 class MultiVariable:
-    """The blueprint for containers to hold the properties of data with
-    *multiple columns/features*.
+    """The blueprint for containers to analyse data with *multiple columns /
+    features*.
 
-    The input data is expected to be a ``pandas.DataFrame``. If the data is of
-    any other type, then there'll be an attempt to explicitly convert it to a
-    ``DataFrame``. If this fails, an :class:`~eda_report.exceptions.InputError`
-    is raised.
+    The input data is expected to be a :class:`pandas.DataFrame`. If the data
+    is of any other type, then there'll be an attempt to explicitly convert it
+    to a ``DataFrame``. If this fails, an
+    :class:`~eda_report.exceptions.InputError` is raised.
     """
 
     def __init__(self, data, *, graph_color="orangered", target_variable=None):
         """Initialise an instance of
         :class:`~eda_report.multivariate.MultiVariable`.
 
-        :param data: The data to process, ideally a ``pandas.DataFrame``
+        :param data: The data to process, ideally a :class:`pandas.DataFrame`
             with several columns.
         :type data: array-like, sequence, iterable, dict
         :param graph_color: The color to apply to the graphs created,
@@ -122,7 +122,7 @@ Categorical features: {', '.join(categorical_cols)}
         :type dtypes: str
         :return: A ``DataFrame`` with columns of the specified data type(s), or
             ``None`` if no column is of that data type.
-        :rtype: A ``DataFrame``, or ``None``
+        :rtype: :class:`pandas.DataFrame`, or ``None``
         """
         selected_cols = self.data.select_dtypes(include=dtypes)
         return selected_cols if selected_cols.shape[1] > 0 else None

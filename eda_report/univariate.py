@@ -10,8 +10,8 @@ from eda_report.validate import validate_univariate_input
 
 
 class Variable:
-    """This is the blueprint for containers to hold the contents and
-    characteristics of *individual columns/features*.
+    """This is the blueprint for objects that analyse and plot one-dimensional
+    datasets: a *single column/feature*.
     """
 
     def __init__(
@@ -20,14 +20,14 @@ class Variable:
         """Initialise an instance of :class:`Variable`.
 
         :param data: The data to process.
-        :type data: ``pandas.Series``
+        :type data: :class:`pandas.Series`.
         :param graph_color: The color to apply to the graphs created,
             defaults to 'orangered'.
         :type graph_color: str, optional
         :param name: The feature's name.
         :type name: str, optional
         :param target_data: The data for the target variable (dependent
-            feature).
+            feature). Currently used to group and color-code values in graphs.
         :type target_data: array-like, optional
         """
         self.data = validate_univariate_input(data)
@@ -38,7 +38,7 @@ class Variable:
         #: The *type* of feature; either *categorical* or *numeric*.
         self.var_type = self._get_variable_type()
         #: *Summary statistics* for the *column/feature*, as a
-        #: ``pandas.DataFrame``.
+        #: :class:`pandas.DataFrame`.
         self.statistics = self._get_summary_statistics()
         #: The *number of unique values* present in the *column/feature*.
         self.num_unique = self.data.nunique()

@@ -5,13 +5,9 @@ from eda_report.read_file import df_from_file
 
 def process_cli_args():
     """Captures and parses input from the command line interface using the
-    `argparse`_ module from the Python standard library.
+    :mod:`argparse` module from the Python standard library.
 
     Available options are::
-
-        usage: eda_cli [-h] [-o OUTFILE] [-t TITLE] [-c COLOR] infile
-
-        Get a basic EDA report in docx format.
 
         positional arguments:
           infile                A .csv or .xlsx file to process.
@@ -26,8 +22,11 @@ def process_cli_args():
           -c COLOR, --color COLOR
                                 A valid matplotlib color specifier (default:
                                 orangered)
-
-    .. _`argparse`: https://docs.python.org/3/library/argparse.html
+          -T TARGET, --target TARGET
+                                The target variable (dependent feature), used
+                                to color-code plotted values. An integer value
+                                is treated as a column index, whereas a string
+                                is treated as a column label. (Default: None)
     """
     parser = argparse.ArgumentParser(
         prog="eda_cli", description="Get a basic EDA report in docx format."
@@ -68,9 +67,10 @@ def process_cli_args():
         "--target",
         default=None,
         help=(
-            "The target variable (dependent feature). An integer value is "
-            "treated as a column index, whereas a string is treated as a "
-            "column label. (Default: %(default)s)"
+            "The target variable (dependent feature), used to color-code "
+            "plotted values. An integer value is treated as a column index, "
+            "whereas a string is treated as a column label."
+            " (Default: %(default)s)"
         )
     )
 

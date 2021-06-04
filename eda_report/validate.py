@@ -10,13 +10,13 @@ def clean_column_names(data):
 
     When an array/sequence/iterable/scalar is used to create a ``DataFrame``
     but no column names are specified, ``pandas`` by default names the columns
-    by index as [0, 1, 2, ...] (``RangeIndex``).
+    by index as [0, 1, 2, ...] ( :class:`~pandas.RangeIndex` ).
 
     This function renames such columns to ['var_1', 'var_2, 'var_3', ...],
     making references and comparisons much more intuitive.
 
     :param data: The data whose columns are checked
-    :type data: ``pandas.DataFrame``
+    :type data: :class:`pandas.DataFrame`.
     """
     # Ensure the data has meaningful column names
     if isinstance(data.columns, RangeIndex):
@@ -26,7 +26,7 @@ def clean_column_names(data):
 
 
 def validate_multivariate_input(data):
-    """Ensures that *multivariate input data* is of type ``pandas.DataFrame``.
+    """Ensures that *multivariate input data* is of type :class:`pandas.DataFrame`.
 
     If it isn't, this attempts to explicitly cast it as a ``DataFrame``.
 
@@ -35,7 +35,7 @@ def validate_multivariate_input(data):
     :raises InputError: Raised if the data cannot be converted to a
         ``DataFrame``, as required.
     :return: The data as a pandas ``DataFrame``.
-    :rtype: ``pandas.DataFrame``
+    :rtype: :class:`pandas.DataFrame`
     """
     if isinstance(data, DataFrame):
         return clean_column_names(data)
@@ -52,7 +52,7 @@ def validate_multivariate_input(data):
 
 
 def validate_univariate_input(data):
-    """Ensures that *univariate input data* is of type ``pandas.Series``.
+    """Ensures that *univariate input data* is of type :class:`pandas.Series`.
 
     If it isn't, this attempts to explicitly cast it as a ``Series``.
 
@@ -61,7 +61,7 @@ def validate_univariate_input(data):
     :raises InputError: Raised if the data cannot be converted to a
         ``Series``, as required.
     :return: The data as a pandas ``Series``.
-    :rtype: ``pandas.Series``
+    :rtype: :class:`pandas.Series`
     """
     if isinstance(data, Series):
         return data

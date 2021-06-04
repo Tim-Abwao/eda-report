@@ -1,2 +1,0 @@
-sphinx==3.5.1
-eda-report>0.0.4

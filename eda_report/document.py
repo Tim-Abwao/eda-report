@@ -15,24 +15,25 @@ logging.basicConfig(
 
 
 class ReportDocument:
-    """The blueprint for objects containing methods to create and populate
-    reports in *.docx* format.
+    """The blueprint for objects that create and populate report documents,
+    in *Word (.docx) format*.
 
-    The *input data as a whole* is used to create an instance of
-    :class:`~eda_report.multivariate.MultiVariable`, which will compute the
-    data's *statistics*, plot *graphs*, and save them all as attributes.
-
+    The *input data as a whole* is analysed as an instance of
+    :class:`~eda_report.multivariate.MultiVariable`. *Descriptive statistics*,
+    *graphs*, and other details can then be obtained as attributes.
     *Individual columns/features* are likewise processed as instances of
-    :class:`~eda_report.univariate.Variable`, so as to obtain *statistics* &
-    *plots* for each feature.
+    :class:`~eda_report.univariate.Variable`.
 
-    The `python-docx`_ module is then used to write the analysis results as a
-    *Word* document. The report is organised into 3 sections:
+    The  :class:`~docx.document.Document` object from the `python-docx`_
+    package is then used to publish the analysis results as a *Word*
+    document.
 
-    #. An *Overview* of the shape of the data and its columns/features
-    #. *Univariate Analysis*: Summary statistics and graphs for each column/
+    The report is organised into 3 sections:
+
+    #. An *Overview* of the data and its features.
+    #. *Univariate Analysis*: Summary statistics and graphs for each
         feature.
-    #. *Bivariate Analysis*: Pairwise comparisons of all numerical columns.
+    #. *Bivariate Analysis*: Pairwise comparisons of all numerical features.
 
     .. _python-docx: https://python-docx.readthedocs.io/en/latest/
     """
@@ -66,9 +67,9 @@ class ReportDocument:
         :param table_style: *Microsoft Word* table style to apply to the
             created tables, defaults to 'Table Grid'.
         :type table_style: str, optional
-        :param target_variable: The target variable (dependent feature). An
-            *integer value* is treated as a *column index*, whereas a *string*
-            is treated as a *column label*.
+        :param target_variable: The target variable (dependent feature), used
+            to color-code plotted values. An *integer value* is treated as a
+            *column index*, whereas a *string* is treated as a *column label*.
         :type target_variable: int, str, optional
 
         .. _`list of named colors`:
@@ -289,7 +290,7 @@ class ReportDocument:
         """Create a table from the given data and add it to the document.
 
         :param data: The data to put into a table.
-        :type data: ``pandas.DataFrame``
+        :type data: :class:`pandas.DataFrame`
         :param column_widths: The desired table column widths, defaults to ().
         :type column_widths: tuple, optional
         :param style: *Word* table style to apply, defaults to None.
