@@ -2,7 +2,7 @@ from eda_report.cli import process_cli_args
 from eda_report.document import ReportDocument
 from eda_report.gui import EDAGUI
 
-__version__ = "1.4.0b"
+__version__ = "1.4.0"
 
 
 def get_word_report(
