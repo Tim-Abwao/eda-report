@@ -206,10 +206,7 @@ Categorical features: {', '.join(categorical_cols)}
         fig.map_diag(  # Plot scatterplots in diagonal
             sns.histplot, kde=True, **subplot_params
         )
-
-        if fig.legend is not None:
-            # position the legend at top right
-            fig.legend.set_bbox_to_anchor((1.05, 1))
+        fig.add_legend(bbox_to_anchor=(1.05, 1.05))
 
         self.joint_scatterplot = savefig(fig)
 
