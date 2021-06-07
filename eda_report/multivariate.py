@@ -47,6 +47,7 @@ class MultiVariable:
         self.TARGET_VARIABLE = validate_target_variable(
             data=self.data, target_variable=target_variable
         )
+        self._COLOR_CODED_GRAPHS = set()
         #: A ``DataFrame`` with all the *numeric columns/features* present.
         self.numeric_cols = self._select_cols("number")
         #: A ``DataFrame`` with all the *categorical columns/features*
@@ -95,7 +96,7 @@ Categorical features: {', '.join(categorical_cols)}
 {self._corr_description if hasattr(self, '_corr_description') else 'N/A'}
 """
 
-    def show_correlation_heatmap(self):
+    def show_correlation_heatmap(self):  # pragma: no cover
         """Display a heatmap of Pearson correlation coefficients for all
         *numeric columns/features* present.
         """
@@ -105,7 +106,7 @@ Categorical features: {', '.join(categorical_cols)}
         else:
             logging.info("Not enough numeric variables to compare.")
 
-    def show_joint_scatterplot(self):
+    def show_joint_scatterplot(self):  # pragma: no cover
         """Display a joint scatter-plot of all the *numeric columns/features*
         present.
         """
@@ -142,7 +143,9 @@ Categorical features: {', '.join(categorical_cols)}
             self._corr_description = "\n".join(
                 [
                     f"{var_pair[0]} & {var_pair[1]} --> {corr_description}"
-                    for var_pair, corr_description in self.corr_type.items()
+                    for var_pair, corr_description in sorted(
+                        self.corr_type.items()
+                    )
                 ]
             )
         else:
@@ -191,6 +194,7 @@ Categorical features: {', '.join(categorical_cols)}
                     ),
                 }
                 subplot_params = {}
+                self._COLOR_CODED_GRAPHS.add("joint-scatterplot")
 
         else:  # When self.TARGET_VARIABLE is None
             plot_params = {"data": self.numeric_cols}

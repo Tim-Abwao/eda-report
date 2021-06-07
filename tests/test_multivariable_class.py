@@ -6,16 +6,15 @@ from eda_report.multivariate import MultiVariable
 
 class TestGeneralMultiVariableProperties(unittest.TestCase):
     def setUp(self):
-        self.variables = MultiVariable(
-            pd.DataFrame(
-                {
-                    "A": range(50),
-                    "B": list("abcde") * 10,
-                    "C": [True, False] * 25,
-                    "D": [1, 3, 5, 7, 9] * 10,
-                }
-            )
+        self.data = pd.DataFrame(
+            {
+                "A": range(50),
+                "B": list("abcdef") * 8 + ["a"] * 2,
+                "C": [True, False] * 25,
+                "D": [1, 3, 5, 7, 9] * 10,
+            }
         )
+        self.variables = MultiVariable(self.data)
 
     def test_type_classification(self):
         # Check if features are correctly categorised
@@ -24,6 +23,28 @@ class TestGeneralMultiVariableProperties(unittest.TestCase):
         )
         self.assertEqual(
             self.variables.categorical_cols.columns.to_list(), ["B", "C"]
+        )
+        # Check if data with purely numeric features is handled
+        numeric_variable = MultiVariable(self.variables.numeric_cols)
+        self.assertIsNone(numeric_variable.categorical_cols)
+        self.assertIn(
+            "Categorical features: \n\n        Summary Statistics",
+            repr(numeric_variable),
+        )
+        self.assertEqual(
+            numeric_variable.numeric_cols.columns.to_list(),
+            self.variables.numeric_cols.columns.to_list(),
+        )
+        # Check if data with purely categorical features is handled
+        categorical_variable = MultiVariable(self.variables.categorical_cols)
+        self.assertIsNone(categorical_variable.numeric_cols)
+        self.assertIn(
+            "Numeric features: \nCategorical features:",
+            repr(categorical_variable),
+        )
+        self.assertEqual(
+            categorical_variable.categorical_cols.columns.to_list(),
+            self.variables.categorical_cols.columns.to_list(),
         )
 
     def test_correlation_df(self):
@@ -45,6 +66,67 @@ class TestGeneralMultiVariableProperties(unittest.TestCase):
             b"\x89PNG",
             self.variables.bivariate_scatterplots[("A", "D")].getvalue(),
         )
+
+    def test_repr(self):
+        self.assertEqual(
+            repr(self.variables),
+            """\
+        Overview
+        ========
+Numeric features: A, D
+Categorical features: B, C
+
+        Summary Statistics (Numeric features)
+        =====================================
+              A          D
+count  50.00000  50.000000
+mean   24.50000   5.000000
+std    14.57738   2.857143
+min     0.00000   1.000000
+25%    12.25000   3.000000
+50%    24.50000   5.000000
+75%    36.75000   7.000000
+max    49.00000   9.000000
+
+        Summary Statistics (Categorical features)
+        =========================================
+         B      C
+count   50     50
+unique   6      2
+top      a  False
+freq    10     25
+
+        Bivariate Analysis (Correlation)
+        ================================
+A & C --> virtually no correlation (-0.03)
+A & D --> virtually no correlation (0.10)
+C & D --> virtually no correlation (0.00)
+""",
+        )
+
+    def test_valid_target_data(self):
+        # A target variable valid for color-coding has 1 to 10 unique values
+        with_numeric_target = MultiVariable(self.data, target_variable="D")
+        with_categorical_target = MultiVariable(self.data, target_variable="B")
+        self.assertEqual(
+            with_numeric_target._COLOR_CODED_GRAPHS, {"joint-scatterplot"}
+        )
+        self.assertEqual(
+            with_categorical_target._COLOR_CODED_GRAPHS, {"joint-scatterplot"}
+        )
+
+    def test_invalid_target_data(self):
+        with self.assertLogs(level="WARNING") as logged_warning:
+            X = MultiVariable(self.data, target_variable="A")
+            # Check that invalid target is ignored
+            self.assertEqual(X._COLOR_CODED_GRAPHS, set())
+            # Check that the warning message is correct
+            self.assertEqual(
+                logged_warning.records[-1].message,
+                "Target variable 'A' not used to group values in joint "
+                "scatterplot. It has too many levels (50), and would clutter"
+                " the graph.",
+            )
 
 
 class TestBivariateAnalysis(unittest.TestCase):
