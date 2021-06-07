@@ -1,64 +1,40 @@
-import subprocess
 import unittest
 from pathlib import Path
 
 import pandas as pd
-from docx import Document
+from eda_report.cli import process_cli_args
 
 
-class TestCLI(unittest.TestCase):
+class TestCLIArgumentParsing(unittest.TestCase):
     def setUp(self):
         # Create a dummy input file
         pd.DataFrame(range(50)).to_csv("test-data.csv", index=False)
 
-    def test_cli_with_all_args(self):
-        # Run the program through the command-line interface
-        subprocess.run(
-            [
-                "python",
-                "-m",
-                "eda_report",
-                "test-data.csv",
-                "-o",
-                "cli-test-1.docx",
-                "-t",
-                "CLI Test",
-                "-T",
-                "0",
-            ]
-        )
-        # Check if a report is generated as specified
-        self.assertTrue(Path("cli-test-1.docx").is_file())
-        self.assertTrue(
-            # Check if the title is as specified
-            Document("cli-test-1.docx").paragraphs[0].text,
+    def test_with_all_args(self):
+        args = process_cli_args(
+            "test-data.csv",
+            "-o",
+            "cli-test-1.docx",
+            "-t",
             "CLI Test",
+            "-c",
+            "teal",
+            "-T",
+            "0",
         )
+        self.assertIsInstance(args.infile, pd.DataFrame)
+        self.assertEqual(args.outfile, "cli-test-1.docx")
+        self.assertEqual(args.title, "CLI Test")
+        self.assertEqual(args.color, "teal")
+        self.assertEqual(args.target, "0")
 
-    def test_cli_with_default_args(self):
-        # Run the program through the command-line interface
-        subprocess.run(
-            [
-                "python",
-                "-m",
-                "eda_report",
-                "test-data.csv",
-            ]
-        )
-        # Check if a report is generated with the default output file-name
-        self.assertTrue(Path("eda-report.docx").is_file())
-        self.assertTrue(
-            # Check if the default title was set
-            Document("eda-report.docx").paragraphs[0].text,
-            "Exploratory Data Analysis Report",
-        )
+    def test_with_default_args(self):
+        args = process_cli_args("test-data.csv")
+        self.assertIsInstance(args.infile, pd.DataFrame)
+        self.assertEqual(args.outfile, "eda-report.docx")
+        self.assertEqual(args.title, "Exploratory Data Analysis Report")
+        self.assertEqual(args.color, "orangered")
+        self.assertEqual(args.target, None)
 
     def tearDown(self):
-        for filename in {
-            "test-data.csv",
-            "cli-test-1.docx",
-            "eda-report.docx",
-        }:
-            file = Path(filename)
-            if file.is_file():
-                file.unlink()  # Delete the file
+        Path("test-data.csv").unlink()  # Delete the file

@@ -3,7 +3,7 @@ import argparse
 from eda_report.read_file import df_from_file
 
 
-def process_cli_args():
+def process_cli_args(*args):
     """Captures and parses input from the command line interface using the
     :mod:`argparse` module from the Python standard library.
 
@@ -65,7 +65,6 @@ def process_cli_args():
     parser.add_argument(
         "-T",
         "--target",
-        default=None,
         help=(
             "The target variable (dependent feature), used to color-code "
             "plotted values. An integer value is treated as a column index, "
@@ -75,4 +74,7 @@ def process_cli_args():
     )
 
     # Parse the arguments
-    return parser.parse_args()
+    if args:
+        return parser.parse_args(args)
+    else:
+        return parser.parse_args()
