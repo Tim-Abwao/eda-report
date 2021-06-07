@@ -26,6 +26,33 @@ class TestGeneralVariableProperties(unittest.TestCase):
         # Check if missing values are correctly captured
         self.assertEqual(self.variable.missing, "3 (6.00%)")
 
+    def test_repr(self):
+        self.assertEqual(
+            repr(self.variable),
+            """\
+            Overview
+            ========
+Name: some variable,
+Type: numeric,
+Unique Values: 47 -> {nan, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, [...],
+Missing Values: 3 (6.00%)
+
+        Summary Statistics
+        ==================
+                        some variable
+Number of observations      47.000000
+Average                     25.425532
+Standard Deviation          14.402211
+Minimum                      1.000000
+Lower Quartile              13.500000
+Median                      26.000000
+Upper Quartile              37.500000
+Maximum                     49.000000
+Skewness                    -0.066004
+Kurtosis                    -1.203069
+""",
+        )
+
 
 class TestNumericVariables(unittest.TestCase):
     def setUp(self):
@@ -156,3 +183,40 @@ class TestCategoricalVariables(unittest.TestCase):
     def test_graph_plotted(self):
         self.assertIn("bar_plot", self.variable._graphs)
         self.assertIn(b"\x89PNG", self.variable._graphs["bar_plot"].getvalue())
+
+
+class TestWithTargetVariable(unittest.TestCase):
+    def setUp(self):
+        self.numeric_data = pd.Series(range(50), name="X")
+        self.categorical_data = pd.Series(list("ABCDE") * 10)
+
+    def test_valid_target_data(self):
+        valid_target = ["a", "e", "i", "o", "u"] * 10
+        numeric_variable = Variable(
+            data=self.numeric_data, target_data=valid_target
+        )
+        categorical_variable = Variable(
+            data=self.categorical_data, target_data=valid_target
+        )
+        self.assertEqual(
+            numeric_variable._COLOR_CODED_GRAPHS,
+            {"histogram & boxplot", "run-plot"},
+        )
+        self.assertEqual(
+            categorical_variable._COLOR_CODED_GRAPHS, {"bar-plot"}
+        )
+
+    def test_invalid_target_data(self):
+        # Invalid target data has unique values u > 10.
+        # Cases where u == 0 are already covered, since the default value for
+        # the target_variable argument is None, which produces empty target
+        # data (an empty Series with no unique values).
+        invalid_target = list(range(25)) * 2
+        numeric_variable = Variable(
+            data=self.numeric_data, target_data=invalid_target
+        )
+        categorical_variable = Variable(
+            data=self.categorical_data, target_data=invalid_target
+        )
+        self.assertEqual(numeric_variable._COLOR_CODED_GRAPHS, set())
+        self.assertEqual(categorical_variable._COLOR_CODED_GRAPHS, set())

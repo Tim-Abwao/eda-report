@@ -49,6 +49,7 @@ class Variable:
         #: The *color* applied to the created graphs.
         self.graph_color = graph_color
         self.TARGET_DATA = validate_univariate_input(target_data)
+        self._COLOR_CODED_GRAPHS = set()
         # Get graphs for the column/feature as a dict of file-like objects.
         self._graphs = self._plot_graphs()
 
@@ -67,7 +68,7 @@ Missing Values: {self.missing}
 {self.statistics}
 """
 
-    def show_graphs(self):
+    def show_graphs(self):  # pragma: no cover
         """Display the plotted graphs for the *column/feature*."""
         for graph in self._graphs.values():
             image = Image.open(graph)
@@ -182,6 +183,7 @@ Missing Values: {self.missing}
                 kde=True,
                 ax=ax2,
             )
+            self._COLOR_CODED_GRAPHS.add("histogram & boxplot")
         else:
             ax1.boxplot(self.data.dropna(), vert=False, notch=True)
             ax1.set_yticklabels([""])  # Remove y-tick labels
@@ -231,6 +233,7 @@ Missing Values: {self.missing}
                 palette=self._color_palette(self.TARGET_DATA.nunique()),
                 ax=ax,
             )
+            self._COLOR_CODED_GRAPHS.add("run-plot")
         else:
             ax.plot(self.data, marker=".", color=self.graph_color)
 
@@ -270,6 +273,7 @@ Missing Values: {self.missing}
                 color=self.graph_color,
                 ax=ax,
             )
+            self._COLOR_CODED_GRAPHS.add("bar-plot")
         else:
             # Include no more than 10 of the most common values
             top_10 = self.data.value_counts().nlargest(10)
