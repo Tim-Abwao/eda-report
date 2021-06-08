@@ -23,7 +23,7 @@ Select a file to analyse, and it will be automatically summarised. The result\
 """
 
 
-class EDAGUI(Frame):
+class EDAGUI(Frame):  # pragma: no cover
     """This is the blueprint for the :mod:`tkinter` - based *graphical user
     interface* to the application.
 

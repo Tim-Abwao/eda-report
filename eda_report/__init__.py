@@ -49,7 +49,7 @@ def get_word_report(
     )
 
 
-def run_from_cli():
+def run_from_cli():  # pragma: no cover
     """Creates an exploratory data analysis report in *.docx* format using input
     from the command line interface.
 
@@ -73,7 +73,7 @@ def run_from_cli():
     )
 
 
-def run_in_gui():
+def run_in_gui():  # pragma: no cover
     """Starts the *graphical user interface* to the application.
 
     This provides the entry point for the ``eda_report`` console script
