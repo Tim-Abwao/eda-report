@@ -132,7 +132,7 @@ Categorical features: {', '.join(categorical_cols)}
         """Get a DataFrame of the correlation coefficients for numeric
         columns.
         """
-        return None if self.numeric_cols is None else self.data.corr()
+        return None if self.numeric_cols is None else self.numeric_cols.corr()
 
     def _get_bivariate_analysis(self):
         """Compare numeric variable pairs."""

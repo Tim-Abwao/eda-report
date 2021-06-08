@@ -118,9 +118,7 @@ freq    10     25
 
         Bivariate Analysis (Correlation)
         ================================
-A & C --> virtually no correlation (-0.03)
 A & D --> virtually no correlation (0.10)
-C & D --> virtually no correlation (0.00)
 """,
         )
 
