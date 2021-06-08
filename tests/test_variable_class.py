@@ -5,12 +5,17 @@ from eda_report.univariate import Variable
 
 
 class TestGeneralVariableProperties(unittest.TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         some_sample = pd.Series(range(50), name="some variable")
         some_sample.iloc[[0, 10, 20]] = None  # Introduce missing values
-        self.variable = Variable(some_sample)
-        self.nameless_variable = Variable(pd.Series(range(50)))
-        self.named_variable = Variable(pd.Series(range(50)), name="any name")
+        cls.variable = Variable(some_sample)
+        cls.nameless_variable = Variable(pd.Series(range(50)))
+        cls.named_variable = Variable(pd.Series(range(50)), name="any name")
+
+    @classmethod
+    def tearDownClass(cls):
+        del cls.variable, cls.nameless_variable, cls.named_variable
 
     def test_variable_name(self):
         # Check if the variable's name is captured
@@ -55,8 +60,13 @@ Kurtosis                    -1.203069
 
 
 class TestNumericVariables(unittest.TestCase):
-    def setUp(self):
-        self.variable = Variable(pd.Series(range(50), name="numbers"))
+    @classmethod
+    def setUpClass(cls):
+        cls.variable = Variable(pd.Series(range(50), name="numbers"))
+
+    @classmethod
+    def tearDownClass(cls):
+        del cls.variable
 
     def test_data_type(self):
         # Check if data type is numeric
@@ -81,7 +91,7 @@ class TestNumericVariables(unittest.TestCase):
         )
 
     def test_summary_statistics_values(self):
-        # Check if summary statistics values are consistent
+        # Check if summary statistics values are as expected
         self.assertAlmostEqual(
             self.variable.statistics.loc["Number of observations", "numbers"],
             50,
@@ -116,6 +126,7 @@ class TestNumericVariables(unittest.TestCase):
         )
 
     def test_graph_plotted(self):
+        # Check that the graphs were plotted and saved
         self.assertEqual(
             ["hist_and_boxplot", "prob_plot", "run_plot"],
             list(self.variable._graphs),
@@ -130,11 +141,12 @@ class TestNumericVariables(unittest.TestCase):
 
 
 class TestCategoricalVariables(unittest.TestCase):
-    def setUp(self):
-        self.variable = Variable(
+    @classmethod
+    def setUpClass(cls):
+        cls.variable = Variable(
             pd.Series(["a"] * 15 + ["b"] * 25 + ["c"] * 10, name="letters")
         )
-        self.variable_from_bool = Variable(
+        cls.variable_from_bool = Variable(
             pd.Series([True, False] * 25, name="bool")
         )
 
@@ -155,7 +167,7 @@ class TestCategoricalVariables(unittest.TestCase):
         )
 
     def test_summary_statistics_values(self):
-        # Check if summary statistics values are consistent
+        # Check if summary statistics values are as expected
         self.assertAlmostEqual(
             self.variable.statistics.loc["Number of observations", "letters"],
             50,
@@ -181,14 +193,20 @@ class TestCategoricalVariables(unittest.TestCase):
         )
 
     def test_graph_plotted(self):
+        # Check if the graphs are plotted and saved
         self.assertIn("bar_plot", self.variable._graphs)
         self.assertIn(b"\x89PNG", self.variable._graphs["bar_plot"].getvalue())
 
 
 class TestWithTargetVariable(unittest.TestCase):
-    def setUp(self):
-        self.numeric_data = pd.Series(range(50), name="X")
-        self.categorical_data = pd.Series(list("ABCDE") * 10)
+    @classmethod
+    def setUpClass(cls):
+        cls.numeric_data = pd.Series(range(50), name="X")
+        cls.categorical_data = pd.Series(list("ABCDE") * 10)
+
+    @classmethod
+    def tearDownClass(cls):
+        del cls.numeric_data, cls.categorical_data
 
     def test_valid_target_data(self):
         valid_target = ["a", "e", "i", "o", "u"] * 10
@@ -198,6 +216,7 @@ class TestWithTargetVariable(unittest.TestCase):
         categorical_variable = Variable(
             data=self.categorical_data, target_data=valid_target
         )
+        # Check that _COLOR_CODED_GRAPHS is non-empty
         self.assertEqual(
             numeric_variable._COLOR_CODED_GRAPHS,
             {"histogram & boxplot", "run-plot"},
@@ -218,5 +237,6 @@ class TestWithTargetVariable(unittest.TestCase):
         categorical_variable = Variable(
             data=self.categorical_data, target_data=invalid_target
         )
+        # Check that _COLOR_CODED_GRAPHS is empty
         self.assertEqual(numeric_variable._COLOR_CODED_GRAPHS, set())
         self.assertEqual(categorical_variable._COLOR_CODED_GRAPHS, set())

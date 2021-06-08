@@ -5,8 +5,10 @@ from eda_report.multivariate import MultiVariable
 
 
 class TestGeneralMultiVariableProperties(unittest.TestCase):
-    def setUp(self):
-        self.data = pd.DataFrame(
+    @classmethod
+    def setUpClass(cls):
+        # Create dummy data
+        cls.data = pd.DataFrame(
             {
                 "A": range(50),
                 "B": list("abcdef") * 8 + ["a"] * 2,
@@ -14,62 +16,80 @@ class TestGeneralMultiVariableProperties(unittest.TestCase):
                 "D": [1, 3, 5, 7, 9] * 10,
             }
         )
-        self.variables = MultiVariable(self.data)
+        cls.multivariable = MultiVariable(cls.data)
+
+    @classmethod
+    def tearDownClass(cls):
+        del cls.data, cls.multivariable
 
     def test_type_classification(self):
         # Check if features are correctly categorised
         self.assertEqual(
-            self.variables.numeric_cols.columns.to_list(), ["A", "D"]
+            self.multivariable.numeric_cols.columns.to_list(), ["A", "D"]
         )
         self.assertEqual(
-            self.variables.categorical_cols.columns.to_list(), ["B", "C"]
+            self.multivariable.categorical_cols.columns.to_list(), ["B", "C"]
         )
+
+    def test_purely_numeric_data(self):
         # Check if data with purely numeric features is handled
-        numeric_variable = MultiVariable(self.variables.numeric_cols)
+        numeric_variable = MultiVariable(self.multivariable.numeric_cols)
+        # categorical_cols should be None
         self.assertIsNone(numeric_variable.categorical_cols)
+        # There should be no text between "features:" and "Summary"
         self.assertIn(
             "Categorical features: \n\n        Summary Statistics",
             repr(numeric_variable),
         )
         self.assertEqual(
             numeric_variable.numeric_cols.columns.to_list(),
-            self.variables.numeric_cols.columns.to_list(),
+            self.multivariable.numeric_cols.columns.to_list(),
         )
+
+    def test_purely_categorical_data(self):
         # Check if data with purely categorical features is handled
-        categorical_variable = MultiVariable(self.variables.categorical_cols)
+        categorical_variable = MultiVariable(
+            self.multivariable.categorical_cols
+        )
+        # numeric_cols should be None
         self.assertIsNone(categorical_variable.numeric_cols)
+        # There should be no text between "features:" and "Categorical"
         self.assertIn(
             "Numeric features: \nCategorical features:",
             repr(categorical_variable),
         )
         self.assertEqual(
             categorical_variable.categorical_cols.columns.to_list(),
-            self.variables.categorical_cols.columns.to_list(),
+            self.multivariable.categorical_cols.columns.to_list(),
         )
 
     def test_correlation_df(self):
         # Check if correlation is computed for numeric columns
-        self.assertAlmostEqual(self.variables.correlation_df.loc["A", "A"], 1)
         self.assertAlmostEqual(
-            self.variables.correlation_df.loc["A", "D"], 0.0979992
+            self.multivariable.correlation_df.loc["A", "A"], 1
+        )
+        self.assertAlmostEqual(
+            self.multivariable.correlation_df.loc["A", "D"], 0.0979992
         )
 
     def test_graphs_plotted(self):
         # Check if the joint correlation plot is present
         self.assertIn(
-            b"\x89PNG", self.variables.joint_correlation_heatmap.getvalue()
+            b"\x89PNG", self.multivariable.joint_correlation_heatmap.getvalue()
         )
         # Check if the joint scatterplot is present
-        self.assertIn(b"\x89PNG", self.variables.joint_scatterplot.getvalue())
+        self.assertIn(
+            b"\x89PNG", self.multivariable.joint_scatterplot.getvalue()
+        )
         # Check if numerical variable pairwise scatterplots are present
         self.assertIn(
             b"\x89PNG",
-            self.variables.bivariate_scatterplots[("A", "D")].getvalue(),
+            self.multivariable.bivariate_scatterplots[("A", "D")].getvalue(),
         )
 
     def test_repr(self):
         self.assertEqual(
-            repr(self.variables),
+            repr(self.multivariable),
             """\
         Overview
         ========
@@ -108,6 +128,7 @@ C & D --> virtually no correlation (0.00)
         # A target variable valid for color-coding has 1 to 10 unique values
         with_numeric_target = MultiVariable(self.data, target_variable="D")
         with_categorical_target = MultiVariable(self.data, target_variable="B")
+        # Check that _COLOR_CODED_GRAPHS is non-empty
         self.assertEqual(
             with_numeric_target._COLOR_CODED_GRAPHS, {"joint-scatterplot"}
         )
@@ -118,9 +139,9 @@ C & D --> virtually no correlation (0.00)
     def test_invalid_target_data(self):
         with self.assertLogs(level="WARNING") as logged_warning:
             X = MultiVariable(self.data, target_variable="A")
-            # Check that invalid target is ignored
+            # Check that _COLOR_CODED_GRAPHS is empty
             self.assertEqual(X._COLOR_CODED_GRAPHS, set())
-            # Check that the warning message is correct
+            # Check that the warning message is as expected
             self.assertEqual(
                 logged_warning.records[-1].message,
                 "Target variable 'A' not used to group values in joint "
@@ -130,8 +151,10 @@ C & D --> virtually no correlation (0.00)
 
 
 class TestBivariateAnalysis(unittest.TestCase):
-    def setUp(self):
-        self.variables = MultiVariable(
+    @classmethod
+    def setUpClass(cls):
+        # Create dummy data
+        cls.multivariable = MultiVariable(
             pd.DataFrame(
                 {
                     "A": range(10),
@@ -145,10 +168,14 @@ class TestBivariateAnalysis(unittest.TestCase):
             )
         )
 
+    @classmethod
+    def tearDownClass(cls):
+        del cls.multivariable
+
     def test_variable_pairs(self):
         # Check if numerical variable pairs are correctly collected
         self.assertEqual(
-            self.variables.var_pairs,
+            self.multivariable.var_pairs,
             {
                 ("A", "B"),
                 ("A", "C"),
@@ -175,27 +202,28 @@ class TestBivariateAnalysis(unittest.TestCase):
         )
 
     def test_correlation_description(self):
+        # Check that the correlation descriptions are as expected
         self.assertEqual(
             "very strong positive correlation (0.98)",
-            self.variables.corr_type[("A", "B")],
+            self.multivariable.corr_type[("A", "B")],
         )
         self.assertEqual(
             "strong positive correlation (0.71)",
-            self.variables.corr_type[("A", "C")],
+            self.multivariable.corr_type[("A", "C")],
         )
         self.assertEqual(
             "moderate positive correlation (0.63)",
-            self.variables.corr_type[("A", "D")],
+            self.multivariable.corr_type[("A", "D")],
         )
         self.assertEqual(
             "weak positive correlation (0.44)",
-            self.variables.corr_type[("A", "E")],
+            self.multivariable.corr_type[("A", "E")],
         )
         self.assertEqual(
             "very weak negative correlation (-0.21)",
-            self.variables.corr_type[("A", "F")],
+            self.multivariable.corr_type[("A", "F")],
         )
         self.assertEqual(
             "virtually no correlation (-0.08)",
-            self.variables.corr_type[("A", "G")],
+            self.multivariable.corr_type[("A", "G")],
         )
