@@ -281,6 +281,7 @@ Missing Values: {self.missing}
                 x=top_10.index,
                 y=top_10,
                 palette=self._color_palette(n_colors=top_10.shape[0] + 1),
+                ax=ax
             )
 
         ax.tick_params(axis="x", rotation=45)

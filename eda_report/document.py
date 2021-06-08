@@ -230,7 +230,7 @@ class ReportDocument:
             elif var.num_unique == 0:
                 unique_vals = "no unique values"
             else:
-                unique_vals = "{var.num_unique} unique values"
+                unique_vals = f"{var.num_unique} unique values"
             p.add_run(f"with {unique_vals}. ")
             p.add_run(f"{var.missing} of its values are missing.")
 
