@@ -5,6 +5,7 @@
 [![Python 3.8](https://github.com/Tim-Abwao/auto-eda/actions/workflows/run-tests.yml/badge.svg)](https://github.com/Tim-Abwao/auto-eda/actions/workflows/run-tests.yml)
 [![Python 3.7 | 3.9](https://github.com/Tim-Abwao/auto-eda/actions/workflows/test-python3.7-3.9.yml/badge.svg)](https://github.com/Tim-Abwao/auto-eda/actions/workflows/test-python3.7-3.9.yml)
 [![Documentation Status](https://readthedocs.org/projects/eda-report/badge/?version=latest)](https://eda-report.readthedocs.io/en/latest/?badge=latest)
+[![codecov](https://codecov.io/gh/Tim-Abwao/auto-eda/branch/main/graph/badge.svg?token=KNQD8XZCWG)](https://codecov.io/gh/Tim-Abwao/auto-eda)
 
 A Python program to help automate the exploratory data analysis and reporting process.
 
