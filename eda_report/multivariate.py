@@ -154,12 +154,6 @@ Categorical features: {', '.join(categorical_cols)}
                 "Not enough numeric variables to compare."
             )
 
-    def _create_palette(self, n_colors=10):
-        """Get a color palette based on the set graph color."""
-        return sns.light_palette(self.graph_color, n_colors=n_colors + 1,)[
-            1:  # Discard the first, which is too light
-        ]
-
     def _plot_joint_scatterplot(self):
         """Create a joint scatter-plot of all numeric columns."""
         if self.TARGET_VARIABLE is not None:
@@ -189,9 +183,7 @@ Categorical features: {', '.join(categorical_cols)}
                 plot_params = {
                     "data": numeric_cols_with_target,
                     "hue": self.TARGET_VARIABLE,
-                    "palette": self._create_palette(
-                        n_colors=self.data[self.TARGET_VARIABLE].nunique()
-                    ),
+                    "palette": f"dark:{self.graph_color}_r",
                 }
                 subplot_params = {}
                 self._COLOR_CODED_GRAPHS.add("joint-scatterplot")
@@ -224,7 +216,7 @@ Categorical features: {', '.join(categorical_cols)}
             yticklabels=True,
             mask=np.triu(self.correlation_df),
             ax=ax,
-            cmap=self._create_palette(n_colors=self.correlation_df.shape[1]),
+            cmap=sns.light_palette(self.graph_color, as_cmap=True),
         )
         ax.tick_params(rotation=45)
         fig.suptitle("Correlation in Numeric Columns", size=15)
@@ -300,7 +292,7 @@ Categorical features: {', '.join(categorical_cols)}
         sns.ecdfplot(
             data=self.data.loc[:, [var1, var2]],
             ax=ax2,
-            palette=self._create_palette(n_colors=2),
+            palette=f"dark:{self.graph_color}_r",
         )
         ax1.set_title(f"Scatter-plot - {var1} vs {var2}".title(), size=9)
         ax2.set_title("Empirical Cummulative Distribution Functions", size=9)
