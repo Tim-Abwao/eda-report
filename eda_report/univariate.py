@@ -146,12 +146,6 @@ Missing Values: {self.missing}
         else:
             return f"{missing_values} ({missing_values / len(self.data):.2%})"
 
-    def _color_palette(self, n_colors):
-        """Get a color palette based on the set graph color."""
-        return sns.light_palette(self.graph_color, n_colors=n_colors + 1,)[
-            1:  # Discard the first, which is too light
-        ]
-
     def _plot_graphs(self):
         """Plot graphs for the column/feature, based on variable type."""
         if self.var_type == "numeric":
@@ -170,9 +164,7 @@ Missing Values: {self.missing}
         ax1, ax2 = fig.subplots(nrows=2, ncols=1)
 
         if self.TARGET_DATA.nunique() in range(1, 11):
-            palette = list(
-                self._color_palette(n_colors=self.TARGET_DATA.nunique()),
-            )
+            palette = f"dark:{self.graph_color}_r"
             sns.boxplot(
                 y=self.data, x=self.TARGET_DATA, palette=palette, ax=ax1
             )
@@ -230,7 +222,7 @@ Missing Values: {self.missing}
                 x=self.data.index,
                 y=self.data,
                 hue=self.TARGET_DATA,
-                palette=self._color_palette(self.TARGET_DATA.nunique()),
+                palette=f"dark:{self.graph_color}_r",
                 ax=ax,
             )
             self._COLOR_CODED_GRAPHS.add("run-plot")
@@ -266,24 +258,14 @@ Missing Values: {self.missing}
         fig = Fig(figsize=(6, 4), linewidth=1)
         ax = fig.subplots()
 
-        if self.TARGET_DATA.nunique() in range(1, 11):
-            sns.countplot(
-                x=self.data,
-                hue=self.TARGET_DATA,
-                color=self.graph_color,
-                ax=ax,
-            )
-            self._COLOR_CODED_GRAPHS.add("bar-plot")
-        else:
-            # Include no more than 10 of the most common values
-            top_10 = self.data.value_counts().nlargest(10)
-            sns.barplot(
-                x=top_10.index,
-                y=top_10,
-                palette=self._color_palette(n_colors=top_10.shape[0] + 1),
-                ax=ax
-            )
-
+        # Include no more than 10 of the most common values
+        top_10 = self.data.value_counts().nlargest(10)
+        sns.barplot(
+            x=top_10.index.to_list(),
+            y=top_10,
+            palette=f"dark:{self.graph_color}_r",
+            ax=ax,
+        )
         ax.tick_params(axis="x", rotation=45)
         ax.set_title(f"Bar-plot of {self.name}", size=12)
 
