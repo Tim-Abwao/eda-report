@@ -51,8 +51,8 @@ class MultiVariable:
         #: A ``DataFrame`` with all the *numeric columns/features* present.
         self.numeric_cols = self._select_cols("number")
         #: A ``DataFrame`` with all the *categorical columns/features*
-        #: present. Please note that **boolean features** are also
-        #: **considered categorical** in this context.
+        #: present. Please note that **boolean** and **datetime** features are
+        #: also **considered categorical** in this context.
         self.categorical_cols = self._select_cols("object", "bool")
         #: A ``DataFrame`` of Pearson correlation coefficients for the
         #: *numeric columns/features*.

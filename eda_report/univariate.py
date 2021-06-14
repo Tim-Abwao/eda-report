@@ -1,7 +1,11 @@
 from textwrap import shorten
 
 import seaborn as sns
-from pandas.api.types import is_bool_dtype, is_numeric_dtype
+from pandas.api.types import (
+    is_bool_dtype,
+    is_datetime64_any_dtype,
+    is_numeric_dtype,
+)
 from PIL import Image
 from scipy.stats import probplot
 
@@ -87,19 +91,25 @@ Missing Values: {self.missing}
 
     def _get_variable_type(self):
         """Get the variable type: 'categorical' or 'numeric'."""
-        if is_numeric_dtype(self.data) and not is_bool_dtype(self.data):
-            # Only int and float types
-            return "numeric"
+        if is_numeric_dtype(self.data):
+            if is_bool_dtype(self.data) or set(self.data.dropna()) == {0, 1}:
+                return "boolean"
+            else:
+                # Only int and float types
+                return "numeric"
+        elif is_datetime64_any_dtype(self.data):
+            self.data = self.data.dt.strftime("%c")
+            return "datetime"
         else:
-            # Handle bool, string, datetime, etc as categorical
-            self.data = self.data.astype("category")
+            # Handle str, etc as categorical
             return "categorical"
 
     def _get_summary_statistics(self):
         """Get summary statistics for the column/feature."""
         if self.var_type == "numeric":
             return self._numeric_summary_statictics()
-        elif self.var_type == "categorical":
+        elif self.var_type in {"boolean", "categorical", "datetime"}:
+            self.data = self.data.astype("category")
             return self._categorical_summary_statistics()
 
     def _numeric_summary_statictics(self):
@@ -154,7 +164,7 @@ Missing Values: {self.missing}
                 "prob_plot": self._plot_prob_plot(),
                 "run_plot": self._plot_run_plot(),
             }
-        elif self.var_type == "categorical":
+        elif self.var_type in {"boolean", "categorical", "datetime"}:
             return {"bar_plot": self._plot_bar()}
 
     def _plot_histogram_and_boxplot(self):

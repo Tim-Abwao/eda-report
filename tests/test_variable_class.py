@@ -92,7 +92,7 @@ class TestNumericVariables(unittest.TestCase):
 
     def test_summary_statistics_values(self):
         # Check if summary statistics values are as expected
-        self.assertAlmostEqual(
+        self.assertEqual(
             self.variable.statistics.loc["Number of observations", "numbers"],
             50,
         )
@@ -103,7 +103,7 @@ class TestNumericVariables(unittest.TestCase):
             self.variable.statistics.loc["Standard Deviation", "numbers"],
             14.5773797,
         )
-        self.assertAlmostEqual(
+        self.assertEqual(
             self.variable.statistics.loc["Minimum", "numbers"], 0
         )
         self.assertAlmostEqual(
@@ -115,7 +115,7 @@ class TestNumericVariables(unittest.TestCase):
         self.assertAlmostEqual(
             self.variable.statistics.loc["Upper Quartile", "numbers"], 36.75
         )
-        self.assertAlmostEqual(
+        self.assertEqual(
             self.variable.statistics.loc["Maximum", "numbers"], 49
         )
         self.assertAlmostEqual(
@@ -146,14 +146,10 @@ class TestCategoricalVariables(unittest.TestCase):
         cls.variable = Variable(
             pd.Series(["a"] * 15 + ["b"] * 25 + ["c"] * 10, name="letters")
         )
-        cls.variable_from_bool = Variable(
-            pd.Series([True, False] * 25, name="bool")
-        )
 
     def test_data_type(self):
-        # Check if data type is categorical
+        # Check if data type is correctly captured
         self.assertEqual(self.variable.var_type, "categorical")
-        self.assertEqual(self.variable_from_bool.var_type, "categorical")
 
     def test_summary_statistics_present(self):
         # Check if all summary statistics are present
@@ -168,14 +164,14 @@ class TestCategoricalVariables(unittest.TestCase):
 
     def test_summary_statistics_values(self):
         # Check if summary statistics values are as expected
-        self.assertAlmostEqual(
+        self.assertEqual(
             self.variable.statistics.loc["Number of observations", "letters"],
             50,
         )
-        self.assertAlmostEqual(
+        self.assertEqual(
             self.variable.statistics.loc["Unique values", "letters"], 3
         )
-        self.assertAlmostEqual(
+        self.assertEqual(
             self.variable.statistics.loc[
                 "Mode (Highest occurring value)", "letters"
             ],
@@ -196,6 +192,110 @@ class TestCategoricalVariables(unittest.TestCase):
         # Check if the graphs are plotted and saved
         self.assertIn("bar_plot", self.variable._graphs)
         self.assertIn(b"\x89PNG", self.variable._graphs["bar_plot"].getvalue())
+
+
+class TestBooleanVariables(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.boolean_variable = Variable(
+            pd.Series([True, False, True] * 15, name="bool")
+        )
+
+    def test_data_type(self):
+        # Check if data type is correctly captured
+        self.assertEqual(self.boolean_variable.var_type, "boolean")
+
+    def test_summary_statistics_present(self):
+        # Check if all summary statistics are present
+        self.assertEqual(
+            self.boolean_variable.statistics.index.to_list(),
+            [
+                "Number of observations",
+                "Unique values",
+                "Mode (Highest occurring value)",
+            ],
+        )
+
+    def test_summary_statistics_values(self):
+        # Check if summary statistics values are as expected
+        self.assertEqual(
+            self.boolean_variable.statistics.loc[
+                "Number of observations", "bool"
+            ],
+            45,
+        )
+        self.assertEqual(
+            self.boolean_variable.statistics.loc["Unique values", "bool"], 2
+        )
+        self.assertEqual(
+            self.boolean_variable.statistics.loc[
+                "Mode (Highest occurring value)", "bool"
+            ],
+            True,
+        )
+
+    def test_most_common_values(self):
+        # Check if the most common values are correctly captured
+        self.assertEqual(
+            self.boolean_variable.most_common_items["bool"].to_list(),
+            ["30 (66.67%)", "15 (33.33%)"],
+        )
+        self.assertEqual(
+            self.boolean_variable.most_common_items.index.to_list(),
+            [True, False],
+        )
+
+    def test_graph_plotted(self):
+        # Check if the graphs are plotted and saved
+        self.assertIn("bar_plot", self.boolean_variable._graphs)
+        self.assertIn(
+            b"\x89PNG", self.boolean_variable._graphs["bar_plot"].getvalue()
+        )
+
+
+class TestDatetimeVariables(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.datetime_variable = Variable(
+            pd.Series(
+                pd.date_range("2021", freq="D", periods=50), name="datetime"
+            )
+        )
+
+    def test_data_type(self):
+        # Check if data type is correctly captured
+        self.assertEqual(self.datetime_variable.var_type, "datetime")
+
+    def test_summary_statistics_present(self):
+        # Check if all summary statistics are present
+        self.assertEqual(
+            self.datetime_variable.statistics.index.to_list(),
+            [
+                "Number of observations",
+                "Unique values",
+                "Mode (Highest occurring value)",
+            ],
+        )
+
+    def test_summary_statistics_values(self):
+        # Check if summary statistics values are as expected
+        self.assertEqual(
+            self.datetime_variable.statistics.loc[
+                "Number of observations", "datetime"
+            ],
+            50,
+        )
+        self.assertEqual(
+            self.datetime_variable.statistics.loc["Unique values", "datetime"],
+            50,
+        )
+
+    def test_graph_plotted(self):
+        # Check if the graphs are plotted and saved
+        self.assertIn("bar_plot", self.datetime_variable._graphs)
+        self.assertIn(
+            b"\x89PNG", self.datetime_variable._graphs["bar_plot"].getvalue()
+        )
 
 
 class TestWithTargetVariable(unittest.TestCase):
