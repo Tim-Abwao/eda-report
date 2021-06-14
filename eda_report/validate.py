@@ -66,7 +66,7 @@ def validate_univariate_input(data):
     if isinstance(data, Series):
         return data
     elif data is None or len(data) == 0:
-        return Series([], dtype='object')
+        return Series([], dtype="object")
     else:
         try:
             # Cast the data as a series
@@ -104,8 +104,6 @@ def validate_target_variable(*, data, target_variable):
                 f" [0, {data.columns.size}]."
             )
 
-        return target_variable
-
     elif isinstance(target_variable, str):
         try:
             data.columns.get_loc(key=target_variable)
@@ -114,11 +112,18 @@ def validate_target_variable(*, data, target_variable):
                 f"{target_variable!r} is not in {data.columns.to_list()}"
             )
 
-        return target_variable
-
     else:
+        # If target_variable is neither an index(int) or label(str)
         logging.warning(
             f"Target variable specifier '{target_variable}' ignored."
             " Not a valid column(feature) index or label."
         )
         return None
+
+    if data[target_variable].nunique() > 10:
+        logging.warning(
+            f"Target variable '{target_variable}' not used to color-code "
+            "graphs since it has too many levels "
+            f"({data[target_variable].nunique()}) which would clutter graphs."
+        )
+    return target_variable
