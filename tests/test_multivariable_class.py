@@ -135,17 +135,9 @@ A & D --> virtually no correlation (0.10)
         )
 
     def test_invalid_target_data(self):
-        with self.assertLogs(level="WARNING") as logged_warning:
-            X = MultiVariable(self.data, target_variable="A")
-            # Check that _COLOR_CODED_GRAPHS is empty
-            self.assertEqual(X._COLOR_CODED_GRAPHS, set())
-            # Check that the warning message is as expected
-            self.assertEqual(
-                logged_warning.records[-1].message,
-                "Target variable 'A' not used to group values in joint "
-                "scatterplot. It has too many levels (50), and would clutter"
-                " the graph.",
-            )
+        X = MultiVariable(self.data, target_variable="A")
+        # Check that _COLOR_CODED_GRAPHS is empty
+        self.assertEqual(X._COLOR_CODED_GRAPHS, set())
 
 
 class TestBivariateAnalysis(unittest.TestCase):
