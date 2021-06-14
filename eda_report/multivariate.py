@@ -156,50 +156,38 @@ Categorical features: {', '.join(categorical_cols)}
 
     def _plot_joint_scatterplot(self):
         """Create a joint scatter-plot of all numeric columns."""
-        if self.TARGET_VARIABLE is not None:
-            target_data = self.data[self.TARGET_VARIABLE]
-
-            if target_data.nunique() > 10:
-                # Too many levels in target variable would clutter the graph
-                logging.warning(
-                    f"Target variable '{target_data.name}' not used to group "
-                    "values in joint scatterplot. It has too many levels "
-                    f"({target_data.nunique()}), and would clutter the graph."
-                )
-                # Treat target variable as if None
-                plot_params = {"data": self.numeric_cols}
-                subplot_params = {"color": self.graph_color}
-
-            elif target_data.nunique() in range(1, 11):
-                # Color-code plotted values by target variable
-                if self.TARGET_VARIABLE in self.numeric_cols:
-                    numeric_cols_with_target = self.numeric_cols
-                else:  # Combine the numeric data and target data
-                    numeric_cols_with_target = self.numeric_cols.merge(
-                        target_data,
-                        left_index=True,
-                        right_index=True,
-                    )
-                plot_params = {
-                    "data": numeric_cols_with_target,
-                    "hue": self.TARGET_VARIABLE,
-                    "palette": f"dark:{self.graph_color}_r",
-                }
-                subplot_params = {}
-                self._COLOR_CODED_GRAPHS.add("joint-scatterplot")
-
-        else:  # When self.TARGET_VARIABLE is None
+        if (
+            self.TARGET_VARIABLE is None
+            or self.data[self.TARGET_VARIABLE].nunique() > 10
+        ):
             plot_params = {"data": self.numeric_cols}
             subplot_params = {"color": self.graph_color}
+
+        else:  # Color-code plotted values by target variable
+            if self.TARGET_VARIABLE in self.numeric_cols:
+                numeric_cols_with_target = self.numeric_cols
+            else:  # Join the numeric data and target-variable data by index
+                numeric_cols_with_target = self.numeric_cols.merge(
+                    self.data[self.TARGET_VARIABLE],
+                    left_index=True,
+                    right_index=True,
+                )
+            plot_params = {
+                "data": numeric_cols_with_target,
+                "hue": self.TARGET_VARIABLE,
+                "palette": f"dark:{self.graph_color}_r",
+            }
+            subplot_params = {}
+            self._COLOR_CODED_GRAPHS.add("joint-scatterplot")
 
         fig = sns.PairGrid(**plot_params)
         fig.map_upper(  # Plot scatterplots in upper half
             sns.scatterplot, **subplot_params
         )
-        fig.map_lower(  # Plot scatterplots in upper half
+        fig.map_lower(  # Plot kdeplots in lower half
             sns.kdeplot, **subplot_params
         )
-        fig.map_diag(  # Plot scatterplots in diagonal
+        fig.map_diag(  # Plot histograms in diagonal
             sns.histplot, kde=True, **subplot_params
         )
         fig.add_legend(bbox_to_anchor=(1.05, 1.05))

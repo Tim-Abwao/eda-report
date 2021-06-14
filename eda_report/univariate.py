@@ -258,16 +258,30 @@ Missing Values: {self.missing}
         fig = Fig(figsize=(6, 4), linewidth=1)
         ax = fig.subplots()
 
-        # Include no more than 10 of the most common values
-        top_10 = self.data.value_counts().nlargest(10)
-        sns.barplot(
-            x=top_10.index.to_list(),
-            y=top_10,
-            palette=f"dark:{self.graph_color}_r",
-            ax=ax,
-        )
-        ax.tick_params(axis="x", rotation=45)
-        ax.set_title(f"Bar-plot of {self.name}", size=12)
+        if (
+            self.data.nunique() in range(1, 11)
+            and self.TARGET_DATA.nunique() in range(1, 11)
+            and len(self.data) == len(self.TARGET_DATA)
+            and set(self.data) != set(self.TARGET_DATA)
+        ):
+            sns.countplot(
+                x=self.data,
+                hue=self.TARGET_DATA,
+                palette=f"dark:{self.graph_color}_r",
+                ax=ax,
+            )
+            self._COLOR_CODED_GRAPHS.add("bar-plot")
+        else:
+            # Include no more than 10 of the most common values
+            top_10 = self.data.value_counts().nlargest(10)
+            sns.barplot(
+                x=top_10.index.to_list(),
+                y=top_10,
+                palette=f"dark:{self.graph_color}_r",
+                ax=ax,
+            )
+            ax.tick_params(axis="x", rotation=45)
+            ax.set_title(f"Bar-plot of {self.name}", size=12)
 
         # Annotate bars
         for p in ax.patches:
