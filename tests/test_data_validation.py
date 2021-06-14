@@ -121,3 +121,16 @@ class TestTargetValidation(unittest.TestCase):
                 "Target variable specifier '1.0' ignored. Not a valid "
                 "column(feature) index or label.",
             )
+
+    def test_target_variable_with_excess_categories(self):
+        # Check that target variables with more than 10 unique values log a
+        # warning that color-coding won't be applied.
+        with self.assertLogs(level="WARNING") as logged_warning:
+            _data = pd.DataFrame([range(11)] * 2).T
+            validate_target_variable(data=_data, target_variable=1)
+            # Check that the warning message is as expected
+            self.assertEqual(
+                logged_warning.records[-1].message,
+                "Target variable '1' not used to color-code graphs since it "
+                "has too many levels (11) which would clutter graphs.",
+            )
