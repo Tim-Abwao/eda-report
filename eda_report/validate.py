@@ -8,7 +8,7 @@ from eda_report.exceptions import InputError
 def clean_column_names(data):
     """Makes sure that *columns/features* have *meaningful* names.
 
-    When an array/sequence/iterable/scalar is used to create a ``DataFrame``
+    When an array/sequence/iterable is used to create a ``DataFrame``
     but no column names are specified, ``pandas`` by default names the columns
     by index as [0, 1, 2, ...] ( :class:`~pandas.RangeIndex` ).
 
@@ -31,7 +31,7 @@ def validate_multivariate_input(data):
     If it isn't, this attempts to explicitly cast it as a ``DataFrame``.
 
     :param data: The data to process.
-    :type data: An array-like, sequence, iterable or dict
+    :type data: array-like, sequence, iterable, dict
     :raises InputError: Raised if the data cannot be converted to a
         ``DataFrame``, as required.
     :return: The data as a pandas ``DataFrame``.
@@ -57,7 +57,7 @@ def validate_univariate_input(data):
     If it isn't, this attempts to explicitly cast it as a ``Series``.
 
     :param data: The data to process.
-    :type data: An array-like, sequence, iterable or dict
+    :type data: array-like, sequence, iterable, dict, scalar
     :raises InputError: Raised if the data cannot be converted to a
         ``Series``, as required.
     :return: The data as a pandas ``Series``.

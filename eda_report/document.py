@@ -25,7 +25,7 @@ class ReportDocument:
     :class:`~eda_report.univariate.Variable`.
 
     The  :class:`~docx.document.Document` object from the `python-docx`_
-    package is then used to publish the analysis results as a *Word*
+    package is then used to publish the results as a *Word*
     document.
 
     The report is organised into 3 sections:
@@ -52,7 +52,7 @@ class ReportDocument:
         :class:`~eda_report.document.ReportDocument`.
 
         :param data: The data to analyse.
-        :type data: Array-like, sequence, iterable
+        :type data: array-like, sequence, iterable
         :param title: The top level heading for the report, defaults to
             'Exploratory Data Analysis Report'.
         :type title: str, optional
@@ -60,16 +60,15 @@ class ReportDocument:
             defaults to 'orangered'. See the *matplotlib* `list of named
             colors`_ for all available options.
         :type graph_color: str, optional
-        :param output_filename: The name and path to use in saving the
-            generated report file, defaults to 'eda-report.docx' in the
-            current directory.
+        :param output_filename: The name and path for the generated report
+            file, defaults to 'eda-report.docx'.
         :type output_filename: str, optional
         :param table_style: *Microsoft Word* table style to apply to the
             created tables, defaults to 'Table Grid'.
         :type table_style: str, optional
-        :param target_variable: The target variable (dependent feature), used
-            to color-code plotted values. An *integer value* is treated as a
-            *column index*, whereas a *string* is treated as a *column label*.
+        :param target_variable: The dependent feature. Used to color-code
+            plotted values. An *integer value* is treated as a *column index*,
+            whereas a *string* is treated as a *column label*.
         :type target_variable: int, str, optional
 
         .. _`list of named colors`:

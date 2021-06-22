@@ -33,9 +33,9 @@ class MultiVariable:
             defaults to 'orangered'. See the *matplotlib* `list of named
             colors`_ for all available options.
         :type graph_color: str, optional
-        :param target_variable: The target variable (dependent feature). An
-            *integer value* is treated as a *column index*, whereas a *string*
-            is treated as a *column label*.
+        :param target_variable: The dependent feature. Used to color-code
+            plotted values. An *integer value* is treated as a *column index*,
+            whereas a *string* is treated as a *column label*.
         :type target_variable: int, str, optional
 
         .. _`list of named colors`:
@@ -58,7 +58,7 @@ class MultiVariable:
         #: *numeric columns/features*.
         self.correlation_df = self._get_correlation()
         #: Get brief descriptions of the nature of correlation between
-        #: numerical feature pairs.
+        #: numerical features.
         self.corr_type = {}
         self.bivariate_scatterplots = {}
         self._get_bivariate_analysis()

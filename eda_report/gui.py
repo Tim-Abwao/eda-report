@@ -27,8 +27,8 @@ class EDAGUI(Frame):  # pragma: no cover
     """This is the blueprint for the :mod:`tkinter` - based *graphical user
     interface* to the application.
 
-    The graphical window is a ``tkinter.Frame``, with a brief description of
-    what the application does, and a *button*. Once you click on the button,
+    The graphical window is a :class:`tkinter.Frame`, with a brief description
+    of what the application does, and a *button*. Once you click on the button,
     it launches a *file-dialog* to navigate to and select a file to analyse.
 
     If a valid file is selected, *text-input widgets* and a *color-picker
@@ -36,7 +36,7 @@ class EDAGUI(Frame):  # pragma: no cover
     and *graph color* respectively. Finally, a file-dialog to set the desired
     location and name for the report is shown.
 
-    After collecting all the necessary inputs, the
+    After collecting all the necessary input, the
     :class:`~eda_report.document.ReportDocument` object is used to create the
     exploratory data analysis report.
     """
@@ -108,7 +108,8 @@ class EDAGUI(Frame):  # pragma: no cover
 
     def create_report(self):
         """Collects input from the graphical user interface, and uses the
-        :func:`~eda_report.get_word_report` function to generate a report.
+        :class:`~eda_report.document.ReportDocument` object to generate a
+        report.
         """
         self.current_action["text"] = "Waiting for input file..."
         self._get_data_from_file()

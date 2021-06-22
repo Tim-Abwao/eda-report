@@ -24,13 +24,13 @@ class Variable:
         """Initialise an instance of :class:`Variable`.
 
         :param data: The data to process.
-        :type data: :class:`pandas.Series`.
+        :type data: array-like, sequence, iterable.
         :param graph_color: The color to apply to the graphs created,
             defaults to 'orangered'.
         :type graph_color: str, optional
         :param name: The feature's name.
         :type name: str, optional
-        :param target_data: The data for the target variable (dependent
+        :param target_data: Data for the target variable (dependent
             feature). Currently used to group and color-code values in graphs.
         :type target_data: array-like, optional
         """
@@ -39,7 +39,8 @@ class Variable:
         #: argument during instantiation, this will be taken as the value of
         #: the ``name`` attribute of the input data.
         self.name = self._get_name(name)
-        #: The *type* of feature; either *categorical* or *numeric*.
+        #: The *type* of feature; either *boolean*, *categorical*, *datetime*
+        #:  or *numeric*.
         self.var_type = self._get_variable_type()
         #: *Summary statistics* for the *column/feature*, as a
         #: :class:`pandas.DataFrame`.
@@ -48,7 +49,7 @@ class Variable:
         self.num_unique = self.data.nunique()
         #: The set of *unique values* present in the *column/feature*.
         self.unique = set(self.data.unique())
-        #: The number of *missing values* (``NaN``, ``None``, ``NA``, ...).
+        #: The number of *missing values*.
         self.missing = self._get_missing_values()
         #: The *color* applied to the created graphs.
         self.graph_color = graph_color

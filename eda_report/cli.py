@@ -70,7 +70,7 @@ def process_cli_args(*args):
             "plotted values. An integer value is treated as a column index, "
             "whereas a string is treated as a column label."
             " (Default: %(default)s)"
-        )
+        ),
     )
 
     # Parse the arguments

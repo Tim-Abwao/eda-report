@@ -13,12 +13,12 @@ The command ``eda_report`` launches a graphical window to help you select a *csv
 
    A ``tkinter``-based graphical user interface to the application
 
-You will be prompted to provide a *report title*, *graph color* & *output file-name*; then a report document will be generated, as specified, from the contents of the selected file.
+You will be prompted to specify a *report title*, *target variable*, *graph color* & *output file-name*. Then a report document will be generated, as specified, from the contents of the selected file.
 
 From an Interactive Session
 ---------------------------
 
-You can obtain a summary for a *single feature (univariate)* using the :class:`~eda_report.univariate.Variable` class::
+You can obtain a summary for a *single feature (univariate sample)* using the :class:`~eda_report.univariate.Variable` class::
 
     >>> from eda_report.univariate import Variable
     >>> x = Variable(range(50), name='1 to 50')
@@ -47,7 +47,7 @@ You can obtain a summary for a *single feature (univariate)* using the :class:`~
     >>> x.show_graphs()
 
 
-You can obtain statistics for a *set of features (multivariate)* using the :class:`~eda_report.multivariate.MultiVariable` class::
+You can obtain statistics for a *set of features (multivariate sample)* using the :class:`~eda_report.multivariate.MultiVariable` class::
 
     >>> from eda_report.multivariate import MultiVariable
     >>> # Get a dataset
@@ -104,7 +104,7 @@ You can obtain statistics for a *set of features (multivariate)* using the :clas
 Using the Command Line Interface
 --------------------------------
 
-The command ``eda_cli`` takes input form the command-line. You can open and analyse *csv* or *excel* files by supplying their path. For instance, to process a file named ``data.csv`` in the current directory, use::
+The command ``eda_cli`` takes input from the command-line. You can analyse *csv* or *excel* files by supplying their path. For instance, to process a file named ``data.csv`` in the current directory, use::
     
     eda_cli data.csv
 
