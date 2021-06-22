@@ -4,14 +4,10 @@ import matplotlib
 from matplotlib.figure import Figure
 
 # Matplotlib configuration
-matplotlib.rcParams["figure.dpi"] = 150  # resolution (dots per inch)
-matplotlib.rcParams["figure.autolayout"] = True  # tight layout
-matplotlib.rcParams["savefig.transparent"] = False
-matplotlib.rcParams["savefig.edgecolor"] = "k"  # black frame
-matplotlib.rcParams["savefig.facecolor"] = "w"  # white background
-matplotlib.rcParams["font.family"] = "serif"
-matplotlib.rcParams["axes.spines.top"] = False  # remove top spine
-matplotlib.rcParams["axes.spines.right"] = False  # remove left spine
+matplotlib.rc("figure", dpi=150, autolayout=True)
+matplotlib.rc("savefig", edgecolor="k", facecolor="w")
+matplotlib.rc("font", family="serif")
+matplotlib.rc("axes.spines", top=False, right=False)
 matplotlib.use("agg")  # use non-interactive matplotlib back-end
 
 
