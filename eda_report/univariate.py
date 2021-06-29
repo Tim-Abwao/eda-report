@@ -110,7 +110,11 @@ Missing Values: {self.missing}
         if self.var_type == "numeric":
             return self._numeric_summary_statictics()
         elif self.var_type in {"boolean", "categorical", "datetime"}:
-            self.data = self.data.astype("category")
+            if (self.data.shape[0] / self.data.nunique()) > 1.5:
+                # If less than 2-thirds of the values are unique
+                self.data = self.data.astype("category")
+            else:
+                self.data = self.data.astype('object')
             return self._categorical_summary_statistics()
 
     def _numeric_summary_statictics(self):

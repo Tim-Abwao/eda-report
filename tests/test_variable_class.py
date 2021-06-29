@@ -2,6 +2,11 @@ import unittest
 
 import pandas as pd
 from eda_report.univariate import Variable
+from pandas.api.types import (
+    is_categorical_dtype,
+    is_numeric_dtype,
+    is_object_dtype,
+)
 
 
 class TestGeneralVariableProperties(unittest.TestCase):
@@ -71,6 +76,7 @@ class TestNumericVariables(unittest.TestCase):
     def test_data_type(self):
         # Check if data type is numeric
         self.assertEqual(self.variable.var_type, "numeric")
+        self.assertTrue(is_numeric_dtype(self.variable.data))
 
     def test_summary_statistics_present(self):
         # Check if all summary statistics are present
@@ -103,9 +109,7 @@ class TestNumericVariables(unittest.TestCase):
             self.variable.statistics.loc["Standard Deviation", "numbers"],
             14.5773797,
         )
-        self.assertEqual(
-            self.variable.statistics.loc["Minimum", "numbers"], 0
-        )
+        self.assertEqual(self.variable.statistics.loc["Minimum", "numbers"], 0)
         self.assertAlmostEqual(
             self.variable.statistics.loc["Lower Quartile", "numbers"], 12.25
         )
@@ -150,6 +154,7 @@ class TestCategoricalVariables(unittest.TestCase):
     def test_data_type(self):
         # Check if data type is correctly captured
         self.assertEqual(self.variable.var_type, "categorical")
+        self.assertTrue(is_categorical_dtype(self.variable.data))
 
     def test_summary_statistics_present(self):
         # Check if all summary statistics are present
@@ -204,6 +209,7 @@ class TestBooleanVariables(unittest.TestCase):
     def test_data_type(self):
         # Check if data type is correctly captured
         self.assertEqual(self.boolean_variable.var_type, "boolean")
+        self.assertTrue(is_categorical_dtype(self.boolean_variable.data))
 
     def test_summary_statistics_present(self):
         # Check if all summary statistics are present
@@ -265,6 +271,7 @@ class TestDatetimeVariables(unittest.TestCase):
     def test_data_type(self):
         # Check if data type is correctly captured
         self.assertEqual(self.datetime_variable.var_type, "datetime")
+        self.assertTrue(is_object_dtype(self.datetime_variable.data))
 
     def test_summary_statistics_present(self):
         # Check if all summary statistics are present
