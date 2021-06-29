@@ -207,7 +207,13 @@ class ReportDocument:
         univariate_heading.paragraph_format.space_before = Pt(0)
 
         for idx, col in enumerate(
-            tqdm(self.data.columns, ncols=99, desc="Univariate analysis"),
+            tqdm(
+                self.data.columns,
+                bar_format="{desc}: {percentage:3.0f}%|{bar:35}| "
+                + "{n_fmt}/{total_fmt} features.",
+                desc="Univariate analysis",
+                dynamic_ncols=True,
+            ),
             start=1,
         ):
             # Perform univariate analysis using the Variable class

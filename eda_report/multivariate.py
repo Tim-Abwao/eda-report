@@ -222,7 +222,11 @@ Categorical features: {', '.join(categorical_cols)}
         self._get_variable_pairs()
 
         for var1, var2 in tqdm(
-            self.var_pairs, ncols=99, desc="Bivariate analysis"
+            self.var_pairs,
+            bar_format="{desc}: {percentage:3.0f}%|{bar:35}| "
+            + "{n_fmt}/{total_fmt} numeric pairs.",
+            dynamic_ncols=True,
+            desc="Bivariate analysis",
         ):
             self._quantify_correlation(var1, var2)
             self._regression_plot(var1, var2)
