@@ -18,7 +18,7 @@ class MultiVariable:
     :class:`~eda_report.exceptions.InputError` is raised.
     """
 
-    def __init__(self, data, *, graph_color="orangered", target_variable=None):
+    def __init__(self, data, *, target_variable=None):
         """Initialise an instance of
         :class:`~eda_report.multivariate.MultiVariable`.
 
@@ -38,12 +38,9 @@ class MultiVariable:
             https://matplotlib.org/stable/gallery/color/named_colors.html
         """
         self.data = validate_multivariate_input(data)
-        #: The color applied to the created graphs.
-        self.graph_color = graph_color
         self.TARGET_VARIABLE = validate_target_variable(
             data=self.data, target_variable=target_variable
         )
-        self._COLOR_CODED_GRAPHS = set()
         #: A ``DataFrame`` with all the *numeric columns/features* present.
         self.numeric_cols = self._select_cols("number")
         #: A ``DataFrame`` with all the *categorical columns/features*

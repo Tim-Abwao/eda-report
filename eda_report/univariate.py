@@ -15,7 +15,7 @@ class Variable:
     """
 
     def __init__(
-        self, data, *, graph_color="orangered", name=None, target_data=None
+        self, data, *, name=None, target_data=None
     ):
         """Initialise an instance of :class:`Variable`.
 
@@ -47,8 +47,6 @@ class Variable:
         self.unique = set(self.data.unique())
         #: The number of *missing values*.
         self.missing = self._get_missing_values()
-        #: The *color* applied to the created graphs.
-        self.graph_color = graph_color
         self.TARGET_DATA = validate_univariate_input(target_data)
 
     def __repr__(self):
