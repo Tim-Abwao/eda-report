@@ -36,22 +36,21 @@ def savefig(figure):
 
 
 class PlotUnivariate:
-    def __init__(self, variable) -> None:
+    def __init__(self, variable, *, graph_color="cyan") -> None:
         self.variable = variable
+        self.GRAPH_COLOR = graph_color
         self.plot_graphs()
 
     def plot_graphs(self):
         """Plot graphs for the column/feature, based on variable type."""
         if self.variable.var_type == "numeric":
-            self.variable._graphs = {
+            return {
                 "hist_and_boxplot": self._plot_histogram_and_boxplot(),
                 "prob_plot": self._plot_prob_plot(),
                 "run_plot": self._plot_run_plot(),
             }
-            return self.variable
         elif self.variable.var_type in {"boolean", "categorical", "datetime"}:
-            self.variable._graphs = {"bar_plot": self._plot_bar()}
-            return self.variable
+            return {"bar_plot": self._plot_bar()}
 
     def _plot_histogram_and_boxplot(self):
         """Get a boxplot and a histogram for a numeric column/feature."""
@@ -60,7 +59,7 @@ class PlotUnivariate:
         ax1, ax2 = fig.subplots(nrows=2, ncols=1)
 
         if self.variable.TARGET_DATA.nunique() in range(1, 11):
-            palette = f"dark:{self.variable.graph_color}_r"
+            palette = f"dark:{self.GRAPH_COLOR}_r"
             sns.boxplot(
                 y=self.variable.data,
                 x=self.variable.TARGET_DATA,
@@ -84,7 +83,7 @@ class PlotUnivariate:
                 x=self.variable.data,
                 kde=True,
                 ax=ax2,
-                color=self.variable.graph_color,
+                color=self.GRAPH_COLOR,
             )
 
         ax1.set_title(f"Box-plot of {self.variable.name}", size=12)
@@ -107,7 +106,7 @@ class PlotUnivariate:
             x=theoretical_quantiles,
             y=ordered_values,
             ax=ax,
-            color=self.variable.graph_color,
+            color=self.GRAPH_COLOR,
         )
         ax.set_title(f"Probability Plot of {self.variable.name}", size=12)
         ax.set_xlabel("Theoretical Quantiles (~ Standard Normal)")
@@ -126,13 +125,13 @@ class PlotUnivariate:
                 x=self.variable.data.index,
                 y=self.variable.data,
                 hue=self.variable.TARGET_DATA,
-                palette=f"dark:{self.variable.graph_color}_r",
+                palette=f"dark:{self.GRAPH_COLOR}_r",
                 ax=ax,
             )
             self._COLOR_CODED_GRAPHS.add("run-plot")
         else:
             ax.plot(
-                self.variable.data, marker=".", color=self.variable.graph_color
+                self.variable.data, marker=".", color=self.GRAPH_COLOR
             )
 
         # Get boundaries of x-axis
@@ -173,7 +172,7 @@ class PlotUnivariate:
             sns.countplot(
                 x=self.variable.data,
                 hue=self.variable.TARGET_DATA,
-                palette=f"dark:{self.variable.graph_color}_r",
+                palette=f"dark:{self.GRAPH_COLOR}_r",
                 ax=ax,
             )
         else:
@@ -182,7 +181,7 @@ class PlotUnivariate:
             sns.barplot(
                 x=top_10.index.to_list(),
                 y=top_10,
-                palette=f"dark:{self.variable.graph_color}_r",
+                palette=f"dark:{self.GRAPH_COLOR}_r",
                 ax=ax,
             )
             ax.tick_params(axis="x", rotation=45)
@@ -200,18 +199,21 @@ class PlotUnivariate:
 
 
 class PlotMultiVariate:
-    def __init__(self, multivariable) -> None:
+    def __init__(self, multivariable, *, graph_color="cyan") -> None:
         self.multivariable = multivariable
+        self.GRAPH_COLOR = graph_color
+        self.plot_graphs()
 
     def plot_graphs(self):
         if hasattr(self.multivariable, "var_pairs"):
-            self._plot_joint_scatterplot()
-            self._plot_joint_correlation()
             self.multivariable.bivariate_scatterplots = {}
-
             for var1, var2 in self.multivariable.var_pairs:
                 self._regression_plot(var1, var2)
-        return self.multivariable
+        return {
+            "joint_scatterplot": self._plot_joint_scatterplot(),
+            "correlation_heatmap": self._plot_correlation_heatmap(),
+            "scatterplots": self.multivariable.bivariate_scatterplots
+        }
 
     def _plot_joint_scatterplot(self):
         """Create a joint scatter-plot of all numeric columns."""
@@ -223,7 +225,7 @@ class PlotMultiVariate:
             > 10
         ):
             plot_params = {"data": self.multivariable.numeric_cols}
-            subplot_params = {"color": self.multivariable.graph_color}
+            subplot_params = {"color": self.GRAPH_COLOR}
 
         else:  # Color-code plotted values by target variable
             if (
@@ -244,7 +246,7 @@ class PlotMultiVariate:
             plot_params = {
                 "data": numeric_cols_with_target,
                 "hue": self.multivariable.TARGET_VARIABLE,
-                "palette": f"dark:{self.multivariable.graph_color}_r",
+                "palette": f"dark:{self.GRAPH_COLOR}_r",
             }
             subplot_params = {}
             self._COLOR_CODED_GRAPHS.add("joint-scatterplot")
@@ -261,9 +263,9 @@ class PlotMultiVariate:
         )
         fig.add_legend(bbox_to_anchor=(1.05, 1.05))
 
-        self.joint_scatterplot = savefig(fig)
+        return savefig(fig)
 
-    def _plot_joint_correlation(self):
+    def _plot_correlation_heatmap(self):
         """Plot a heatmap of the correlation among all numeric columns."""
         fig = Figure(figsize=(6, 6))
         ax = fig.subplots()
@@ -274,13 +276,13 @@ class PlotMultiVariate:
             mask=np.triu(self.multivariable.correlation_df),
             ax=ax,
             cmap=sns.light_palette(
-                self.multivariable.graph_color, as_cmap=True
+                self.GRAPH_COLOR, as_cmap=True
             ),
         )
         ax.tick_params(rotation=45)
         fig.suptitle("Correlation in Numeric Columns", size=15)
 
-        self.multivariable.joint_correlation_heatmap = savefig(fig)
+        return savefig(fig)
 
     def _regression_plot(self, var1, var2):
         """Create a scatterplot with a fitted linear regression line.
@@ -299,13 +301,13 @@ class PlotMultiVariate:
             data=self.multivariable.data,
             ax=ax1,
             truncate=False,
-            color=self.multivariable.graph_color,
+            color=self.GRAPH_COLOR,
         )
         # Empirical cummulative distribution function plots
         sns.ecdfplot(
             data=self.multivariable.data.loc[:, [var1, var2]],
             ax=ax2,
-            palette=f"dark:{self.multivariable.graph_color}_r",
+            palette=f"dark:{self.GRAPH_COLOR}_r",
         )
         ax1.set_title(f"Scatter-plot - {var1} vs {var2}".title(), size=9)
         ax2.set_title("Empirical Cummulative Distribution Functions", size=9)
