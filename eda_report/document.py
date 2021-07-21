@@ -15,7 +15,139 @@ logging.basicConfig(
 )
 
 
-class ReportDocument:
+class ReportContent:
+    """ """
+
+    def __init__(
+        self,
+        data,
+        *,
+        title="Exploratory Data Analysis Report",
+        graph_color="cyan",
+        target_variable=None,
+    ):
+        """"""
+        self.data = data
+        self.variables = MultiVariable(data, target_variable=target_variable)
+        self.GRAPH_COLOR = graph_color
+        self.TITLE = title
+        self._get_content()
+
+    def _get_content(self):
+        """"""
+        self._create_introductory_summary()
+        self._get_numeric_variables_summary_table()
+        self._get_categorical_variables_summary_table()
+        self._get_variable_descriptions()
+        self._get_bivariate_analysis_results()
+
+    def _create_introductory_summary(self):
+        """"""
+        # Get row and column info
+        num_rows, num_cols = self.data.shape
+
+        if num_rows == 1:
+            rows = "1 row (observation)"
+        else:
+            rows = f"{num_rows} rows (observations)"
+
+        if num_cols == 1:
+            cols = "1 column (feature)"
+        else:
+            cols = f"{num_cols} columns (features)"
+
+        # Get numeric column info
+        num_numeric = self.data.select_dtypes(include="number").columns.size
+        if num_numeric > 1:
+            numeric = f", {num_numeric} of which are numeric"
+        elif num_numeric == 1:
+            numeric = ", 1 of which is numeric"
+        else:
+            numeric = ""
+
+        self.intro_text = (
+            f"The dataset consists of {rows} and {cols}{numeric}."
+        )
+
+    def _get_numeric_variables_summary_table(self):
+        """"""
+        if self.variables.numeric_cols is not None:
+            self.numeric_variables_summary = (
+                # Get summary statistics for numeric columns
+                self.variables.numeric_cols.describe(percentiles=[0.5])
+                # Transpose to set the feature names as the index, and summary
+                # statistics as columns.
+                .round(4).T
+            )
+        else:
+            self.numeric_variables_summary = None
+
+    def _get_categorical_variables_summary_table(self):
+        """"""
+        if self.variables.categorical_cols is not None:
+            self.categorical_variables_summary = (
+                # Get summary statistics for categorical columns
+                self.variables.categorical_cols.describe().round(4)
+                # Transpose to set the feature names as the index, and summary
+                # statistics as columns.
+                .T
+            )
+        else:
+            self.categorical_variables_summary = None
+
+    def _get_variable_descriptions(self):
+        """"""
+        self.variable_descriptions = {}
+        for col in tqdm(
+            self.data.columns,
+            bar_format="{desc}: {percentage:3.0f}%|{bar:35}| "
+            + "{n_fmt}/{total_fmt} features.",
+            desc="Univariate analysis",
+            dynamic_ncols=True,
+        ):
+            # Perform univariate analysis using the Variable class
+            var = Variable(
+                self.data[col],
+                target_data=self.data.get(self.variables.TARGET_VARIABLE),
+            )
+
+            # Add a brief introduction of the feature/column
+            if var.num_unique == 1:
+                unique_vals = "1 unique value"
+            elif var.num_unique == 0:
+                unique_vals = "no unique values"
+            else:
+                unique_vals = f"{var.num_unique} unique values"
+
+            self.variable_descriptions[col] = {
+                "description": (
+                    f"{col.capitalize()} is a {var.var_type} variable with"
+                    f" {unique_vals}. {var.missing} of its values are missing."
+                ),
+                "graphs": PlotUnivariate(
+                    variable=var, graph_color=self.GRAPH_COLOR
+                ).plot_graphs(),
+                "statistics": var.statistics,
+                "most_common_items": var.most_common_items
+                if hasattr(var, "most_common_items")
+                else None,
+            }
+
+    def _get_bivariate_analysis_results(self):
+        self.multivariate_graphs = PlotMultiVariate(
+            multivariable=self.variables, graph_color=self.GRAPH_COLOR
+        ).plot_graphs()
+        self.bivariate_summaries = {}
+        # Compare numeric variable pairs
+        for var_pair in self.variables.var_pairs:
+            # Add introductory text
+            self.bivariate_summaries[var_pair] = (
+                f"{var_pair[0].capitalize()} and {var_pair[1].capitalize()}"
+                f" have {self.variables.corr_type[var_pair]}."
+            )
+
+
+class ReportDocument(ReportContent):
     """The blueprint for objects that create and populate report documents,
     in *Word (.docx) format*.
 
@@ -45,9 +177,9 @@ class ReportDocument:
         *,
         title="Exploratory Data Analysis Report",
         graph_color="orangered",
+        target_variable=None,
         output_filename="eda-report.docx",
         table_style="Table Grid",
-        target_variable=None,
     ):
         """Initialise an instance of
         :class:`~eda_report.document.ReportDocument`.
@@ -75,12 +207,14 @@ class ReportDocument:
         .. _`list of named colors`:
             https://matplotlib.org/stable/gallery/color/named_colors.html
         """
-        self.data = data
-        self.TITLE = title
-        self.GRAPH_COLOR = graph_color
-        self.TABLE_STYLE = table_style
-        self.TARGET_VARIABLE = target_variable
+        super().__init__(
+            data,
+            title=title,
+            graph_color=graph_color,
+            target_variable=target_variable,
+        )
         self.OUTPUT_FILENAME = output_filename
+        self.TABLE_STYLE = table_style
         self.document = Document()
         self._get_report()
 
@@ -88,16 +222,6 @@ class ReportDocument:
         """Calculate summary statistics, plot graphs, and save the results as
         a .docx file.
         """
-        logging.info("Assessing correlation in numeric variables...")
-        self.variables = PlotMultiVariate(
-            MultiVariable(
-                self.data,
-                graph_color=self.GRAPH_COLOR,
-                target_variable=self.TARGET_VARIABLE,
-            )
-        ).plot_graphs()
-
-        logging.info("Done. Summarising each variable...")
         self._create_title_page()  # begin the report document
         self._get_variable_info()  # summarise each variable
 
@@ -112,44 +236,22 @@ class ReportDocument:
         # Main title
         self.document.add_heading(self.TITLE, level=0)
 
-        # Get row and column info
-        num_rows, num_cols = self.data.shape
-
-        if num_rows == 1:
-            rows = "1 row (observation)"
-        else:
-            rows = f"{num_rows} rows (observations)"
-
-        if num_cols == 1:
-            cols = "1 column (feature)"
-        else:
-            cols = f"{num_cols} columns (features)"
-
-        # Get numeric column info
-        num_numeric = self.data.select_dtypes(include="number").columns.size
-        if num_numeric > 1:
-            numeric = f", {num_numeric} of which are numeric"
-        elif num_numeric == 1:
-            numeric = ", 1 of which is numeric"
-        else:
-            numeric = ""
-
         # Add introductory paragraph
-        intro_text = f"The dataset consists of {rows} and {cols}{numeric}."
-        self.document.add_paragraph(intro_text)
+        self.document.add_paragraph(self.intro_text)
         self.document.add_paragraph()
 
         # Add an overview of the data
         self._get_numeric_overview_table()
         self._get_categorical_overview_table()
 
-        if hasattr(self.variables, "joint_scatterplot"):
+        if hasattr(self.variables, "var_pairs"):
             # Add a joint scatterplot of the numeric features
             self.document.add_heading(
                 "Joint Scatter-plot of Numeric Columns", level=2
             )
             self.document.add_picture(
-                self.variables.joint_scatterplot, width=Inches(6.5)
+                self.multivariate_graphs["joint_scatterplot"],
+                width=Inches(6.5),
             )
             self.document.add_page_break()
 
@@ -159,17 +261,8 @@ class ReportDocument:
             self.document.add_heading("Overview of Numeric Features", level=2)
             self.document.add_paragraph()
 
-            summary = (
-                # Get summary statistics for numeric columns
-                self.variables.numeric_cols.describe(percentiles=[0.5])
-                # Transpose to set the feature names as the index, and summary
-                # statistics as columns.
-                .round(4).T
-            )
-            # Create a table for the column names and summary statistics -
-            # count, mean, std, min, 50% and max.
             self._create_table(
-                data=summary,
+                data=self.numeric_variables_summary,
                 header=True,
                 column_widths=(1.5,) + (0.9,) * 6,
                 style="Normal Table",
@@ -183,17 +276,10 @@ class ReportDocument:
             )
             self.document.add_paragraph()
 
-            summary = (
-                # Get summary statistics for categorical columns
-                self.variables.categorical_cols.describe().round(4)
-                # Transpose to set the feature names as the index, and summary
-                # statistics as columns.
-                .T
-            )
             # Create a table with column-names and summary statistics - count,
             # unique, top and freq
             self._create_table(
-                data=summary,
+                data=self.categorical_variables_summary,
                 header=True,
                 column_widths=(1.4,) + (1,) * 4,
                 style="Normal Table",
@@ -209,54 +295,27 @@ class ReportDocument:
         )
         univariate_heading.paragraph_format.space_before = Pt(0)
 
-        for idx, col in enumerate(
-            tqdm(
-                self.data.columns,
-                bar_format="{desc}: {percentage:3.0f}%|{bar:35}| "
-                + "{n_fmt}/{total_fmt} features.",
-                desc="Univariate analysis",
-                dynamic_ncols=True,
-            ),
-            start=1,
-        ):
-            # Perform univariate analysis using the Variable class
-            var = PlotUnivariate(
-                Variable(
-                    self.data[col],
-                    graph_color=self.GRAPH_COLOR,
-                    target_data=self.data.get(self.TARGET_VARIABLE),
-                )
-            ).plot_graphs()
-
+        for idx, var_name in enumerate(self.variable_descriptions):
+            var_info = self.variable_descriptions[var_name]
             # Add a heading for the feature/column
-            self.document.add_heading(f"{idx}. {col}".title(), level=2)
+            self.document.add_heading(f"{idx}. {var_name}".title(), level=2)
 
             # Add a brief introduction of the feature/column
-            p = self.document.add_paragraph()
-            p.add_run(f"{col}".capitalize()).bold = True
-            p.add_run(f" is a {var.var_type} variable ")
-            if var.num_unique == 1:
-                unique_vals = "1 unique value"
-            elif var.num_unique == 0:
-                unique_vals = "no unique values"
-            else:
-                unique_vals = f"{var.num_unique} unique values"
-            p.add_run(f"with {unique_vals}. ")
-            p.add_run(f"{var.missing} of its values are missing.")
+            self.document.add_paragraph(var_info["description"])
 
             # Add a table of summary statistics
             self.document.add_heading("Summary Statistics", level=4)
-            self._create_table(var.statistics, column_widths=[2.5, 2])
+            self._create_table(var_info["statistics"], column_widths=[2.5, 2])
 
             # Add most-common-items, if they were recorded
-            if hasattr(var, "most_common_items"):
+            if var_info.get("most_common_items") is not None:
                 self.document.add_heading("Most Common Values", level=4)
                 self._create_table(
-                    var.most_common_items, column_widths=(2.5, 2)
+                    var_info["most_common_items"], column_widths=(2.5, 2)
                 )
 
             # Add graphs
-            for graph in var._graphs.values():  # var._graphs is a dict
+            for graph in var_info["graphs"].values():  # var._graphs is a dict
                 self.document.add_picture(graph, width=Inches(5.4))
 
             self.document.add_page_break()
@@ -274,26 +333,22 @@ class ReportDocument:
 
         # Add joint correlation heatmap of all numeric columns
         self.document.add_picture(
-            self.variables.joint_correlation_heatmap, width=Inches(6.7)
+            self.multivariate_graphs["correlation_heatmap"], width=Inches(6.7)
         )
         self.document.add_page_break()
 
         # Compare numeric variable pairs
-        for idx, var_pair in enumerate(self.variables.var_pairs, start=1):
+        for idx, var_pair in enumerate(self.bivariate_summaries, start=1):
             # Add heading
             self.document.add_heading(
                 f"{idx}. {var_pair[0]} vs {var_pair[1]}".title(), level=2
             )
             # Add introductory text
-            p = self.document.add_paragraph()
-            p.add_run(f"{var_pair[0]}".capitalize()).bold = True
-            p.add_run(" and ")
-            p.add_run(f"{var_pair[1]}".capitalize()).bold = True
-            p.add_run(f" have {self.variables.corr_type[var_pair]}.")
+            self.document.add_paragraph(self.bivariate_summaries[var_pair])
 
             # Add graphs
             self.document.add_picture(
-                self.variables.bivariate_scatterplots[var_pair],
+                self.multivariate_graphs["scatterplots"][var_pair],
                 width=Inches(6),
             )
             self.document.add_paragraph()
@@ -350,3 +405,16 @@ class ReportDocument:
     def _save_file(self):
         """Save the document as a .docx file."""
         self.document.save(self.OUTPUT_FILENAME)
+
+
+if __name__ == "__main__":
+    import seaborn as sns
+
+    data = sns.load_dataset("iris")
+    rep = ReportDocument(data)
+    print(
+        dir(
+            rep
+        )
+    )
+    rep._save_file()
