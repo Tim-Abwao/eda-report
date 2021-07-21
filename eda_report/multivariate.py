@@ -1,11 +1,7 @@
 from itertools import combinations
 import logging
-import numpy as np
-import seaborn as sns
-from PIL import Image
 from tqdm import tqdm
 
-from eda_report.plotting import Fig, savefig
 from eda_report.validate import (
     validate_multivariate_input,
     validate_target_variable,
@@ -60,7 +56,6 @@ class MultiVariable:
         #: Get brief descriptions of the nature of correlation between
         #: numerical features.
         self.corr_type = {}
-        self.bivariate_scatterplots = {}
         self._get_bivariate_analysis()
 
     def __repr__(self):
@@ -96,26 +91,6 @@ Categorical features: {', '.join(categorical_cols)}
 {self._corr_description if hasattr(self, '_corr_description') else 'N/A'}
 """
 
-    def show_correlation_heatmap(self):  # pragma: no cover
-        """Display a heatmap of Pearson correlation coefficients for all
-        *numeric columns/features* present.
-        """
-        if hasattr(self, "joint_correlation_heatmap"):
-            image = Image.open(self.joint_correlation_heatmap)
-            image.show()
-        else:
-            logging.info("Not enough numeric variables to compare.")
-
-    def show_joint_scatterplot(self):  # pragma: no cover
-        """Display a joint scatter-plot of all the *numeric columns/features*
-        present.
-        """
-        if hasattr(self, "joint_scatterplot"):
-            image = Image.open(self.joint_scatterplot)
-            image.show()
-        else:
-            logging.info("Not enough numeric variables to compare.")
-
     def _select_cols(self, *dtypes):
         """Get a DataFrame including only the data types specified.
 
@@ -137,8 +112,6 @@ Categorical features: {', '.join(categorical_cols)}
     def _get_bivariate_analysis(self):
         """Compare numeric variable pairs."""
         if self.numeric_cols is not None and self.numeric_cols.shape[1] > 1:
-            self._plot_joint_scatterplot()
-            self._plot_joint_correlation()
             self._compare_variable_pairs()
             self._corr_description = "\n".join(
                 [
@@ -153,63 +126,6 @@ Categorical features: {', '.join(categorical_cols)}
                 "Skipped Bivariate Analysis: "
                 "Not enough numeric variables to compare."
             )
-
-    def _plot_joint_scatterplot(self):
-        """Create a joint scatter-plot of all numeric columns."""
-        if (
-            self.TARGET_VARIABLE is None
-            or self.data[self.TARGET_VARIABLE].nunique() > 10
-        ):
-            plot_params = {"data": self.numeric_cols}
-            subplot_params = {"color": self.graph_color}
-
-        else:  # Color-code plotted values by target variable
-            if self.TARGET_VARIABLE in self.numeric_cols:
-                numeric_cols_with_target = self.numeric_cols
-            else:  # Join the numeric data and target-variable data by index
-                numeric_cols_with_target = self.numeric_cols.merge(
-                    self.data[self.TARGET_VARIABLE],
-                    left_index=True,
-                    right_index=True,
-                )
-            plot_params = {
-                "data": numeric_cols_with_target,
-                "hue": self.TARGET_VARIABLE,
-                "palette": f"dark:{self.graph_color}_r",
-            }
-            subplot_params = {}
-            self._COLOR_CODED_GRAPHS.add("joint-scatterplot")
-
-        fig = sns.PairGrid(**plot_params)
-        fig.map_upper(  # Plot scatterplots in upper half
-            sns.scatterplot, **subplot_params
-        )
-        fig.map_lower(  # Plot kdeplots in lower half
-            sns.kdeplot, **subplot_params
-        )
-        fig.map_diag(  # Plot histograms in diagonal
-            sns.histplot, kde=True, **subplot_params
-        )
-        fig.add_legend(bbox_to_anchor=(1.05, 1.05))
-
-        self.joint_scatterplot = savefig(fig)
-
-    def _plot_joint_correlation(self):
-        """Plot a heatmap of the correlation among all numeric columns."""
-        fig = Fig(figsize=(6, 6))
-        ax = fig.subplots()
-        sns.heatmap(
-            self.correlation_df,
-            annot=True,
-            yticklabels=True,
-            mask=np.triu(self.correlation_df),
-            ax=ax,
-            cmap=sns.light_palette(self.graph_color, as_cmap=True),
-        )
-        ax.tick_params(rotation=45)
-        fig.suptitle("Correlation in Numeric Columns", size=15)
-
-        self.joint_correlation_heatmap = savefig(fig)
 
     def _get_variable_pairs(self):
         """Get a list of unique pairings of the numeric variables"""
@@ -229,7 +145,6 @@ Categorical features: {', '.join(categorical_cols)}
             desc="Bivariate analysis",
         ):
             self._quantify_correlation(var1, var2)
-            self._regression_plot(var1, var2)
 
     def _quantify_correlation(self, var1, var2):
         """Explain the magnitude of correlation between variable pairs.
@@ -260,33 +175,3 @@ Categorical features: {', '.join(categorical_cols)}
         self.corr_type[
             (var1, var2)
         ] = f"{strength}{ nature} correlation ({correlation:.2f})"
-
-    def _regression_plot(self, var1, var2):
-        """Create a scatterplot with a fitted linear regression line.
-
-        :param var1: A numeric column/feature name
-        :type var1: str
-        :param var2: A numeric column/feature name
-        :type var2: str
-        """
-        fig = Fig(figsize=(8.2, 4))
-        ax1, ax2 = fig.subplots(nrows=1, ncols=2)
-        # Scatter-plot with linear regression line
-        sns.regplot(
-            x=var1,
-            y=var2,
-            data=self.data,
-            ax=ax1,
-            truncate=False,
-            color=self.graph_color,
-        )
-        # Empirical cummulative distribution function plots
-        sns.ecdfplot(
-            data=self.data.loc[:, [var1, var2]],
-            ax=ax2,
-            palette=f"dark:{self.graph_color}_r",
-        )
-        ax1.set_title(f"Scatter-plot - {var1} vs {var2}".title(), size=9)
-        ax2.set_title("Empirical Cummulative Distribution Functions", size=9)
-
-        self.bivariate_scatterplots[(var1, var2)] = savefig(fig)

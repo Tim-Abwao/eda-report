@@ -6,6 +6,7 @@ from tqdm import tqdm
 
 from eda_report.multivariate import MultiVariable
 from eda_report.univariate import Variable
+from eda_report.plotting import PlotMultiVariate, PlotUnivariate
 
 logging.basicConfig(
     format="[%(levelname)s %(asctime)s.%(msecs)03d] %(message)s",
@@ -88,11 +89,13 @@ class ReportDocument:
         a .docx file.
         """
         logging.info("Assessing correlation in numeric variables...")
-        self.variables = MultiVariable(
-            self.data,
-            graph_color=self.GRAPH_COLOR,
-            target_variable=self.TARGET_VARIABLE,
-        )
+        self.variables = PlotMultiVariate(
+            MultiVariable(
+                self.data,
+                graph_color=self.GRAPH_COLOR,
+                target_variable=self.TARGET_VARIABLE,
+            )
+        ).plot_graphs()
 
         logging.info("Done. Summarising each variable...")
         self._create_title_page()  # begin the report document
@@ -217,11 +220,13 @@ class ReportDocument:
             start=1,
         ):
             # Perform univariate analysis using the Variable class
-            var = Variable(
-                self.data[col],
-                graph_color=self.GRAPH_COLOR,
-                target_data=self.data.get(self.TARGET_VARIABLE),
-            )
+            var = PlotUnivariate(
+                Variable(
+                    self.data[col],
+                    graph_color=self.GRAPH_COLOR,
+                    target_data=self.data.get(self.TARGET_VARIABLE),
+                )
+            ).plot_graphs()
 
             # Add a heading for the feature/column
             self.document.add_heading(f"{idx}. {col}".title(), level=2)
