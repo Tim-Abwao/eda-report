@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Iterable
 from typing import Union
 
 from pandas import DataFrame, RangeIndex, Series
@@ -6,18 +7,25 @@ from pandas import DataFrame, RangeIndex, Series
 from eda_report.exceptions import InputError
 
 
-def clean_column_names(data):
-    """Makes sure that *columns/features* have *meaningful* names.
+def clean_column_names(data: DataFrame) -> DataFrame:
+    """Makes sure that *columns* have *meaningful* names.
 
-    When an array/sequence/iterable is used to create a ``DataFrame``
-    but no column names are specified, ``pandas`` by default names the columns
-    by index as [0, 1, 2, ...] ( :class:`~pandas.RangeIndex` ).
+    When an ``Iterable`` is used to create a ``DataFrame`` and no column names
+    are provided, the columns by default are created as a
+    ( :class:`~pandas.RangeIndex` ) [0, 1, 2, ...].
 
     This function renames such columns to ['var_1', 'var_2, 'var_3', ...],
     making references and comparisons much more intuitive.
 
-    :param data: The data whose columns are checked
-    :type data: :class:`pandas.DataFrame`.
+    Parameters
+    ----------
+    data : DataFrame
+        Data to inspect and perhaps edit.
+
+    Returns
+    -------
+    DataFrame
+        The data, with reader-friendly column names.
     """
     # Ensure the data has meaningful column names
     if isinstance(data.columns, RangeIndex):
@@ -47,43 +55,59 @@ def warn_if_target_data_has_high_cardinality(
         )
 
 
-def validate_multivariate_input(data):
+def validate_multivariate_input(data: Iterable) -> DataFrame:
     """Ensures that *multivariate input data* is of type :class:`pandas.DataFrame`.
 
     If it isn't, this attempts to explicitly cast it as a ``DataFrame``.
 
-    :param data: The data to process.
-    :type data: array-like, sequence, iterable, dict
-    :raises InputError: Raised if the data cannot be converted to a
-        ``DataFrame``, as required.
-    :return: The data as a pandas ``DataFrame``.
-    :rtype: :class:`pandas.DataFrame`
+    Parameters
+    ----------
+    data : Iterable
+        The data to analyse.
+
+    Returns
+    -------
+    DataFrame
+        The input data as a ``DataFrame``.
+
+    Raises
+    ------
+    InputError
+        If the ``data`` cannot be cast as a :class:`~pandas.DataFrame`.
     """
     if isinstance(data, DataFrame):
         return clean_column_names(data)
     else:
         try:
-            # Cast the data as a dataframe
             data = DataFrame(data)
         except Exception:
             raise InputError(
                 f"Expected a pandas.Dataframe object, but got {type(data)}."
             )
+        # Attempt to infer better dtypes for object columns.
         data = data.infer_objects()
     return clean_column_names(data)
 
 
-def validate_univariate_input(data):
+def validate_univariate_input(data: Iterable) -> Series:
     """Ensures that *univariate input data* is of type :class:`pandas.Series`.
 
     If it isn't, this attempts to explicitly cast it as a ``Series``.
 
-    :param data: The data to process.
-    :type data: array-like, sequence, iterable, dict, scalar
-    :raises InputError: Raised if the data cannot be converted to a
-        ``Series``, as required.
-    :return: The data as a pandas ``Series``.
-    :rtype: :class:`pandas.Series`
+    Parameters
+    ----------
+    data : Iterable
+        The data to analyse.
+
+    Returns
+    -------
+    Series
+        The input data as a ``Series``.
+
+    Raises
+    ------
+    InputError
+        If the ``data`` cannot be cast as a :class:`~pandas.Series`.
     """
     if isinstance(data, Series):
         return data
@@ -91,7 +115,6 @@ def validate_univariate_input(data):
         return Series([], dtype="object")
     else:
         try:
-            # Cast the data as a series
             data = Series(data)
         except Exception:
             raise InputError(
