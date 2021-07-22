@@ -1,4 +1,5 @@
 import logging
+from typing import Union
 
 from pandas import DataFrame, RangeIndex, Series
 
@@ -23,6 +24,27 @@ def clean_column_names(data):
         data.columns = [f"var_{i+1}" for i in data.columns]
 
     return data
+
+
+def warn_if_target_data_has_high_cardinality(
+    target_data: Series, threshold: int = 10
+) -> None:
+    """Check whether the ``target_data`` is suitable for color-coding or has
+    too many unique values (> ``threshold``).
+
+    Parameters
+    ----------
+    target_data : Series
+        The data intended to color-code graphs.
+    threshold : int, optional
+        Maximum allowable cardinality, by default 10
+    """
+    if target_data.nunique() > threshold:
+        logging.warning(
+            f"Target variable '{target_data.name}' not used to color-code "
+            "graphs since it has high cardinality "
+            f"({target_data.nunique()}) which would clutter graphs."
+        )
 
 
 def validate_multivariate_input(data):
@@ -78,52 +100,56 @@ def validate_univariate_input(data):
     return data
 
 
-def validate_target_variable(*, data, target_variable):
-    """Ensures that the supplied *target variable* (column label or index) is
+def validate_target_variable(
+    *, data: DataFrame, target_variable: Union[int, str]
+) -> Union[Series, None]:
+    """Ensures that the specified *target variable* (column label or index) is
     present in the data.
 
-    :param target_variable: The column label or index of the target
-        variable.
-    :type target_variable: int, str, optional
+    Parameters
+    ----------
+    data : DataFrame
+        The data being analysed.
+    target_variable : Union[int, str]
+        A column label or index.
 
-    :raises InputError: Raised if a provided *column label* is *not in the
-        data*, or a provided *column index* is *out of bounds*.
+    Returns
+    -------
+    union[Series, None]
+        The target variable's data if ``target_variable`` is valid, or None.
 
-    :return: The name of the target variable, or None.
-    :rtype: str, None
+    Raises
+    ------
+    InputError
+        If the column label does not exist or the column index is out of
+        bounds.
     """
     if target_variable is None:
         return None
 
     elif isinstance(target_variable, int):
         try:
-            target_variable = data.columns[target_variable]
+            target_data = data.iloc[:, target_variable]
         except IndexError:
             raise InputError(
                 f"Column index {target_variable} is not in the range"
                 f" [0, {data.columns.size}]."
             )
-
+        warn_if_target_data_has_high_cardinality(target_data)
+        return target_data
     elif isinstance(target_variable, str):
         try:
-            data.columns.get_loc(key=target_variable)
+            target_data = data[target_variable]
         except KeyError:
             raise InputError(
                 f"{target_variable!r} is not in {data.columns.to_list()}"
             )
-
+        warn_if_target_data_has_high_cardinality(target_data)
+        return target_data
     else:
         # If target_variable is neither an index(int) or label(str)
         logging.warning(
-            f"Target variable specifier '{target_variable}' ignored."
-            " Not a valid column(feature) index or label."
+            f"Target variable '{target_variable}' ignored."
+            " Not a valid column index or label."
         )
         return None
-
-    if data[target_variable].nunique() > 10:
-        logging.warning(
-            f"Target variable '{target_variable}' not used to color-code "
-            "graphs since it has too many levels "
-            f"({data[target_variable].nunique()}) which would clutter graphs."
-        )
-    return target_variable
