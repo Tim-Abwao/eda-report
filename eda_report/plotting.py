@@ -1,12 +1,15 @@
-from eda_report.multivariate import MultiVariable
 from io import BytesIO
 
 import matplotlib
-from matplotlib.figure import Figure
+import numpy as np
 import seaborn as sns
+from matplotlib.figure import Figure
 from scipy.stats import probplot
 
-import numpy as np
+from eda_report.validate import (
+    validate_target_variable,
+    validate_univariate_input,
+)
 
 # Matplotlib configuration
 matplotlib.rc("figure", dpi=150, autolayout=True)
@@ -16,29 +19,39 @@ matplotlib.rc("axes.spines", top=False, right=False)
 matplotlib.use("agg")  # use non-interactive matplotlib back-end
 
 
-def savefig(figure):
+def savefig(figure: Figure) -> BytesIO:
     """Saves the contents of a :class:`~matplotlib.figure.Figure` in PNG format,
     as bytes in a file-like object.
 
-    This is a utility function helpful in by-passing the *filesystem*. Created
-    graphs are stored in :class:`io.BytesIO` objects, and can then be read
-    directly as *attributes*. This allows convenient, rapid in-memory access.
+    This is a utility function helpful in by-passing the *filesystem*. Graphs
+    are stored in :class:`io.BytesIO` objects, and can then be read
+    directly as *attributes*, thus allowing rapid in-memory access.
 
-    :param figure: A *matplotlib Figure* with plotted axes.
-    :type figure: :class:`matplotlib.figure.Figure`
-    :return: A file-like object with the figure's contents.
-    :rtype: :class:`io.BytesIO`
+    Parameters
+    ----------
+    figure : Figure
+        A matplotlib figure with graph content.
+
+    Returns
+    -------
+    BytesIO
+        A graph in PNG format as bytes.
     """
     graph = BytesIO()
-    figure.savefig(graph)
+    figure.savefig(graph, format="png")
 
     return graph
 
 
 class PlotUnivariate:
-    def __init__(self, variable, *, graph_color="cyan") -> None:
+    def __init__(self, variable, *, graph_color="cyan", hue=None) -> None:
         self.variable = variable
         self.GRAPH_COLOR = graph_color
+        self.HUE = validate_univariate_input(hue)
+        self.COLOR_CODE_GRAPHS = (
+            True if self.HUE.nunique() in range(1, 11) else False
+        )
+        self._COLOR_CODED_GRAPHS = set()
         self.plot_graphs()
 
     def plot_graphs(self):
@@ -58,17 +71,17 @@ class PlotUnivariate:
         fig = Figure(figsize=(6, 6), linewidth=1)
         ax1, ax2 = fig.subplots(nrows=2, ncols=1)
 
-        if self.variable.TARGET_DATA.nunique() in range(1, 11):
+        if self.COLOR_CODE_GRAPHS:
             palette = f"dark:{self.GRAPH_COLOR}_r"
             sns.boxplot(
                 y=self.variable.data,
-                x=self.variable.TARGET_DATA,
+                x=self.HUE,
                 palette=palette,
                 ax=ax1,
             )
             sns.histplot(
                 x=self.variable.data,
-                hue=self.variable.TARGET_DATA,
+                hue=self.HUE,
                 palette=palette,
                 kde=True,
                 ax=ax2,
@@ -120,19 +133,17 @@ class PlotUnivariate:
         fig = Figure(figsize=(6, 4), linewidth=1)
         ax = fig.subplots()
         # Get a line plot of the data
-        if self.variable.TARGET_DATA.nunique() in range(1, 11):
+        if self.COLOR_CODE_GRAPHS:
             sns.lineplot(
                 x=self.variable.data.index,
                 y=self.variable.data,
-                hue=self.variable.TARGET_DATA,
+                hue=self.HUE,
                 palette=f"dark:{self.GRAPH_COLOR}_r",
                 ax=ax,
             )
             self._COLOR_CODED_GRAPHS.add("run-plot")
         else:
-            ax.plot(
-                self.variable.data, marker=".", color=self.GRAPH_COLOR
-            )
+            ax.plot(self.variable.data, marker=".", color=self.GRAPH_COLOR)
 
         # Get boundaries of x-axis
         xmin = self.variable.data.index[0]
@@ -165,16 +176,17 @@ class PlotUnivariate:
 
         if (
             self.variable.data.nunique() in range(1, 11)
-            and self.variable.TARGET_DATA.nunique() in range(1, 11)
-            and len(self.variable.data) == len(self.variable.TARGET_DATA)
-            and set(self.variable.data) != set(self.variable.TARGET_DATA)
+            and self.COLOR_CODE_GRAPHS is True
+            and len(self.variable.data) == len(self.HUE)
+            and set(self.variable.data) != set(self.HUE)
         ):
             sns.countplot(
                 x=self.variable.data,
-                hue=self.variable.TARGET_DATA,
+                hue=self.HUE,
                 palette=f"dark:{self.GRAPH_COLOR}_r",
                 ax=ax,
             )
+            self._COLOR_CODED_GRAPHS.add("bar_plot")
         else:
             # Include no more than 10 of the most common values
             top_10 = self.variable.data.value_counts().nlargest(10)
@@ -199,9 +211,18 @@ class PlotUnivariate:
 
 
 class PlotMultiVariate:
-    def __init__(self, multivariable, *, graph_color="cyan") -> None:
+    def __init__(self, multivariable, *, graph_color="cyan", hue=None) -> None:
         self.multivariable = multivariable
         self.GRAPH_COLOR = graph_color
+        self.HUE = validate_target_variable(
+            data=multivariable.data, target_variable=hue
+        )
+        self.COLOR_CODE_GRAPHS = (
+            False
+            if (self.HUE is None or self.HUE.nunique() in range(1, 10))
+            else True
+        )
+        self._COLOR_CODED_GRAPHS = set()
         self.plot_graphs()
 
     def plot_graphs(self):
@@ -212,40 +233,29 @@ class PlotMultiVariate:
         return {
             "joint_scatterplot": self._plot_joint_scatterplot(),
             "correlation_heatmap": self._plot_correlation_heatmap(),
-            "scatterplots": self.multivariable.bivariate_scatterplots
+            "scatterplots": self.multivariable.bivariate_scatterplots,
         }
 
     def _plot_joint_scatterplot(self):
         """Create a joint scatter-plot of all numeric columns."""
-        if (
-            self.multivariable.TARGET_VARIABLE is None
-            or self.multivariable.data[
-                self.multivariable.TARGET_VARIABLE
-            ].nunique()
-            > 10
-        ):
+        if self.COLOR_CODE_GRAPHS is False:
             plot_params = {"data": self.multivariable.numeric_cols}
             subplot_params = {"color": self.GRAPH_COLOR}
 
         else:  # Color-code plotted values by target variable
-            if (
-                self.multivariable.TARGET_VARIABLE
-                in self.multivariable.numeric_cols
-            ):
+            if self.HUE in self.multivariable.numeric_cols:
                 numeric_cols_with_target = self.multivariable.numeric_cols
             else:  # Join the numeric data and target-variable data by index
                 numeric_cols_with_target = (
                     self.multivariable.numeric_cols.merge(
-                        self.multivariable.data[
-                            self.multivariable.TARGET_VARIABLE
-                        ],
+                        self.multivariable.data[self.HUE],
                         left_index=True,
                         right_index=True,
                     )
                 )
             plot_params = {
                 "data": numeric_cols_with_target,
-                "hue": self.multivariable.TARGET_VARIABLE,
+                "hue": self.HUE,
                 "palette": f"dark:{self.GRAPH_COLOR}_r",
             }
             subplot_params = {}
@@ -275,9 +285,7 @@ class PlotMultiVariate:
             yticklabels=True,
             mask=np.triu(self.multivariable.correlation_df),
             ax=ax,
-            cmap=sns.light_palette(
-                self.GRAPH_COLOR, as_cmap=True
-            ),
+            cmap=sns.light_palette(self.GRAPH_COLOR, as_cmap=True),
         )
         ax.tick_params(rotation=45)
         fig.suptitle("Correlation in Numeric Columns", size=15)
@@ -313,8 +321,3 @@ class PlotMultiVariate:
         ax2.set_title("Empirical Cummulative Distribution Functions", size=9)
 
         self.multivariable.bivariate_scatterplots[(var1, var2)] = savefig(fig)
-
-
-if __name__ == "__main__":
-    data = sns.load_dataset("iris")
-    print(PlotMultiVariate(MultiVariable(data)).plot_graphs())
