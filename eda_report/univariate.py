@@ -30,26 +30,9 @@ class Variable:
 
     Example
     --------
-    >>> Variable(data=range(20), name="0 to 20")
-                    Overview
-                    ========
-    Name: 0 to 20
-    Type: numeric
-    Unique Values: 20 -> {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, [...]
-    Missing Values: None
-                    ***
-            Summary Statistics
-                            0 to 20
-    Number of observations  20.00000
-    Average                  9.50000
-    Standard Deviation       5.91608
-    Minimum                  0.00000
-    Lower Quartile           4.75000
-    Median                   9.50000
-    Upper Quartile          14.25000
-    Maximum                 19.00000
-    Skewness                 0.00000
-    Kurtosis                -1.20000
+
+    .. literalinclude:: examples.txt
+       :lines: 3-23
     """
 
     def __init__(self, data: Iterable, *, name: str = None) -> None:

@@ -23,6 +23,11 @@ class MultiVariable:
     ----------
     data : Iterable
         The data to analyse.
+
+    Example
+    -------
+    .. literalinclude:: examples.txt
+       :lines: 28-58
     """
 
     def __init__(self, data: Iterable) -> None:
@@ -130,11 +135,11 @@ class MultiVariable:
 
     def _compute_numeric_summary_statistics(self) -> DataFrame:
         """Get descriptive statistics for numeric columns.
-        [description]
-                Returns
-                -------
-                DataFrame
-                    Numeric summary statistics.
+
+        Returns
+        -------
+        DataFrame
+            Numeric summary statistics.
         """
         if self.numeric_cols is not None:
             if self.numeric_cols.shape[0] > 1:
