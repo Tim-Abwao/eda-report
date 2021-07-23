@@ -41,25 +41,26 @@ class Variable:
         """
         self.data = validate_univariate_input(data, name=name)
 
-        #: The ``Variable``'s *name*. If no name is specified during
-        #: instantiation, the name will be equal to the value of the ``name``
-        #: attribute of the input data (if present), or None.
+        #: Optional[str]: The ``Variable``'s *name*. If no name is specified
+        #: during instantiation, the name will be equal to the value of the
+        #: ``name`` attribute of the input data (if present), or None.
         self.name = self.data.name
 
-        #: The ``Variable``'s *type* — one of *boolean*, *categorical*,
-        #: *datetime* or *numeric*.
+        #: str: The ``Variable``'s *type* — one of *"boolean"*,
+        #: *"categorical"*, *"datetime"* or *"numeric"*.
         self.var_type = self._get_variable_type()
 
-        #: *Summary statistics* as a :class:`~pandas.DataFrame`.
+        #: :class:`~pandas.DataFrame`: The ``Variables`` *Summary statistics*.
         self.statistics = self._get_summary_statistics()
 
-        #: The *number of unique values* present in the ``Variable``.
+        #: int: The *number of unique values* present in the ``Variable``.
         self.num_unique = self.data.nunique()
 
-        #: The *set of unique values* present in the ``Variable``.
+        #: set: The *set of unique values* present in the ``Variable``.
         self.unique = set(self.data.unique())
 
-        #: *Missing value information* in the form ``number (percentage%)``.
+        #: str: *Missing value information* in the form
+        #: ``number (percentage%)``.
         self.missing = self._get_missing_values_info()
 
     def __repr__(self) -> str:
