@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 from textwrap import shorten
+from typing import Optional
 
 from pandas import DataFrame
 from pandas.api.types import (is_bool_dtype, is_datetime64_any_dtype,
@@ -38,12 +39,12 @@ class Variable:
     def __init__(self, data: Iterable, *, name: str = None) -> None:
         """Initialise an instance of :class:`~eda_report.univariate.Variable`.
         """
-        self.data = validate_univariate_input(data)
+        self.data = validate_univariate_input(data, name=name)
 
-        #: The ``Variable``'s *name*. If no name was specified during
+        #: The ``Variable``'s *name*. If no name is specified during
         #: instantiation, the name will be equal to the value of the ``name``
-        #: attribute of the input data (if present) or zero.
-        self.name = name or self.data.name
+        #: attribute of the input data (if present), or None.
+        self.name = self.data.name
 
         #: The ``Variable``'s *type* — one of *boolean*, *categorical*,
         #: *datetime* or *numeric*.
@@ -84,7 +85,7 @@ class Variable:
             ]
         )
 
-    def rename(self, name: str = None):
+    def rename(self, name: Optional[str] = None) -> None:
         """Rename the ``Variable`` as specified.
 
         Parameters

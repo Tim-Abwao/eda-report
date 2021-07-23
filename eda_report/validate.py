@@ -1,6 +1,6 @@
 import logging
 from collections.abc import Iterable
-from typing import Union
+from typing import Optional, Union
 
 from pandas import DataFrame, RangeIndex, Series
 
@@ -89,7 +89,9 @@ def validate_multivariate_input(data: Iterable) -> DataFrame:
     return clean_column_names(data)
 
 
-def validate_univariate_input(data: Iterable) -> Series:
+def validate_univariate_input(
+    data: Iterable, *, name: Optional[str] = None
+) -> Series:
     """Ensures that *univariate input data* is of type :class:`pandas.Series`.
 
     If it isn't, this attempts to explicitly cast it as a ``Series``.
@@ -98,6 +100,8 @@ def validate_univariate_input(data: Iterable) -> Series:
     ----------
     data : Iterable
         The data to analyse.
+    name : Optional[str]
+        The name to assign the data, by default None.
 
     Returns
     -------
@@ -110,12 +114,13 @@ def validate_univariate_input(data: Iterable) -> Series:
         If the ``data`` cannot be cast as a :class:`~pandas.Series`.
     """
     if isinstance(data, Series):
-        return data
+        name_ = name or data.name
+        return data.rename(name_)
     elif data is None or len(data) == 0:
-        return Series([], dtype="object")
+        return Series([], dtype="object", name=name)
     else:
         try:
-            data = Series(data)
+            data = Series(data, name=name)
         except Exception:
             raise InputError(
                 f"Expected a pandas.Series object, but got {type(data)}."
