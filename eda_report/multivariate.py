@@ -4,7 +4,6 @@ from itertools import combinations
 from typing import Sequence, Union
 
 from pandas.core.frame import DataFrame
-from tqdm import tqdm
 
 from eda_report.validate import validate_multivariate_input
 
@@ -232,13 +231,7 @@ class MultiVariable:
         """
         self._get_variable_pairs()
 
-        for var1, var2 in tqdm(
-            self.var_pairs,
-            bar_format="{desc}: {percentage:3.0f}%|{bar:35}| "
-            + "{n_fmt}/{total_fmt} numeric pairs.",
-            dynamic_ncols=True,
-            desc="Bivariate analysis",
-        ):
+        for var1, var2 in self.var_pairs:
             self._quantify_correlation(var1, var2)
 
     def _get_bivariate_analysis(self) -> None:
