@@ -1,5 +1,5 @@
 from io import BytesIO
-from typing import Dict, Optional, Union
+from typing import Optional
 
 import matplotlib
 import numpy as np
@@ -92,8 +92,13 @@ class PlotUnivariate(BasePlot):
         The color to apply to the generated graphs, by default "cyan".
     hue : Optional[Series]
         Data to use to group values & color-code graphs, by default None.
-    """
 
+    Attributes
+    ----------
+    graphs : Dict[str, BytesIO]
+        A dictionary of graphs, with graph names as keys and file-objects
+        containing plotted graphs as values.
+    """
     def __init__(
         self,
         variable: Variable,
@@ -103,9 +108,9 @@ class PlotUnivariate(BasePlot):
     ) -> None:
         super().__init__(graph_color=graph_color, hue=hue)
         self.variable = variable
-        self.plot_graphs()
+        self._plot_graphs()
 
-    def plot_graphs(self) -> Dict[str, BytesIO]:
+    def _plot_graphs(self) -> None:
         """Plot graphs based on the ``Variable`` type.
 
         For **numeric** variables, a *box-plot*, *histogram*, *probability
@@ -113,22 +118,16 @@ class PlotUnivariate(BasePlot):
 
         For **categorical**, **boolean** or **datetime** objects, only a *bar
         plot* is produced.
-
-        Returns
-        -------
-        Dict[str, BytesIO]
-            The graph names as keys, and file-objects containing the plotted
-            graphs as values.
         """
         if self.variable.var_type == "numeric":
-            return {
+            self.graphs = {
                 "boxplot": self._plot_boxplot(),
                 "histogram": self._plot_histogram(),
                 "prob_plot": self._plot_prob_plot(),
                 "run_plot": self._plot_run_plot(),
             }
         elif self.variable.var_type in {"boolean", "categorical", "datetime"}:
-            return {"bar_plot": self._plot_bar()}
+            self.graphs = {"bar_plot": self._plot_bar()}
 
     def _plot_boxplot(self) -> BytesIO:
         """Get a boxplot for a numeric variable.
@@ -310,8 +309,16 @@ class PlotMultiVariate(BasePlot):
         The color to apply to the generated graphs, by default "cyan".
     hue : Optional[Series]
         Data to use to group values & color-code graphs, by default None.
-    """
 
+    Attributes
+    ----------
+    graphs : Dict[str, Union[BytesIO, dict[tuple(str, str), BytesIO]]]
+        A dictionary of graphs, with graph names as keys, and file-objects
+        containing the plotted graphs as values.
+
+        Bi-variate scatterplots are further nested in a dict of
+        :class:`~io.BytesIO` objects, with tuples (col_i, col_j) as keys.
+    """
     def __init__(
         self,
         multivariable: MultiVariable,
@@ -321,19 +328,11 @@ class PlotMultiVariate(BasePlot):
     ) -> None:
         super().__init__(graph_color=graph_color, hue=hue)
         self.multivariable = multivariable
-        self.plot_graphs()
+        self._plot_graphs()
 
-    def plot_graphs(self) -> Dict[str, Union[BytesIO, dict]]:
+    def _plot_graphs(self) -> None:
         """Get a heatmap of the correlation in all numeric columns, and
         scatter-plots & ecdf-plots of numeric column pairs.
-
-        Returns
-        -------
-        Dict[str, Union[BytesIO, dict]]
-            The graph names as keys, and file-objects containing the plotted
-            graphs as values. Bi-variate scatterplots are returned nested in
-            a dict of :class:`~io.BytesIO` objects, with tuple (col_i, col_j)
-            as keys.
         """
         if hasattr(self.multivariable, "var_pairs"):
             self.bivariate_scatterplots = {}
@@ -345,7 +344,7 @@ class PlotMultiVariate(BasePlot):
                 desc="Bivariate analysis",
             ):
                 self._regression_plot(var1, var2)
-        return {
+        self.graphs = {
             "correlation_heatmap": self._plot_correlation_heatmap(),
             "scatterplots": self.bivariate_scatterplots,
         }
