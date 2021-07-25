@@ -57,7 +57,7 @@ class Variable:
         self.num_unique = self.data.nunique()
 
         #: set: The *set of unique values* present in the ``Variable``.
-        self.unique = set(self.data.unique())
+        self.unique = set(self.data.dropna().unique())
 
         #: str: *Missing value information* in the form
         #: ``number (percentage%)``.
@@ -172,6 +172,6 @@ class Variable:
         """
         missing_values = self.data.isna().sum()
         if missing_values == 0:
-            return "None"
+            return None
         else:
             return f"{missing_values} ({missing_values / len(self.data):.2%})"
