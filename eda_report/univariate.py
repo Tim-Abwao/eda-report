@@ -56,8 +56,8 @@ class Variable:
         #: int: The *number of unique values* present in the ``Variable``.
         self.num_unique = self.data.nunique()
 
-        #: set: The *set of unique values* present in the ``Variable``.
-        self.unique = set(self.data.dropna().unique())
+        #: list: The *set of unique values* present in the ``Variable``.
+        self.unique = sorted(self.data.dropna().unique())
 
         #: str: *Missing value information* in the form
         #: ``number (percentage%)``.
@@ -94,11 +94,10 @@ class Variable:
         name
             The name to assign to the ``Variable``, by default None.
         """
-        if name is not None:
-            self.name = self.data.name = name
-            self.statistics.set_axis([name], axis=1, inplace=True)
-            if hasattr(self, "most_common_items"):
-                self.most_common_items.set_axis([name], axis=1, inplace=True)
+        self.name = self.data.name = name
+        self.statistics.set_axis([name], axis=1, inplace=True)
+        if hasattr(self, "most_common_items"):
+            self.most_common_items.set_axis([name], axis=1, inplace=True)
 
     def _get_variable_type(self) -> str:
         """Determine the ``Variable``'s type.
@@ -139,7 +138,7 @@ class Variable:
 
             return summary.round(7).to_frame()
 
-        elif self.var_type in {"boolean", "categorical", "datetime"}:
+        else:  # {"boolean", "categorical", "datetime"}
             if (self.data.shape[0] / self.data.nunique()) > 1.5:
                 # If less than 2-thirds of the values are unique
                 self.data = self.data.astype("category")
