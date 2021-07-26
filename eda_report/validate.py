@@ -1,6 +1,7 @@
 import logging
 from collections.abc import Iterable
 from typing import Optional, Union
+from types import GeneratorType
 
 from pandas import DataFrame, RangeIndex, Series
 
@@ -113,19 +114,27 @@ def validate_univariate_input(
     InputError
         If the ``data`` cannot be cast as a :class:`~pandas.Series`.
     """
-    if isinstance(data, Series):
-        name_ = name or data.name
-        return data.rename(name_)
-    elif data is None or len(data) == 0:
-        return Series([], dtype="object", name=name)
+    if isinstance(data, GeneratorType):
+        return Series(data, name=name)
+
+    elif issubclass(type(data), Iterable) and len(list(data)) > 0:
+
+        if isinstance(data, Series):
+            name_ = name or data.name
+            return data.rename(name_)
+
+        else:
+            try:
+                data = Series(data, name=name)
+            except Exception:
+                raise InputError(
+                    f"Expected a one-dimensional sequence, "
+                    f"but got {type(data)}."
+                )
+            else:
+                return data
     else:
-        try:
-            data = Series(data, name=name)
-        except Exception:
-            raise InputError(
-                f"Expected a pandas.Series object, but got {type(data)}."
-            )
-    return data
+        raise InputError("No data to process.")
 
 
 def validate_target_variable(
