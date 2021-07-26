@@ -1,67 +1,48 @@
 import argparse
 
+from eda_report.document import ReportDocument
 from eda_report.read_file import df_from_file
 
 
-def process_cli_args(*args):
+def process_cli_args(*args) -> argparse.Namespace:
     """Captures and parses input from the command line interface using the
     :mod:`argparse` module from the Python standard library.
 
-    Available options are::
-
-        positional arguments:
-          infile                A .csv or .xlsx file to process.
-
-        optional arguments:
-          -h, --help            show this help message and exit
-          -o OUTFILE, --outfile OUTFILE
-                                The output file (default: eda-report.docx)
-          -t TITLE, --title TITLE
-                                The top level heading in the report (default:
-                                Exploratory Data Analysis Report)
-          -c COLOR, --color COLOR
-                                A valid matplotlib color specifier (default:
-                                orangered)
-          -T TARGET, --target TARGET
-                                The target variable (dependent feature), used
-                                to color-code plotted values. An integer value
-                                is treated as a column index, whereas a string
-                                is treated as a column label. (Default: None)
+    Returns
+    -------
+    argparse.Namespace
+        A class with parsed arguments as attributes.
     """
     parser = argparse.ArgumentParser(
-        prog="eda_cli", description="Get a basic EDA report in docx format."
+        prog="eda_cli",
+        description="Automatically analyse data and generate reports.",
     )
 
-    # Get the data from a file
     parser.add_argument(
-        "infile", type=df_from_file, help="A .csv or .xlsx file to process."
+        "infile", type=df_from_file, help="A .csv or .xlsx file to analyse."
     )
 
-    # Set the output file's name
     parser.add_argument(
         "-o",
         "--outfile",
         default="eda-report.docx",
-        help="The output file (default: %(default)s)",
+        help="The output name for analysis results (default: %(default)s)",
     )
 
-    # Set the report's title
     parser.add_argument(
         "-t",
         "--title",
         default="Exploratory Data Analysis Report",
-        help="The top level heading in the report (default: %(default)s)",
+        help="The top level heading for the report (default: %(default)s)",
     )
 
-    # Set the graph color
     parser.add_argument(
         "-c",
         "--color",
-        default="orangered",
-        help="A valid matplotlib color specifier (default: %(default)s)",
+        default="cyan",
+        help="The color to apply to graphs (default: %(default)s)",
     )
 
-    # Set the target variable
     parser.add_argument(
         "-T",
         "--target",
@@ -73,8 +54,31 @@ def process_cli_args(*args):
         ),
     )
 
-    # Parse the arguments
+    # Parse arguments
     if args:
         return parser.parse_args(args)
     else:
         return parser.parse_args()
+
+
+def run_from_cli():  # pragma: no cover
+    """Creates an exploratory data analysis report in *Word* format using input
+    from the command line interface.
+
+    This is the function executed when the package is run as a script (using
+    ``python -m eda_report``. It is also the entry point for the ``eda_cli``
+    console script (command).
+
+    Arguments passed from the command line are captured using the
+    :func:`~eda_report.cli.process_cli_args` function, and then supplied to the
+    :class:`~eda_report.document.ReportDocument` object to generate the report.
+    """
+    args = process_cli_args()
+
+    ReportDocument(
+        args.infile,
+        title=args.title,
+        graph_color=args.color,
+        output_filename=args.outfile,
+        target_variable=args.target,
+    )
