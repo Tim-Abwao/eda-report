@@ -1,11 +1,12 @@
 from pathlib import Path
+from typing import Union
 
 import pandas as pd
 
 from eda_report.exceptions import InputError
 
 
-def df_from_file(filename: str) -> pd.DataFrame:
+def df_from_file(filepath: Union[str, Path]) -> pd.DataFrame:
     """Reads a file, and loads its contents as a ``pandas``
     :class:`~pandas.DataFrame`.
 
@@ -18,7 +19,7 @@ def df_from_file(filename: str) -> pd.DataFrame:
 
     Parameters
     ----------
-    filename : str
+    filepath : Path, str
         The path to a file.
 
     Returns
@@ -29,14 +30,14 @@ def df_from_file(filename: str) -> pd.DataFrame:
     Raises
     ------
     InputError
-        If the supplied filename is invalid, for instance if the file is of an
+        If the supplied filepath is invalid, for instance if the file is of an
         incorrect format or does not exist.
     """
-    file = Path(filename)
+    file = Path(filepath)
 
     if file.suffix == ".csv":
         return pd.read_csv(file)
     elif file.suffix == ".xlsx":
         return pd.read_excel(file, engine="openpyxl")
     else:
-        raise InputError(f"Invalid input file: {filename}")
+        raise InputError(f"Invalid input file: {filepath}")
