@@ -141,11 +141,7 @@ class MultiVariable:
             Numeric summary statistics.
         """
         if self.numeric_cols is not None:
-            if self.numeric_cols.shape[0] > 1:
-                numeric_stats = self.numeric_cols.describe().T
-            else:
-                numeric_stats = self.numeric_cols.describe().to_frame().T
-
+            numeric_stats = self.numeric_cols.describe().T
             numeric_stats["skewness"] = self.numeric_cols.skew(
                 numeric_only=True
             )
@@ -166,12 +162,7 @@ class MultiVariable:
             Categorical summary statistics.
         """
         if self.categorical_cols is not None:
-            if self.categorical_cols.shape[0] > 1:
-                categorical_stats = self.categorical_cols.describe().T
-            else:
-                categorical_stats = (
-                    self.categorical_cols.describe().to_frame().T
-                )
+            categorical_stats = self.categorical_cols.describe().T
             categorical_stats["relative freq"] = (
                 categorical_stats["freq"] / len(self.data)
             ).apply(lambda x: f"{x :.2%}")
@@ -251,3 +242,4 @@ class MultiVariable:
                 "Skipped Bivariate Analysis: "
                 "Not enough numeric variables to compare."
             )
+            return None
