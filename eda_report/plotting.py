@@ -99,6 +99,7 @@ class PlotUnivariate(BasePlot):
         A dictionary of graphs, with graph names as keys and file-objects
         containing plotted graphs as values.
     """
+
     def __init__(
         self,
         variable: Variable,
@@ -126,7 +127,7 @@ class PlotUnivariate(BasePlot):
                 "prob_plot": self._plot_prob_plot(),
                 "run_plot": self._plot_run_plot(),
             }
-        elif self.variable.var_type in {"boolean", "categorical", "datetime"}:
+        else:  # {"boolean", "categorical", "datetime"}:
             self.graphs = {"bar_plot": self._plot_bar()}
 
     def _plot_boxplot(self) -> BytesIO:
@@ -319,6 +320,7 @@ class PlotMultiVariate(BasePlot):
         Bi-variate scatterplots are further nested in a dict of
         :class:`~io.BytesIO` objects, with tuples (col_i, col_j) as keys.
     """
+
     def __init__(
         self,
         multivariable: MultiVariable,
@@ -335,19 +337,22 @@ class PlotMultiVariate(BasePlot):
         scatter-plots & ecdf-plots of numeric column pairs.
         """
         if hasattr(self.multivariable, "var_pairs"):
-            self.bivariate_scatterplots = {}
-            for var1, var2 in tqdm(
-                self.multivariable.var_pairs,
-                bar_format="{desc}: {percentage:3.0f}%|{bar:35}| "
-                + "{n_fmt}/{total_fmt} numeric pairs.",
-                dynamic_ncols=True,
-                desc="Bivariate analysis",
-            ):
-                self._regression_plot(var1, var2)
-        self.graphs = {
-            "correlation_heatmap": self._plot_correlation_heatmap(),
-            "scatterplots": self.bivariate_scatterplots,
-        }
+            self.bivariate_scatterplots = {
+                (var_pair): self._regression_plot(*var_pair)
+                for var_pair in tqdm(
+                    self.multivariable.var_pairs,
+                    bar_format="{desc}: {percentage:3.0f}%|{bar:35}| "
+                    + "{n_fmt}/{total_fmt} numeric pairs.",
+                    dynamic_ncols=True,
+                    desc="Bivariate analysis",
+                )
+            }
+            self.graphs = {
+                "correlation_heatmap": self._plot_correlation_heatmap(),
+                "scatterplots": self.bivariate_scatterplots,
+            }
+        else:
+            self.graphs = None
 
     def _plot_correlation_heatmap(self) -> BytesIO:
         """Get a heatmap of the correlation among all numeric columns.
@@ -400,4 +405,4 @@ class PlotMultiVariate(BasePlot):
         ax1.set_title(f"Scatter-plot - {var1} vs {var2}".title(), size=9)
         ax2.set_title("Empirical Cummulative Distribution Functions", size=9)
 
-        self.bivariate_scatterplots[(var1, var2)] = savefig(fig)
+        return savefig(fig)
