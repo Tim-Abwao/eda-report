@@ -130,7 +130,7 @@ class EDAGUI(Frame):  # pragma: no cover
                 title=self.report_title,
                 graph_color=self.graph_color,
                 output_filename=self.save_name,
-                target_variable=self.target_variable.name,
+                target_variable=self.target_variable,
             )
 
             self.current_action["text"] = ""
@@ -183,13 +183,13 @@ class EDAGUI(Frame):  # pragma: no cover
         collect input.
         """
         if askyesno(message="Would you like to specify a target variable?"):
-            target_variable = askstring(
+            self.target_variable = askstring(
                 title="Target Variable",
                 prompt="Please enter the name of the target variable:",
             )
             try:
-                self.target_variable = validate_target_variable(
-                    data=self.data, target_variable=target_variable
+                validate_target_variable(
+                    data=self.data, target_variable=self.target_variable
                 )
             except InputError as error:
                 self.target_variable = None
