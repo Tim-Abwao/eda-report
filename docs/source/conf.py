@@ -32,14 +32,18 @@ copyright = "2021, Abwao"
 author = "Abwao"
 
 # The full version, including alpha/beta/rc tags
-release = "1.6.2"
+release = "2.0.0rc0"
 
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["sphinx.ext.autodoc", "sphinx.ext.intersphinx"]
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.napoleon",
+]
 
 intersphinx_mapping = {
     "docx": ("https://python-docx.readthedocs.io/en/latest/", None),

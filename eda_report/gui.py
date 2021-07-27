@@ -41,7 +41,7 @@ class EDAGUI(Frame):  # pragma: no cover
     exploratory data analysis report.
     """
 
-    def __init__(self, master=None, **kwargs):
+    def __init__(self, master=None, **kwargs) -> None:
         super().__init__(master)
         self.master.title("eda_report")
         self.master.geometry("600x360")
@@ -50,12 +50,11 @@ class EDAGUI(Frame):  # pragma: no cover
         self._create_widgets()
         self.pack()
 
-    def _create_widgets(self):
+    def _create_widgets(self) -> None:
         """Creates the widgets for the graphical user interface: A *canvas*
         with the a *background image*, *introductory text*, and a *button* to
         select a file.
         """
-        # Create the canvas
         self.canvas = Canvas(self, width=600, height=400)
 
         # Set background image
@@ -106,7 +105,7 @@ class EDAGUI(Frame):  # pragma: no cover
 
         self.canvas.pack()
 
-    def create_report(self):
+    def create_report(self) -> None:
         """Collects input from the graphical user interface, and uses the
         :class:`~eda_report.document.ReportDocument` object to generate a
         report.
@@ -131,14 +130,14 @@ class EDAGUI(Frame):  # pragma: no cover
                 title=self.report_title,
                 graph_color=self.graph_color,
                 output_filename=self.save_name,
-                target_variable=self.target_variable,
+                target_variable=self.target_variable.name,
             )
 
             self.current_action["text"] = ""
             showinfo(message=f"Done! Report saved as {self.save_name!r}.")
             del self.data  # Clear stale data
 
-    def _get_data_from_file(self, retries=1):
+    def _get_data_from_file(self, retries=1) -> None:
         """Creates a file dialog to help navigate to and select a file to
         analyse.
         """
@@ -162,7 +161,7 @@ class EDAGUI(Frame):  # pragma: no cover
         else:
             self.master.quit()  # Quit if no file selected and retry is spent
 
-    def _get_report_title(self):
+    def _get_report_title(self) -> None:
         """Creates a simple dialog to capture text input for the desired
         report title.
         """
@@ -179,7 +178,7 @@ class EDAGUI(Frame):  # pragma: no cover
             else "Exploratory Data Analysis Report"
         )
 
-    def _get_target_variable(self):
+    def _get_target_variable(self) -> None:
         """Inquire about the target variable, and create a text box to
         collect input.
         """
@@ -200,17 +199,17 @@ class EDAGUI(Frame):  # pragma: no cover
         else:  # If user doesn't wish to supply a target variable
             self.target_variable = None
 
-    def _get_graph_color(self):
+    def _get_graph_color(self) -> None:
         """Creates a graphical color picking tool to help set the desired
         color for the generated graphs.
         """
         # Returns a tuple e.g ((255.99609375, 69.26953125, 0.0), '#ff4500').
         color = askcolor(
-            color="orangered", title="Please select a color for the graphs"
+            color="cyan", title="Please select a color for the graphs"
         )[-1]
         self.graph_color = color if color is not None else "orangered"
 
-    def _get_save_as_name(self):
+    def _get_save_as_name(self) -> None:
         """Create a file dialog to help select a destination folder and file
         name for the generated report.
         """
@@ -221,3 +220,13 @@ class EDAGUI(Frame):  # pragma: no cover
             title="Please select Save As file name",
         )
         self.save_name = save_name if save_name else "eda-report.docx"
+
+
+def run_in_gui() -> None:
+    """Starts the *graphical user interface* to the application.
+
+    This provides the entry point for the ``eda_report`` console script
+    (command).
+    """
+    app = EDAGUI()
+    app.mainloop()

@@ -3,5 +3,6 @@ eda\_report.document module
 
 .. automodule:: eda_report.document
    :members:
+   :inherited-members:
    :undoc-members:
-   :special-members: __init__
+   :show-inheritance:
