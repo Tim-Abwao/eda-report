@@ -1,12 +1,17 @@
 import logging
+from typing import Iterable, Optional, Sequence, Union
 
 from docx import Document
 from docx.shared import Inches, Pt
+from pandas.core.frame import DataFrame
 from tqdm import tqdm
 
 from eda_report.multivariate import MultiVariable
 from eda_report.univariate import Variable
 from eda_report.plotting import PlotMultiVariate, PlotUnivariate
+from eda_report.validate import (
+    validate_target_variable,
+)
 
 logging.basicConfig(
     format="[%(levelname)s %(asctime)s.%(msecs)03d] %(message)s",
@@ -16,35 +21,55 @@ logging.basicConfig(
 
 
 class ReportContent:
-    """ """
+    """This defines objects that analyse data and store results as textual
+    summaries and graphs.
+
+    Parameters
+    ----------
+    data : Iterable
+        The data to analyse.
+    target_variable : Optional[Union[str, int]]
+        The column
+    title : str, optional
+        The title to assign the report, by default "Exploratory Data Analysis
+        Report"
+    graph_color : str, optional
+        The color to apply to the graphs, by default "cyan"
+    """
 
     def __init__(
         self,
-        data,
+        data: Iterable,
         *,
-        title="Exploratory Data Analysis Report",
-        graph_color="cyan",
-        target_variable=None,
-    ):
-        """"""
-        self.data = data
-        self.variables = MultiVariable(data, target_variable=target_variable)
+        title: str = "Exploratory Data Analysis Report",
+        graph_color: str = "cyan",
+        target_variable: Optional[Union[str, int]] = None,
+    ) -> None:
+        self.variables = MultiVariable(data)
         self.GRAPH_COLOR = graph_color
+        self.TARGET_VARIABLE = validate_target_variable(
+            data=self.variables.data, target_variable=target_variable
+        )
         self.TITLE = title
-        self._get_content()
+        self.intro_text = self._get_introductory_summary()
+        self.multivariate_graphs = PlotMultiVariate(
+            self.variables,
+            graph_color=self.GRAPH_COLOR,
+            hue=self.TARGET_VARIABLE,
+        ).graphs
+        self.variable_descriptions = self._get_variable_descriptions()
+        self.bivariate_summaries = self._get_bivariate_summaries()
 
-    def _get_content(self):
-        """"""
-        self._create_introductory_summary()
-        self._get_numeric_variables_summary_table()
-        self._get_categorical_variables_summary_table()
-        self._get_variable_descriptions()
-        self._get_bivariate_analysis_results()
+    def _get_introductory_summary(self) -> str:
+        """Get a brief overview of the number of rows and the nature of
+        columns.
 
-    def _create_introductory_summary(self):
-        """"""
-        # Get row and column info
-        num_rows, num_cols = self.data.shape
+        Returns
+        -------
+        str
+            An overview of the input data.
+        """
+        num_rows, num_cols = self.variables.data.shape
 
         if num_rows == 1:
             rows = "1 row (observation)"
@@ -57,7 +82,7 @@ class ReportContent:
             cols = f"{num_cols} columns (features)"
 
         # Get numeric column info
-        num_numeric = self.data.select_dtypes(include="number").columns.size
+        num_numeric = self.variables.numeric_cols.shape[1]
         if num_numeric > 1:
             numeric = f", {num_numeric} of which are numeric"
         elif num_numeric == 1:
@@ -65,103 +90,86 @@ class ReportContent:
         else:
             numeric = ""
 
-        self.intro_text = (
-            f"The dataset consists of {rows} and {cols}{numeric}."
-        )
+        return f"The dataset consists of {rows} and {cols}{numeric}."
 
-    def _get_numeric_variables_summary_table(self):
-        """"""
-        if self.variables.numeric_cols is not None:
-            self.numeric_variables_summary = (
-                # Get summary statistics for numeric columns
-                self.variables.numeric_cols.describe(percentiles=[0.5])
-                # Transpose to set the feature names as the index, and summary
-                # statistics as columns.
-                .round(4).T
-            )
+    def _describe_variable(self, name: str) -> dict:
+
+        # Perform univariate analysis using the Variable class
+        var = Variable(self.variables.data[name])
+
+        if var.num_unique == 1:
+            unique_vals = "1 unique value"
         else:
-            self.numeric_variables_summary = None
+            unique_vals = f"{var.num_unique} unique values"
 
-    def _get_categorical_variables_summary_table(self):
-        """"""
-        if self.variables.categorical_cols is not None:
-            self.categorical_variables_summary = (
-                # Get summary statistics for categorical columns
-                self.variables.categorical_cols.describe().round(4)
-                # Transpose to set the feature names as the index, and summary
-                # statistics as columns.
-                .T
-            )
-        else:
-            self.categorical_variables_summary = None
-
-    def _get_variable_descriptions(self):
-        """"""
-        self.variable_descriptions = {}
-        for col in tqdm(
-            self.data.columns,
-            bar_format="{desc}: {percentage:3.0f}%|{bar:35}| "
-            + "{n_fmt}/{total_fmt} features.",
-            desc="Univariate analysis",
-            dynamic_ncols=True,
-        ):
-            # Perform univariate analysis using the Variable class
-            var = Variable(
-                self.data[col],
-                target_data=self.data.get(self.variables.TARGET_VARIABLE),
-            )
-
-            # Add a brief introduction of the feature/column
-            if var.num_unique == 1:
-                unique_vals = "1 unique value"
-            elif var.num_unique == 0:
-                unique_vals = "no unique values"
-            else:
-                unique_vals = f"{var.num_unique} unique values"
-
-            self.variable_descriptions[col] = {
-                "description": (
-                    f"{col.capitalize()} is a {var.var_type} variable with"
-                    f" {unique_vals}. {var.missing} of its values are missing."
-                ),
-                "graphs": PlotUnivariate(
-                    variable=var, graph_color=self.GRAPH_COLOR
-                ).plot_graphs(),
-                "statistics": var.statistics,
-                "most_common_items": var.most_common_items
+        return {
+            "description": (
+                f"{name.capitalize()} is a {var.var_type} variable with"
+                f" {unique_vals}. {var.missing} of its values are missing."
+            ),
+            "graphs": PlotUnivariate(
+                variable=var,
+                graph_color=self.GRAPH_COLOR,
+                hue=self.TARGET_VARIABLE,
+            ).graphs,
+            "statistics": var.statistics,
+            "most_common_items": (
+                var.most_common_items
                 if hasattr(var, "most_common_items")
-                else None,
-            }
+                else None
+            ),
+        }
 
-    def _get_bivariate_analysis_results(self):
-        self.multivariate_graphs = PlotMultiVariate(
-            multivariable=self.variables, graph_color=self.GRAPH_COLOR
-        ).plot_graphs()
-        self.bivariate_summaries = {}
-        # Compare numeric variable pairs
-        for var_pair in self.variables.var_pairs:
-            # Add introductory text
-            self.bivariate_summaries[var_pair] = (
-                f"{var_pair[0].capitalize()} and {var_pair[1].capitalize()}"
-                f" have {self.variables.corr_type[var_pair]}."
+    def _get_variable_descriptions(self) -> dict:
+        """Get brief descriptions of all columns present in the data.
+
+        Returns
+        -------
+        dict[str, str]
+            Summaries of columns present.
+        """
+        return {
+            col: self._describe_variable(col)
+            for col in tqdm(
+                self.variables.data.columns,
+                bar_format="{desc}: {percentage:3.0f}%|{bar:35}| "
+                + "{n_fmt}/{total_fmt} features.",
+                desc="Univariate analysis",
+                dynamic_ncols=True,
             )
+        }
+
+    def _get_bivariate_summaries(self) -> dict:
+        """Get descriptions of the nature of correlation between numeric
+        column pairs.
+
+        Returns
+        -------
+        dict[str, str]
+            Correlation info.
+        """
+        if hasattr(self.variables, "var_pairs"):
+            return {
+                var_pair: (
+                    f"{var_pair[0].title()} and {var_pair[1].title()} have"
+                    f" {self.variables.correlation_descriptions[var_pair]}."
+                )
+                for var_pair in self.variables.var_pairs
+            }
+        else:
+            return None
 
 
 class ReportDocument(ReportContent):
-    """The blueprint for objects that create and populate report documents,
-    in *Word (.docx) format*.
+    """This defines objects that produce *Word* documents with analysis
+    results.
 
-    The *input data as a whole* is analysed as an instance of
-    :class:`~eda_report.multivariate.MultiVariable`. *Descriptive statistics*,
-    *graphs*, and other details can then be obtained as attributes.
-    *Individual columns/features* are likewise processed as instances of
-    :class:`~eda_report.univariate.Variable`.
+    The :class:`ReportContent` class is used to analyse the data and
+    generate text and graph content. Then the :class:`~docx.document.Document`
+    class from the `python-docx`_ package is used to publish the results as a
+    *Word* document.
 
-    The  :class:`~docx.document.Document` object from the `python-docx`_
-    package is then used to publish the results as a *Word*
-    document.
-
-    The report is organised into 3 sections:
+    The report is consists of 3 main sections:
 
     #. An *Overview* of the data and its features.
     #. *Univariate Analysis*: Summary statistics and graphs for each
@@ -169,44 +177,35 @@ class ReportDocument(ReportContent):
     #. *Bivariate Analysis*: Pairwise comparisons of all numerical features.
 
     .. _python-docx: https://python-docx.readthedocs.io/en/latest/
+
+    Parameters
+    ----------
+    data : Iterable
+        The data to analyse.
+    target_variable : Optional[Union[str, int]]
+        The column
+    title : str, optional
+        The title to assign the report, by default "Exploratory Data Analysis
+        Report"
+    graph_color : str, optional
+        The color to apply to the graphs, by default "cyan"
+    output_filename : str, optional
+        The file name or path to save the document to, by default
+        "eda-report.docx"
+    table_style : str, optional
+        The style to apply to the tables created, by default "Table Grid"
     """
 
     def __init__(
         self,
-        data,
+        data: Iterable,
         *,
-        title="Exploratory Data Analysis Report",
-        graph_color="orangered",
-        target_variable=None,
-        output_filename="eda-report.docx",
-        table_style="Table Grid",
-    ):
-        """Initialise an instance of
-        :class:`~eda_report.document.ReportDocument`.
-
-        :param data: The data to analyse.
-        :type data: array-like, sequence, iterable
-        :param title: The top level heading for the report, defaults to
-            'Exploratory Data Analysis Report'.
-        :type title: str, optional
-        :param graph_color: The color to apply to the generated graphs,
-            defaults to 'orangered'. See the *matplotlib* `list of named
-            colors`_ for all available options.
-        :type graph_color: str, optional
-        :param output_filename: The name and path for the generated report
-            file, defaults to 'eda-report.docx'.
-        :type output_filename: str, optional
-        :param table_style: *Microsoft Word* table style to apply to the
-            created tables, defaults to 'Table Grid'.
-        :type table_style: str, optional
-        :param target_variable: The dependent feature. Used to color-code
-            plotted values. An *integer value* is treated as a *column index*,
-            whereas a *string* is treated as a *column label*.
-        :type target_variable: int, str, optional
-
-        .. _`list of named colors`:
-            https://matplotlib.org/stable/gallery/color/named_colors.html
-        """
+        title: str = "Exploratory Data Analysis Report",
+        graph_color: str = "cyan",
+        target_variable: Optional[Union[str, int]] = None,
+        output_filename: str = "eda-report.docx",
+        table_style: str = "Table Grid",
+    ) -> None:
         super().__init__(
             data,
             title=title,
@@ -222,199 +221,171 @@ class ReportDocument(ReportContent):
         """Calculate summary statistics, plot graphs, and save the results as
         a .docx file.
         """
-        self._create_title_page()  # begin the report document
-        self._get_variable_info()  # summarise each variable
+        self._create_title_page()
+        self._get_variable_info()
 
         if hasattr(self.variables, "var_pairs"):
-            self._get_bivariate_analysis()  # summarise variable pairs
+            self._get_bivariate_analysis()
 
         self._save_file()
         logging.info(f"Done. Results saved as {self.OUTPUT_FILENAME!r}")
 
-    def _create_title_page(self):
+    def _create_title_page(self) -> None:
         """Add a title and a brief summary of the data."""
-        # Main title
         self.document.add_heading(self.TITLE, level=0)
 
-        # Add introductory paragraph
         self.document.add_paragraph(self.intro_text)
         self.document.add_paragraph()
 
-        # Add an overview of the data
         self._get_numeric_overview_table()
         self._get_categorical_overview_table()
 
-        if hasattr(self.variables, "var_pairs"):
-            # Add a joint scatterplot of the numeric features
-            self.document.add_heading(
-                "Joint Scatter-plot of Numeric Columns", level=2
-            )
-            self.document.add_picture(
-                self.multivariate_graphs["joint_scatterplot"],
-                width=Inches(6.5),
-            )
-            self.document.add_page_break()
-
-    def _get_numeric_overview_table(self):
-        """Create a table with an overview of numeric features."""
+    def _get_numeric_overview_table(self) -> None:
+        """Create a table with an overview of the numeric features present."""
         if self.variables.numeric_cols is not None:
             self.document.add_heading("Overview of Numeric Features", level=2)
             self.document.add_paragraph()
 
+            # count | mean | std | min | 25% | 50% | 75% | max
             self._create_table(
-                data=self.numeric_variables_summary,
+                data=self.variables.numeric_stats,
                 header=True,
-                column_widths=(1.5,) + (0.9,) * 6,
+                column_widths=(1.2,) + (0.7,) * 8,
+                font_size=8.5,
                 style="Normal Table",
             )
 
-    def _get_categorical_overview_table(self):
-        """Create a table with an overview of categorical features."""
+    def _get_categorical_overview_table(self) -> None:
+        """Create a table with an overview of the categorical features
+        present.
+        """
         if self.variables.categorical_cols is not None:
             self.document.add_heading(
                 "Overview of Categorical Features", level=2
             )
             self.document.add_paragraph()
 
-            # Create a table with column-names and summary statistics - count,
-            # unique, top and freq
+            # column-name | count | unique | top | freq | relative freq
             self._create_table(
-                data=self.categorical_variables_summary,
+                data=self.variables.categorical_stats,
                 header=True,
-                column_widths=(1.4,) + (1,) * 4,
+                column_widths=(1.2,) + (0.9,) * 5,
+                font_size=8.5,
                 style="Normal Table",
             )
 
-    def _get_variable_info(self):
+    def _get_variable_info(self) -> None:
         """Get a brief introduction, summary statistics, and graphs for each
         individual variable.
         """
-        # Univariate section heading
-        univariate_heading = self.document.add_heading(
-            "A. Univariate Analysis", level=1
-        )
-        univariate_heading.paragraph_format.space_before = Pt(0)
+        self.document.add_heading("A. Univariate Analysis", level=1)
 
-        for idx, var_name in enumerate(self.variable_descriptions):
+        for idx, var_name in enumerate(self.variable_descriptions, start=1):
             var_info = self.variable_descriptions[var_name]
-            # Add a heading for the feature/column
-            self.document.add_heading(f"{idx}. {var_name}".title(), level=2)
 
-            # Add a brief introduction of the feature/column
+            self.document.add_heading(f"{idx}. {var_name}".title(), level=2)
             self.document.add_paragraph(var_info["description"])
 
-            # Add a table of summary statistics
             self.document.add_heading("Summary Statistics", level=4)
             self._create_table(var_info["statistics"], column_widths=[2.5, 2])
 
-            # Add most-common-items, if they were recorded
+            # Add most-common-items table, if present
             if var_info.get("most_common_items") is not None:
                 self.document.add_heading("Most Common Values", level=4)
                 self._create_table(
                     var_info["most_common_items"], column_widths=(2.5, 2)
                 )
 
-            # Add graphs
-            for graph in var_info["graphs"].values():  # var._graphs is a dict
+            for graph in var_info["graphs"].values():
                 self.document.add_picture(graph, width=Inches(5.4))
 
-            self.document.add_page_break()
+        self.document.add_page_break()
 
-    def _get_bivariate_analysis(self):
+    def _get_bivariate_analysis(self) -> None:
         """Get comparisons, scatterplots and ecdf plots for pairs of numeric
         variables.
         """
-        # Bivariate section heading
         bivariate_heading = self.document.add_heading(
             "B. Bivariate Analysis (Correlation)", level=1
         )
         bivariate_heading.paragraph_format.space_before = Pt(0)
         self.document.add_paragraph()
 
-        # Add joint correlation heatmap of all numeric columns
         self.document.add_picture(
             self.multivariate_graphs["correlation_heatmap"], width=Inches(6.7)
         )
         self.document.add_page_break()
 
-        # Compare numeric variable pairs
         for idx, var_pair in enumerate(self.bivariate_summaries, start=1):
-            # Add heading
             self.document.add_heading(
                 f"{idx}. {var_pair[0]} vs {var_pair[1]}".title(), level=2
             )
-            # Add introductory text
             self.document.add_paragraph(self.bivariate_summaries[var_pair])
-
-            # Add graphs
             self.document.add_picture(
                 self.multivariate_graphs["scatterplots"][var_pair],
                 width=Inches(6),
             )
             self.document.add_paragraph()
 
-            # Add page break after every 2 pairs
+            # Add a page break after every 2 pairs
             if idx % 2 == 0:
                 self.document.add_page_break()
 
-    def _create_table(self, data, column_widths=(), style=None, header=False):
-        """Create a table from the given data and add it to the document.
+    def _create_table(
+        self,
+        data: DataFrame,
+        column_widths: Sequence = (),
+        font_face: str = "Courier New",
+        font_size: float = 10,
+        style: Optional[str] = None,
+        header: bool = False,
+    ) -> None:
+        """Generates a table for the supplied `data` with
 
-        :param data: The data to put into a table.
-        :type data: :class:`pandas.DataFrame`
-        :param column_widths: The desired table column widths, defaults to ().
-        :type column_widths: tuple, optional
-        :param style: *Word* table style to apply, defaults to None.
-        :type style: str, optional
-        :param header: Whether or not to include column names as the first row
-            in the table, defaults to False.
-        :type header: bool, optional
+        Parameters
+        ----------
+        data : DataFrame
+            The data to tabulate.
+        column_widths : Sequence, optional
+            The desired number and widths of columns, by default ().
+        font_face : str, optional
+            The font typeface for cell text, by default "Courier New".
+        font_size : float, optional
+            The font size for cell text, by default 10.
+        style : Optional[str], optional
+            A Word table style, by default None.
+        header : bool, optional
+            Flags whether the first row is a header, by default False.
         """
         if header:
-            # Add the column names as a row at index ''
             data.loc["", :] = data.columns
-            # Sort the index in ascending order, so that the column names end
-            # up at the top, in true header fashion.
-            # The column names will be the first row of the table created.
+            # Sort the index in ascending order, to ensure that column names
+            # end up as the first row.
             data.sort_index(inplace=True)
 
-        # Create the table
         table = self.document.add_table(
-            rows=len(data),  # A row for each row in the data
-            cols=len(column_widths),  # As many columns as column-widths given
+            rows=len(data),
+            cols=len(column_widths),
         )
-
-        # Set table style
-        if style is None:
-            table.style = self.document.styles[self.TABLE_STYLE]
-        else:
-            table.style = self.document.styles[style]
+        table.style = style or self.document.styles[self.TABLE_STYLE]
 
         # Set column dimensions
         for idx, width in enumerate(column_widths):
             table.columns[idx].width = Inches(width)
 
-        # Populate the table with the data
+        # Populate the rows
         for idx, row_data in enumerate(data.itertuples()):
-            # Populate the row's cells
-            for cell, datum in zip(table.rows[idx].cells, row_data):
-                cell.text = f"{datum}"
+            for cell, value in zip(table.rows[idx].cells, row_data):
+                cell.text = f"{value}"
+
+                # Font size and type-face have to be set at `run` level
+                run = cell.paragraphs[0].runs[0]
+                font = run.font
+                font.size = Pt(font_size)
+                font.name = font_face
 
         self.document.add_paragraph()
 
-    def _save_file(self):
-        """Save the document as a .docx file."""
+    def _save_file(self) -> None:
+        """Save the document as a file."""
         self.document.save(self.OUTPUT_FILENAME)
-
-
-if __name__ == "__main__":
-    import seaborn as sns
-
-    data = sns.load_dataset("iris")
-    rep = ReportDocument(data)
-    print(
-        dir(
-            rep
-        )
-    )
-    rep._save_file()
