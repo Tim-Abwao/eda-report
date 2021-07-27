@@ -7,11 +7,9 @@ from pandas.core.frame import DataFrame
 from tqdm import tqdm
 
 from eda_report.multivariate import MultiVariable
-from eda_report.univariate import Variable
 from eda_report.plotting import PlotMultiVariate, PlotUnivariate
-from eda_report.validate import (
-    validate_target_variable,
-)
+from eda_report.univariate import Variable
+from eda_report.validate import validate_target_variable
 
 logging.basicConfig(
     format="[%(levelname)s %(asctime)s.%(msecs)03d] %(message)s",
@@ -82,13 +80,15 @@ class ReportContent:
             cols = f"{num_cols} columns (features)"
 
         # Get numeric column info
-        num_numeric = self.variables.numeric_cols.shape[1]
-        if num_numeric > 1:
-            numeric = f", {num_numeric} of which are numeric"
-        elif num_numeric == 1:
+        if self.variables.numeric_cols is None:
+            numeric = ""
+        elif self.variables.numeric_cols.shape[1] == 1:
             numeric = ", 1 of which is numeric"
         else:
-            numeric = ""
+            numeric = (
+                f", {self.variables.numeric_cols.shape[1]} of which are"
+                " numeric"
+            )
 
         return f"The dataset consists of {rows} and {cols}{numeric}."
 
