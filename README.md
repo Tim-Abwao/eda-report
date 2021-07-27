@@ -5,6 +5,7 @@
 [![Python 3.7 | 3.9](https://github.com/Tim-Abwao/auto-eda/actions/workflows/test-python3.7-3.9.yml/badge.svg)](https://github.com/Tim-Abwao/auto-eda/actions/workflows/test-python3.7-3.9.yml)
 [![Documentation Status](https://readthedocs.org/projects/eda-report/badge/?version=latest)](https://eda-report.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/Tim-Abwao/auto-eda/branch/main/graph/badge.svg?token=KNQD8XZCWG)](https://codecov.io/gh/Tim-Abwao/auto-eda)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 A Python program to help automate the exploratory data analysis and reporting process.
 
@@ -34,89 +35,79 @@ You will be prompted to set a *report title*, *target variable (optional)*, *gra
 
 ### 2. Interactive Mode
 
-You can obtain a summary for a *single feature (univariate)* using the `Variable` class:
+#### 2.1 Analyse univariate data
 
 ```python
 >>> from eda_report.univariate import Variable
->>> x = Variable(data=range(50), name='1 to 50')
->>> x
-            Overview
-            ========
-Name: 1 to 50,
-Type: numeric,
-Unique Values: 50 -> {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, [...],
+>>> Variable(range(20), name="1 to 20")
+        Overview
+        ========
+Name: 1 to 20
+Type: numeric
+Unique Values: 20 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, [...]
 Missing Values: None
-
-        Summary Statistics
-        ==================
-                         1 to 50
-Number of observations  50.00000
-Average                 24.50000
-Standard Deviation      14.57738
+          ***
+      Summary Statistics
+                         1 to 20
+Number of observations  20.00000
+Average                  9.50000
+Standard Deviation       5.91608
 Minimum                  0.00000
-Lower Quartile          12.25000
-Median                  24.50000
-Upper Quartile          36.75000
-Maximum                 49.00000
+Lower Quartile           4.75000
+Median                   9.50000
+Upper Quartile          14.25000
+Maximum                 19.00000
 Skewness                 0.00000
 Kurtosis                -1.20000
-
->>> x.show_graphs()
 ```
 
-You can obtain statistics for a *set of features (multivariate)* using the `MultiVariable` class:
+#### 2.2 Analyse multivariate data
 
 ```python
 >>> from eda_report.multivariate import MultiVariable
->>> # Get a dataset
->>> import seaborn as sns
->>> data = sns.load_dataset('iris')
->>> X = MultiVariable(data)
-Bivariate analysis: 100%|████████████████████████████████████████████| 6/6 [00:01<00:00,  3.85it/s]
->>> X
-        Overview
-        ========
+>>> from seaborn import load_dataset
+>>> data = load_dataset("iris")
+>>> MultiVariable(data)
+                        OVERVIEW
+                        ========
 Numeric features: sepal_length, sepal_width, petal_length, petal_width
 Categorical features: species
-
-        Summary Statistics (Numeric features)
-        =====================================
-       sepal_length  sepal_width  petal_length  petal_width
-count    150.000000   150.000000    150.000000   150.000000
-mean       5.843333     3.057333      3.758000     1.199333
-std        0.828066     0.435866      1.765298     0.762238
-min        4.300000     2.000000      1.000000     0.100000
-25%        5.100000     2.800000      1.600000     0.300000
-50%        5.800000     3.000000      4.350000     1.300000
-75%        6.400000     3.300000      5.100000     1.800000
-max        7.900000     4.400000      6.900000     2.500000
-
-        Summary Statistics (Categorical features)
-        =========================================
-       species
-count      150
-unique       3
-top     setosa
-freq        50
-
-        Bivariate Analysis (Correlation)
-        ================================
-sepal_length & petal_width --> strong positive correlation (0.82)
-sepal_width & petal_width --> weak negative correlation (-0.37)
-sepal_length & sepal_width --> very weak negative correlation (-0.12)
-sepal_length & petal_length --> strong positive correlation (0.87)
-sepal_width & petal_length --> weak negative correlation (-0.43)
+                          ***
+          Summary Statistics (Numeric features)
+          -------------------------------------
+              count    mean     std  min  25%   50%  75%  max  skewness  kurtosis
+sepal_length  150.0  5.8433  0.8281  4.3  5.1  5.80  6.4  7.9    0.3149   -0.5521
+sepal_width   150.0  3.0573  0.4359  2.0  2.8  3.00  3.3  4.4    0.3190    0.2282
+petal_length  150.0  3.7580  1.7653  1.0  1.6  4.35  5.1  6.9   -0.2749   -1.4021
+petal_width   150.0  1.1993  0.7622  0.1  0.3  1.30  1.8  2.5   -0.1030   -1.3406
+                          ***
+          Summary Statistics (Categorical features)
+          -----------------------------------------
+        count unique     top freq relative freq
+species   150      3  setosa   50        33.33%
+                          ***
+          Bivariate Analysis (Correlation)
+          --------------------------------
 petal_length & petal_width --> very strong positive correlation (0.96)
+sepal_length & petal_length --> strong positive correlation (0.87)
+sepal_length & petal_width --> strong positive correlation (0.82)
+sepal_length & sepal_width --> very weak negative correlation (-0.12)
+sepal_width & petal_length --> weak negative correlation (-0.43)
+sepal_width & petal_width --> weak negative correlation (-0.37)
+```
 
->>> X.show_correlation_heatmap()
->>> # Generate a report document
+#### 2.3 Generate a report
+
+```python
 >>> from eda_report import get_word_report
+>>> from seaborn import load_dataset
+
+>>> data = load_dataset("iris")
 >>> get_word_report(data)
-[INFO 10:56:50.241] Assessing correlation in numeric variables...
-Bivariate analysis: 100%|████████████████████████████████████████████| 6/6 [00:01<00:00,  3.89it/s]
-[INFO 10:56:53.851] Done. Summarising each variable...
-Univariate analysis: 100%|███████████████████████████████████████████| 5/5 [00:01<00:00,  2.52it/s]
-[INFO 10:56:56.007] Done. Results saved as 'eda-report.docx' 
+Bivariate analysis: 100%|███████████████████████████████████| 6/6 numeric pairs.
+Univariate analysis: 100%|███████████████████████████████████| 5/5 features.
+[INFO 17:31:37.880] Done. Results saved as 'eda-report.docx'
+<eda_report.document.ReportDocument object at 0x7f3040c9bcd0>
 ```
 
 ### 3. Command Line Interface
@@ -144,21 +135,21 @@ eda_cli -h
 ```bash
 usage: eda_cli [-h] [-o OUTFILE] [-t TITLE] [-c COLOR] [-T TARGET] infile
 
-Get a basic EDA report in docx format.
+Automatically analyse data and generate reports.
 
 positional arguments:
-  infile                A .csv or .xlsx file to process.
+  infile                A .csv or .xlsx file to analyse.
 
 optional arguments:
   -h, --help            show this help message and exit
   -o OUTFILE, --outfile OUTFILE
-                        The output file (default: eda-report.docx)
+                        The output name for analysis results (default: eda-
+                        report.docx)
   -t TITLE, --title TITLE
-                        The top level heading in the report (default:
+                        The top level heading for the report (default:
                         Exploratory Data Analysis Report)
   -c COLOR, --color COLOR
-                        A valid matplotlib color specifier (default:
-                        orangered)
+                        The color to apply to graphs (default: cyan)
   -T TARGET, --target TARGET
                         The target variable (dependent feature), used to
                         color-code plotted values. An integer value is treated
