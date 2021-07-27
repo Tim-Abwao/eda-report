@@ -3,11 +3,11 @@ Installation
 
 You can install ``eda_report`` from the `Python Package Index`_ using ``pip``::
 
-    pip install eda-report
+    $ pip install eda-report
 
 You can also install the latest stable version right from the `GitHub repository`_ using::
 
-    pip install https://github.com/tim-abwao/auto-eda/archive/main.tar.gz
+    $ pip install https://github.com/tim-abwao/auto-eda/archive/main.tar.gz
 
 Only **Python3.7 to 3.9** are currently supported.
 

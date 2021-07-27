@@ -1,12 +1,12 @@
+from eda_report import get_word_report
 from pandas.core.frame import DataFrame
 from seaborn import load_dataset
-from eda_report.document import ReportDocument
 
 
 class TestReportWithIdealInput:
 
     data = load_dataset("iris")
-    content = ReportDocument(
+    content = get_word_report(
         data,
         title="Test Report",
         graph_color="teal",
@@ -63,7 +63,7 @@ class TestReportWithLimitedInput:
     data = DataFrame(
         {"categorical": list("ABCDEFGHIJKL"), "numeric": range(12)}
     )
-    report = ReportDocument(data)
+    report = get_word_report(data)
 
     def test_title(self):
         assert self.report.TITLE == "Exploratory Data Analysis Report"
@@ -71,8 +71,8 @@ class TestReportWithLimitedInput:
 
 class TestReportWithUnivariateInput:
 
-    univariate_numeric_report = ReportDocument(DataFrame(range(5)))
-    univariate_categorical_report = ReportDocument(DataFrame(["a"]))
+    univariate_numeric_report = get_word_report(DataFrame(range(5)))
+    univariate_categorical_report = get_word_report(DataFrame(["a"]))
 
     def test_title(self):
         assert (

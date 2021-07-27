@@ -6,7 +6,7 @@ Variable
         ========
 Name: 1 to 20
 Type: numeric
-Unique Values: 20 -> {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, [...]
+Unique Values: 20 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, [...]
 Missing Values: None
           ***
       Summary Statistics
