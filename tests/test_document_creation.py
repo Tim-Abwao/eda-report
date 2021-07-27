@@ -2,6 +2,14 @@ from eda_report import get_word_report
 from eda_report.document import ReportDocument
 from pandas.core.frame import DataFrame
 from seaborn import load_dataset
+from io import BytesIO
+
+import pytest
+
+
+@pytest.fixture(scope="session")
+def temp_data_dir(tmp_path_factory):
+    return tmp_path_factory.mktemp("data")
 
 
 class TestReportWithIdealInput:
@@ -12,6 +20,7 @@ class TestReportWithIdealInput:
         title="Test Report",
         graph_color="teal",
         target_variable="species",
+        output_filename=BytesIO(),
     )
 
     def test_title(self):
@@ -58,9 +67,6 @@ class TestReportWithIdealInput:
         assert "correlation_heatmap" in self.report.multivariate_graphs
         assert "scatterplots" in self.report.multivariate_graphs
 
-    def test_output_filename(self):
-        assert self.report.OUTPUT_FILENAME == "eda-report.docx"
-
     def test_table_style(self):
         assert self.report.TABLE_STYLE == "Table Grid"
 
@@ -83,7 +89,10 @@ class TestReportWithLimitedInput:
         {"categorical": list("ABCDEFGHIJKL"), "numeric": range(12)}
     )
     report = get_word_report(
-        data, title="One Numeric One Categorical", graph_color="lime"
+        data,
+        title="One Numeric One Categorical",
+        graph_color="lime",
+        output_filename=BytesIO(),
     )
 
     def test_report_creation(self):
@@ -103,10 +112,14 @@ class TestReportWithLimitedInput:
 class TestReportWithUnivariateInput:
 
     univariate_numeric_report = get_word_report(
-        DataFrame(range(5)), title="Univariate Numeric Report"
+        DataFrame(range(5)),
+        title="Univariate Numeric Report",
+        output_filename=BytesIO(),
     )
     univariate_categorical_report = get_word_report(
-        DataFrame(["a"]), title="Univariate Categorical Report"
+        DataFrame(["a"]),
+        title="Univariate Categorical Report",
+        output_filename=BytesIO(),
     )
 
     def test_bivariate_analysis(self):
@@ -115,3 +128,11 @@ class TestReportWithUnivariateInput:
 
         assert self.univariate_numeric_report.multivariate_graphs is None
         assert self.univariate_categorical_report.multivariate_graphs is None
+
+
+def test_output_file(tmp_path):
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+
+    get_word_report(range(50), output_filename=data_dir / "eda.docx")
+    assert (tmp_path / "data" / "eda.docx").is_file()
