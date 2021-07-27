@@ -12,8 +12,8 @@ class TestMixedMultiVariables:
             {
                 "A": range(50),
                 "B": list("abcdef") * 8 + ["a"] * 2,
-                "C": [True, False] * 25,
-                "D": [1, 3, 5, 7, 9] * 10,
+                "C": [True, False] * 24 + [True] * 2,
+                "D": [1, 3, 5, 7, 9, 11, 13] * 7 + [17],
             }
         )
     )
@@ -31,8 +31,8 @@ class TestMixedMultiVariables:
             "count": {"B": 50, "C": 50},
             "unique": {"B": 6, "C": 2},
             "top": {"B": "a", "C": True},
-            "freq": {"B": 10, "C": 25},
-            "relative freq": {"B": "20.00%", "C": "50.00%"},
+            "freq": {"B": 10, "C": 26},
+            "relative freq": {"B": "20.00%", "C": "52.00%"},
         }
 
     def test_numeric_summary_statistics(self):
@@ -41,15 +41,15 @@ class TestMixedMultiVariables:
         ) == pytest.approx(
             {
                 "count": [50.0, 50.0],
-                "mean": [24.5, 5.0],
-                "std": [14.5774, 2.8571],
+                "mean": [24.5, 7.2],
+                "std": [14.5774, 4.2426],
                 "min": [0.0, 1.0],
                 "25%": [12.25, 3.0],
-                "50%": [24.5, 5.0],
-                "75%": [36.75, 7.0],
-                "max": [49.0, 9.0],
-                "skewness": [0.0, 0.0],
-                "kurtosis": [-1.2, -1.3097],
+                "50%": [24.5, 7.0],
+                "75%": [36.75, 11.0],
+                "max": [49.0, 17.0],
+                "skewness": [0.0, 0.1309],
+                "kurtosis": [-1.2, -0.9598],
             }
         )
 
@@ -58,10 +58,10 @@ class TestMixedMultiVariables:
         assert self.multivariable.correlation_df.to_dict(
             orient="list"
         ) == pytest.approx(
-            {"A": [1.0, 0.09799919151000494], "D": [0.09799919151000494, 1.0]}
+            {"A": [1.0, 0.21019754169815516], "D": [0.21019754169815516, 1.0]}
         )
         assert self.multivariable.correlation_descriptions == {
-            ("A", "D"): "virtually no correlation (0.10)"
+            ("A", "D"): "very weak positive correlation (0.21)"
         }
 
     def test_multivariable_description(self, capsys):
@@ -70,12 +70,12 @@ class TestMixedMultiVariables:
         assert captured.out == (
             "\n\tSummary Statistics (Numeric columns):\n\n    count  mean"
             "      std  min    25%   50%    75%   max  skewness  kurtosis\nA"
-            "   50.0  24.5  14.5774  0.0  12.25  24.5  36.75  49.0       0.0"
-            "   -1.2000\nD   50.0   5.0   2.8571  1.0   3.00   5.0   7.00"
-            "   9.0       0.0   -1.3097\n\n\tSummary Statistics (Categorical"
+            "   50.0  24.5  14.5774  0.0  12.25  24.5  36.75  49.0    0.0000"
+            "   -1.2000\nD   50.0   7.2   4.2426  1.0   3.00   7.0  11.00"
+            "  17.0    0.1309   -0.9598\n\n\tSummary Statistics (Categorical"
             " columns):\n\n   count unique   top freq relative freq\nB    50"
-            "      6     a   10        20.00%\nC    50      2  True   25"
-            "        50.00%\n"
+            "      6     a   10        20.00%\nC    50      2  True   26"
+            "        52.00%\n"
         )
 
 
