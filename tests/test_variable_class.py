@@ -1,6 +1,11 @@
 import pytest
 from eda_report.univariate import Variable
 from pandas import Series, date_range
+from pandas.api.types import (
+    is_categorical_dtype,
+    is_numeric_dtype,
+    is_object_dtype,
+)
 
 
 class TestNumericVariables:
@@ -9,7 +14,7 @@ class TestNumericVariables:
 
     def test_data_type(self):
         assert isinstance(self.variable.data, Series)
-        assert self.variable.data.dtype == int
+        assert is_numeric_dtype(self.variable.data)
         assert self.variable.var_type == "numeric"
 
     def test_missing_values(self):
@@ -40,16 +45,16 @@ class TestNumericVariables:
 
     def test_repr(self):
         assert str(self.variable) == (
-                "\t\tOverview\n\t\t========\nName: 1 to 50\nType: numeric\n"
-                "Unique Values: 50 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,"
-                " 12, 13, [...]\nMissing Values: None\n\t\t  ***\n\t  Summary"
-                " Statistics\n                         1 to 50\nNumber of "
-                "observations  50.00000\nAverage                 24.50000\n"
-                "Standard Deviation      14.57738\nMinimum                  "
-                "0.00000\nLower Quartile          12.25000\nMedian           "
-                "       24.50000\nUpper Quartile          36.75000\nMaximum"
-                "                 49.00000\nSkewness                 "
-                "0.00000\nKurtosis                -1.20000"
+            "\t\tOverview\n\t\t========\nName: 1 to 50\nType: numeric\n"
+            "Unique Values: 50 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,"
+            " 12, 13, [...]\nMissing Values: None\n\t\t  ***\n\t  Summary"
+            " Statistics\n                         1 to 50\nNumber of "
+            "observations  50.00000\nAverage                 24.50000\n"
+            "Standard Deviation      14.57738\nMinimum                  "
+            "0.00000\nLower Quartile          12.25000\nMedian           "
+            "       24.50000\nUpper Quartile          36.75000\nMaximum"
+            "                 49.00000\nSkewness                 "
+            "0.00000\nKurtosis                -1.20000"
         )
 
     def test_numeric_variable_methods(self):
@@ -65,11 +70,11 @@ class TestCategoricalVariables:
     def test_data_type(self):
 
         assert isinstance(self.variable_with_majority_unique.data, Series)
-        assert self.variable_with_majority_unique.data.dtype == "object"
+        assert is_object_dtype(self.variable_with_majority_unique.data)
         assert self.variable_with_majority_unique.var_type == "categorical"
 
         assert isinstance(self.variable_with_majority_repeating.data, Series)
-        assert self.variable_with_majority_repeating.data.dtype == "category"
+        assert is_categorical_dtype(self.variable_with_majority_repeating.data)
         assert self.variable_with_majority_repeating.var_type == "categorical"
 
     def test_missing_values(self):
@@ -128,7 +133,7 @@ class TestCategoricalVariables:
             "(16.67%)\n\t\t  ***\n\t  Summary Statistics\n                "
             "                0\nNumber of observations          5\nUnique"
             " values                   4\nMode (Highest occurring value)  a"
-            )
+        )
 
     def test_categorical_variable_methods(self):
         self.variable_with_majority_unique.rename("new name")
@@ -144,11 +149,11 @@ class TestBooleanVariables:
 
     def test_data_type(self):
         assert isinstance(self.boolean_variable.data, Series)
-        assert self.boolean_variable.data.dtype == "object"
+        assert is_object_dtype(self.boolean_variable.data)
         assert self.boolean_variable.var_type == "boolean"
 
         assert isinstance(self.boolean_variable_from_int.data, Series)
-        assert self.boolean_variable_from_int.data.dtype == "category"
+        assert is_categorical_dtype(self.boolean_variable_from_int.data)
         assert self.boolean_variable_from_int.var_type == "boolean"
 
     def test_missing_values(self):
@@ -197,7 +202,7 @@ class TestDateTimeVariables:
 
     def test_data_type(self):
         assert isinstance(self.variable.data, Series)
-        assert self.variable.data.dtype == "object"
+        assert is_object_dtype(self.variable.data)
         assert self.variable.var_type == "datetime"
 
     def test_missing_values(self):
