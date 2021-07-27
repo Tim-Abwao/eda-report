@@ -1,4 +1,5 @@
 from eda_report import get_word_report
+from eda_report.document import ReportDocument
 from pandas.core.frame import DataFrame
 from seaborn import load_dataset
 
@@ -6,15 +7,27 @@ from seaborn import load_dataset
 class TestReportWithIdealInput:
 
     data = load_dataset("iris")
-    content = get_word_report(
+    report = get_word_report(
         data,
         title="Test Report",
         graph_color="teal",
         target_variable="species",
     )
 
+    def test_title(self):
+        assert self.report.TITLE == "Test Report"
+
+    def test_graph_color(self):
+        assert self.report.GRAPH_COLOR == "teal"
+
+    def test_intro(self):
+        assert self.report.intro_text == (
+            "The dataset consists of 150 rows (observations) and 5 columns "
+            "(features), 4 of which are numeric."
+        )
+
     def test_bivariate_analysis(self):
-        assert self.content.bivariate_summaries == {
+        assert self.report.bivariate_summaries == {
             ("sepal_length", "petal_length"): (
                 "Sepal_Length and Petal_Length have strong positive "
                 "correlation (0.87)."
@@ -41,21 +54,27 @@ class TestReportWithIdealInput:
             ),
         }
 
-    def test_graph_color(self):
-        assert self.content.GRAPH_COLOR == "teal"
-
-    def test_intro(self):
-        assert self.content.intro_text == (
-            "The dataset consists of 150 rows (observations) and 5 columns "
-            "(features), 4 of which are numeric."
-        )
-
     def test_bivariate_graphs(self):
-        assert "correlation_heatmap" in self.content.multivariate_graphs
-        assert "scatterplots" in self.content.multivariate_graphs
+        assert "correlation_heatmap" in self.report.multivariate_graphs
+        assert "scatterplots" in self.report.multivariate_graphs
 
-    def test_target_data(self):
-        assert self.content.TARGET_VARIABLE.equals(self.data["species"])
+    def test_output_filename(self):
+        assert self.report.OUTPUT_FILENAME == "eda-report.docx"
+
+    def test_table_style(self):
+        assert self.report.TABLE_STYLE == "Table Grid"
+
+    def test_target_variable(self):
+        assert self.report.TARGET_VARIABLE.equals(self.data["species"])
+
+    def test_variable_descriptions(self):
+        assert list(self.report.variable_descriptions.keys()) == [
+            "sepal_length",
+            "sepal_width",
+            "petal_length",
+            "petal_width",
+            "species",
+        ]
 
 
 class TestReportWithLimitedInput:
@@ -63,23 +82,36 @@ class TestReportWithLimitedInput:
     data = DataFrame(
         {"categorical": list("ABCDEFGHIJKL"), "numeric": range(12)}
     )
-    report = get_word_report(data)
+    report = get_word_report(
+        data, title="One Numeric One Categorical", graph_color="lime"
+    )
 
-    def test_title(self):
-        assert self.report.TITLE == "Exploratory Data Analysis Report"
+    def test_report_creation(self):
+        assert self.report.TITLE == "One Numeric One Categorical"
+        assert isinstance(self.report, ReportDocument)
+        assert self.report.GRAPH_COLOR == "lime"
+        assert list(self.report.variable_descriptions.keys()) == [
+            "categorical",
+            "numeric",
+        ]
+
+    def test_bivariate_analysis(self):
+        assert self.report.bivariate_summaries is None
+        assert self.report.multivariate_graphs is None
 
 
 class TestReportWithUnivariateInput:
 
-    univariate_numeric_report = get_word_report(DataFrame(range(5)))
-    univariate_categorical_report = get_word_report(DataFrame(["a"]))
+    univariate_numeric_report = get_word_report(
+        DataFrame(range(5)), title="Univariate Numeric Report"
+    )
+    univariate_categorical_report = get_word_report(
+        DataFrame(["a"]), title="Univariate Categorical Report"
+    )
 
-    def test_title(self):
-        assert (
-            self.univariate_numeric_report.TITLE
-            == "Exploratory Data Analysis Report"
-        )
-        assert (
-            self.univariate_categorical_report.TITLE
-            == "Exploratory Data Analysis Report"
-        )
+    def test_bivariate_analysis(self):
+        assert self.univariate_numeric_report.bivariate_summaries is None
+        assert self.univariate_categorical_report.bivariate_summaries is None
+
+        assert self.univariate_numeric_report.multivariate_graphs is None
+        assert self.univariate_categorical_report.multivariate_graphs is None
