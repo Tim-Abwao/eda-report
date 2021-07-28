@@ -18,7 +18,7 @@ You will be prompted to enter your desired *title*, *target variable*, *graph co
 From an Interactive Session
 ---------------------------
 
-You can use the :func:`~eda_report.get_word_report` function generates reports:
+You can use the :func:`~eda_report.get_word_report` function to generate reports:
 
 >>> from eda_report import get_word_report
 >>> from seaborn import load_dataset
@@ -37,7 +37,7 @@ You can analyse a one-dimensional dataset using the :class:`~eda_report.univaria
 You can analyse a multivariate dataset using the :class:`~eda_report.multivariate.MultiVariable` object:
 
 .. literalinclude:: examples.txt
-   :lines: 28-58
+   :lines: 28-57
 
 Using the Command Line Interface
 --------------------------------
