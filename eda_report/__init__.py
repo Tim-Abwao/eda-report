@@ -3,7 +3,7 @@ from collections.abc import Iterable
 from eda_report.document import ReportDocument
 
 
-__version__ = "2.0.0rc0"
+__version__ = "2.0.0"
 
 
 def get_word_report(
@@ -26,7 +26,7 @@ def get_word_report(
     data : Iterable
         The data to analyse.
     target_variable : Optional[Union[str, int]]
-        The column
+        The column to use to group values and color-code graphs.
     title : str, optional
         The title to assign the report, by default "Exploratory Data Analysis
         Report"
