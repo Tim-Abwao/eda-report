@@ -10,8 +10,7 @@ from eda_report.validate import validate_univariate_input
 
 
 class Variable:
-    """This defines objects for analysing one-dimensional datasets — a single
-    column.
+    """This defines objects for analysing one-dimensional datasets.
 
     The input data is internally handled as a :class:`~pandas.Series` in order
     to leverage pandas_ built-in statistical methods, as well as functions
@@ -56,7 +55,7 @@ class Variable:
         #: int: The *number of unique values* present in the ``Variable``.
         self.num_unique = self.data.nunique()
 
-        #: list: The *set of unique values* present in the ``Variable``.
+        #: list: The *unique values* present in the ``Variable``.
         self.unique = sorted(self.data.dropna().unique())
 
         #: str: *Missing value information* in the form

@@ -12,8 +12,8 @@ def clean_column_names(data: DataFrame) -> DataFrame:
     """Makes sure that *columns* have *meaningful* names.
 
     When an ``Iterable`` is used to create a ``DataFrame`` and no column names
-    are provided, the columns by default are created as a
-    ( :class:`~pandas.RangeIndex` ) [0, 1, 2, ...].
+    are provided, the columns by default are set as a
+    :class:`~pandas.RangeIndex` — [0, 1, 2, ...].
 
     This function renames such columns to ['var_1', 'var_2, 'var_3', ...],
     making references and comparisons much more intuitive.

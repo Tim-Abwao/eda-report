@@ -28,17 +28,23 @@ class EDAGUI(Frame):  # pragma: no cover
     interface* to the application.
 
     The graphical window is a :class:`tkinter.Frame`, with a brief description
-    of what the application does, and a *button*. Once you click on the button,
-    it launches a *file-dialog* to navigate to and select a file to analyse.
+    of what the application does, and a *button*.
+
+    .. figure:: _static/screencast.*
+       :alt: an image of the graphical user interface
+
+    The button launches a *file-dialog* to navigate to and select a file to
+    analyse.
 
     If a valid file is selected, *text-input widgets* and a *color-picker
     tool* pop up to help set the report's *title*, *target variable(optional)*
-    and *graph color* respectively. Finally, a file-dialog to set the desired
-    location and name for the report is shown.
+    and *graph color*.
 
-    After collecting all the necessary input, the
-    :class:`~eda_report.document.ReportDocument` object is used to create the
-    exploratory data analysis report.
+    Afterwards, a file-dialog to set the desired location and name for the
+    report appears.
+
+    The :class:`~eda_report.document.ReportDocument` object is then used to
+    create the exploratory data analysis report.
     """
 
     def __init__(self, master=None, **kwargs) -> None:
@@ -86,7 +92,7 @@ class EDAGUI(Frame):  # pragma: no cover
             default="active",
             bg="teal",
             fg="white",
-            command=self.create_report,
+            command=self._create_report,
             relief="flat",
         )
         self.canvas.create_window(
@@ -105,7 +111,7 @@ class EDAGUI(Frame):  # pragma: no cover
 
         self.canvas.pack()
 
-    def create_report(self) -> None:
+    def _create_report(self) -> None:
         """Collects input from the graphical user interface, and uses the
         :class:`~eda_report.document.ReportDocument` object to generate a
         report.

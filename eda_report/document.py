@@ -27,7 +27,7 @@ class ReportContent:
     data : Iterable
         The data to analyse.
     target_variable : Optional[Union[str, int]]
-        The column
+        The column to use to group values and color-code graphs.
     title : str, optional
         The title to assign the report, by default "Exploratory Data Analysis
         Report"
@@ -172,8 +172,7 @@ class ReportDocument(ReportContent):
     The report is consists of 3 main sections:
 
     #. An *Overview* of the data and its features.
-    #. *Univariate Analysis*: Summary statistics and graphs for each
-        feature.
+    #. *Univariate Analysis*: Summary statistics and graphs for each feature.
     #. *Bivariate Analysis*: Pairwise comparisons of all numerical features.
 
     .. _python-docx: https://python-docx.readthedocs.io/en/latest/
@@ -183,7 +182,7 @@ class ReportDocument(ReportContent):
     data : Iterable
         The data to analyse.
     target_variable : Optional[Union[str, int]]
-        The column
+        The column to use to group values and color-code graphs.
     title : str, optional
         The title to assign the report, by default "Exploratory Data Analysis
         Report"

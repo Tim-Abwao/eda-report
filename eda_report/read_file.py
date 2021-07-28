@@ -11,11 +11,12 @@ def df_from_file(filepath: Union[str, Path]) -> pd.DataFrame:
     :class:`~pandas.DataFrame`.
 
     File formats are currently restricted to *csv* and *excel*, since these
-    are the most often used to store data. This is basically a wrapper around
-    ``pandas'`` input functions:
+    are the most often used to store data.
 
-    * :func:`pandas.read_csv`
-    * :func:`pandas.read_excel`
+    This is basically a wrapper around ``pandas'`` input functions:
+
+        * :func:`pandas.read_csv`
+        * :func:`pandas.read_excel`
 
     Parameters
     ----------
