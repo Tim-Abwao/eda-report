@@ -1,5 +1,6 @@
 from io import BytesIO
 from typing import Optional
+from collections.abc import Iterable
 
 import matplotlib
 import numpy as np
@@ -11,6 +12,7 @@ from tqdm import tqdm
 
 from eda_report.multivariate import MultiVariable
 from eda_report.univariate import Variable
+from eda_report.validate import validate_univariate_input
 
 # Matplotlib configuration
 matplotlib.rc("figure", autolayout=True, dpi=150, figsize=(6, 3.8))
@@ -55,15 +57,15 @@ class BasePlot:
     ----------
     graph_color : str, optional
         The color to apply to the generated graphs, by default "cyan".
-    hue : Optional[Series]
+    hue : Optional[Iterable]
         Data to use to group values & color-code graphs, by default None.
     """
 
     def __init__(
-        self, *, graph_color: str = "cyan", hue: Optional[Series] = None
+        self, *, graph_color: str = "cyan", hue: Optional[Iterable] = None
     ) -> None:
         self.GRAPH_COLOR = graph_color
-        self.HUE = hue
+        self.HUE = None if hue is None else validate_univariate_input(hue)
         sns.set_palette(
             f"dark:{self.GRAPH_COLOR}_r",
             n_colors=2 if self.HUE is None else self.HUE.nunique(),
@@ -90,7 +92,7 @@ class PlotUnivariate(BasePlot):
         The data to plot.
     graph_color : str, optional
         The color to apply to the generated graphs, by default "cyan".
-    hue : Optional[Series]
+    hue : Optional[Iterable]
         Data to use to group values & color-code graphs, by default None.
 
     Attributes
@@ -308,7 +310,7 @@ class PlotMultiVariate(BasePlot):
         The data to plot.
     graph_color : str, optional
         The color to apply to the generated graphs, by default "cyan".
-    hue : Optional[Series]
+    hue : Optional[Iterable]
         Data to use to group values & color-code graphs, by default None.
 
     Attributes
