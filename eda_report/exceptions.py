@@ -19,3 +19,17 @@ class InputError(Error):
 
     def __init__(self, message) -> None:
         self.message = message
+
+
+class EmptyDataError(InputError):
+    """The *Exception* raised when an iterable input object has length zero
+    or has no items to yield.
+    """
+
+    pass
+
+
+class TargetVariableError(InputError):
+    """The *Exception* raised when the specified target variable is invalid."""
+
+    pass
