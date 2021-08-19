@@ -1,7 +1,7 @@
 Installation
 ============
 
-You can install ``eda_report`` from the `Python Package Index`_ using ``pip``::
+You can install ``eda-report`` from the `Python Package Index`_ using ``pip``::
 
     $ pip install eda-report
 

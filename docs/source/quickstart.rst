@@ -4,9 +4,9 @@ Quickstart
 Using the Graphical User Interface
 ----------------------------------
 
-The command ``eda_report`` launches a graphical window to help you select a *csv* or *excel* file to analyse::
+The command ``eda-report`` launches a graphical window to help you select a *csv* or *excel* file to analyse::
 
-    $ eda_report
+    $ eda-report
 
 .. figure:: _static/screencast.*
    :alt: an image of the graphical user interface
@@ -14,6 +14,16 @@ The command ``eda_report`` launches a graphical window to help you select a *csv
    A ``tkinter``-based graphical user interface to the application
 
 You will be prompted to enter your desired *title*, *target variable*, *graph color* & *output file-name*. Then a report document will be generated, as specified, from the contents of the selected file.
+
+Using the Command Line Interface
+--------------------------------
+
+You can specify the input file and an output file-name with::
+
+    $ eda-report -i data.csv -o some_name.docx
+
+.. literalinclude:: examples.txt
+       :lines: 60-83
 
 From an Interactive Session
 ---------------------------
@@ -39,15 +49,3 @@ You can analyse a multivariate dataset using the :class:`~eda_report.multivariat
 .. literalinclude:: examples.txt
    :lines: 28-57
 
-Using the Command Line Interface
---------------------------------
-
-The command ``eda_cli`` takes input from the command-line. You can analyse *csv* or *excel* files by supplying their path. For instance, to process a file named ``data.csv`` in the current directory, use::
-    
-    $ eda_cli data.csv
-
-You can specify the output file-name and location using the ``-o`` option::
-
-    $ eda_cli data.csv -o some_name.docx
-
-Use ``eda_cli -h`` to view all available options.

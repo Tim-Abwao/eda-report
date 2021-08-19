@@ -27,7 +27,7 @@ StandaloneHTMLBuilder.supported_image_types = [
 
 # -- Project information -----------------------------------------------------
 
-project = "eda_report"
+project = "eda-report"
 copyright = "2021, Abwao"
 author = "Abwao"
 

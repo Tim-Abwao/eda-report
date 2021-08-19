@@ -16,7 +16,11 @@ def process_cli_args() -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser(
         prog="eda-report",
-        description="Automatically analyse data and generate reports.",
+        description=(
+            "Automatically analyse data and generate reports. A graphical user"
+            " interface will be launched if none of the optional arguments is "
+            "specified."
+        ),
     )
 
     parser.add_argument(
@@ -66,12 +70,20 @@ def run_from_cli():
     from the command line interface.
 
     This is the function executed when the package is run as a script (using
-    ``python -m eda_report``. It is also the entry point for the ``eda_cli``
-    console script (command).
+    ``python -m eda_report``). It is also the entry point for the
+    ``eda-report`` command (console script).
+
+    Running the ``eda-report`` command without any arguments launches the
+    graphical user interface.
 
     Arguments passed from the command line are captured using the
-    :func:`~eda_report.cli.process_cli_args` function, and then supplied to the
-    :class:`~eda_report.document.ReportDocument` object to generate the report.
+    :func:`~eda_report.cli.process_cli_args` function, and then used to create
+    a :class:`~eda_report.document.ReportDocument` object.
+
+    Example
+    --------
+    .. literalinclude:: examples.txt
+       :lines: 60-83
     """
     args = process_cli_args()
 

@@ -17,7 +17,7 @@ def clean_column_labels(data: DataFrame) -> DataFrame:
     """Makes sure that *columns* have *meaningful* names.
 
     When an ``Iterable`` is used to create a ``DataFrame`` and no column names
-    are provided, the columns by default are set as a
+    are provided, the column labels by default are set as a
     :class:`~pandas.RangeIndex` — [0, 1, 2, ...].
 
     This function renames such columns to ['var_1', 'var_2, 'var_3', ...],
@@ -86,6 +86,8 @@ def validate_multivariate_input(data: Iterable) -> DataFrame:
     ------
     InputError
         If the ``data`` cannot be cast as a :class:`~pandas.DataFrame`.
+    EmptyDataError
+        If the ``data`` has no rows (has length zero).
     """
     if isinstance(data, DataFrame):
         data_frame = data

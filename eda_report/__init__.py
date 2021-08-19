@@ -1,7 +1,7 @@
-from typing import Optional, Union
 from collections.abc import Iterable
-from eda_report.document import ReportDocument
+from typing import Optional, Union
 
+from eda_report.document import ReportDocument
 
 __version__ = "2.0.0"
 
@@ -18,7 +18,7 @@ def get_word_report(
     """Analyses input data, and generates a report in *Word* (*.docx*) format.
 
     This is simply a wrapper around the
-    :class:`~eda_report.document.ReportDocument` object, and the arguments
+    :class:`~eda_report.document.ReportDocument` class, and the arguments
     supplied are passed to it.
 
     Parameters
@@ -42,6 +42,14 @@ def get_word_report(
     -------
     ReportDocument
         The report object.
+
+    Example
+    --------
+    >>> eda_report.get_word_report([[1, 2], [3, 4]])
+    Bivariate analysis: 100%|█████████████████████████████| 1/1 numeric pairs.
+    Univariate analysis: 100%|█████████████████████████████████| 2/2 features.
+    [INFO 00:16:16.821] Done. Results saved as 'eda-report.docx'
+    <eda_report.document.ReportDocument object at 0x7fc3f7efaa90>
     """
     return ReportDocument(
         data,
@@ -49,5 +57,5 @@ def get_word_report(
         graph_color=graph_color,
         output_filename=output_filename,
         target_variable=target_variable,
-        table_style=table_style
+        table_style=table_style,
     )

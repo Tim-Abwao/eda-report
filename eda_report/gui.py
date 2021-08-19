@@ -43,7 +43,7 @@ class EDAGUI(Frame):  # pragma: no cover
     Afterwards, a file-dialog to set the desired location and name for the
     report appears.
 
-    The :class:`~eda_report.document.ReportDocument` object is then used to
+    The :class:`~eda_report.document.ReportDocument` class is then used to
     create the exploratory data analysis report.
     """
 

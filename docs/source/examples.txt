@@ -55,3 +55,29 @@ sepal_length & petal_width --> strong positive correlation (0.82)
 sepal_length & sepal_width --> very weak negative correlation (-0.12)
 sepal_width & petal_length --> weak negative correlation (-0.43)
 sepal_width & petal_width --> weak negative correlation (-0.37)
+
+
+$ eda-report -h
+usage: eda-report [-h] [-i INFILE] [-o OUTFILE] [-t TITLE] [-c COLOR]
+                  [-T TARGET]
+
+Automatically analyse data and generate reports. A graphical user interface
+will be launched if none of the optional arguments is specified.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INFILE, --infile INFILE
+                        A .csv or .xlsx file to analyse.
+  -o OUTFILE, --outfile OUTFILE
+                        The output name for analysis results (default: eda-
+                        report.docx)
+  -t TITLE, --title TITLE
+                        The top level heading for the report (default:
+                        Exploratory Data Analysis Report)
+  -c COLOR, --color COLOR
+                        The color to apply to graphs (default: cyan)
+  -T TARGET, --target TARGET
+                        The target variable (dependent feature), used to
+                        color-code plotted values. An integer value is treated
+                        as a column index, whereas a string is treated as a
+                        column label.
