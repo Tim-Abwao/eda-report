@@ -4,11 +4,16 @@ from typing import Optional, Union
 from types import GeneratorType
 
 from pandas import DataFrame, RangeIndex, Series
+from pandas.api.types import is_numeric_dtype
 
-from eda_report.exceptions import InputError
+from eda_report.exceptions import (
+    EmptyDataError,
+    InputError,
+    TargetVariableError,
+)
 
 
-def clean_column_names(data: DataFrame) -> DataFrame:
+def clean_column_labels(data: DataFrame) -> DataFrame:
     """Makes sure that *columns* have *meaningful* names.
 
     When an ``Iterable`` is used to create a ``DataFrame`` and no column names
@@ -16,7 +21,9 @@ def clean_column_names(data: DataFrame) -> DataFrame:
     :class:`~pandas.RangeIndex` — [0, 1, 2, ...].
 
     This function renames such columns to ['var_1', 'var_2, 'var_3', ...],
-    making references and comparisons much more intuitive.
+    making references and comparisons much more intuitive. It also ensures
+    that column labels are of type ``str`` to allow sorting and the use of
+    string methods.
 
     Parameters
     ----------
@@ -28,10 +35,14 @@ def clean_column_names(data: DataFrame) -> DataFrame:
     DataFrame
         The data, with reader-friendly column names.
     """
-    # Ensure the data has meaningful column names
-    if isinstance(data.columns, RangeIndex):
+    # Prepend "var_" to entirely numeric column labels
+    if isinstance(data.columns, RangeIndex) or is_numeric_dtype(data.columns):
         data.columns = [f"var_{i+1}" for i in data.columns]
+        return data
 
+    # Ensure all column labels are of type str to allow sorting, and so that
+    # string methods can be used.
+    data.columns = [str(col) for col in data.columns]
     return data
 
 
@@ -77,17 +88,22 @@ def validate_multivariate_input(data: Iterable) -> DataFrame:
         If the ``data`` cannot be cast as a :class:`~pandas.DataFrame`.
     """
     if isinstance(data, DataFrame):
-        return clean_column_names(data)
+        data_frame = data
     else:
         try:
-            data = DataFrame(data)
+            data_frame = DataFrame(data)
         except Exception:
             raise InputError(
                 f"Expected a pandas.Dataframe object, but got {type(data)}."
             )
         # Attempt to infer better dtypes for object columns.
-        data = data.infer_objects()
-    return clean_column_names(data)
+        data_frame = data_frame.infer_objects()
+
+    # The data should not be empty
+    if len(data_frame) == 0:
+        raise EmptyDataError("The supplied data has length zero.")
+
+    return clean_column_labels(data_frame)
 
 
 def validate_univariate_input(
@@ -157,9 +173,9 @@ def validate_target_variable(
 
     Raises
     ------
-    InputError
-        If the column label does not exist or the column index is out of
-        bounds.
+    TargetVariableError
+        If the supplied column label does not exist, or the supplied column
+        index is out of bounds.
     """
     if target_variable is None:
         return None
@@ -168,7 +184,7 @@ def validate_target_variable(
         try:
             target_data = data.iloc[:, target_variable]
         except IndexError:
-            raise InputError(
+            raise TargetVariableError(
                 f"Column index {target_variable} is not in the range"
                 f" [0, {data.columns.size}]."
             )
@@ -178,7 +194,7 @@ def validate_target_variable(
         try:
             target_data = data[target_variable]
         except KeyError:
-            raise InputError(
+            raise TargetVariableError(
                 f"{target_variable!r} is not in {data.columns.to_list()}"
             )
         warn_if_target_data_has_high_cardinality(target_data)
