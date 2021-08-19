@@ -6,7 +6,7 @@ from tkinter.messagebox import askretrycancel, askyesno, showinfo, showwarning
 from tkinter.simpledialog import askstring
 
 from eda_report.document import ReportDocument
-from eda_report.exceptions import InputError
+from eda_report.exceptions import TargetVariableError
 from eda_report.read_file import df_from_file
 from eda_report.validate import validate_target_variable
 
@@ -19,7 +19,7 @@ description = """
 A simple application to help speed up exploratory data analysis and reporting.
 
 Select a file to analyse, and it will be automatically summarised. The result\
- is a report in .docx format, complete with summary statistics and graphs.
+ is a report in Word format, complete with summary statistics and graphs.
 """
 
 
@@ -49,7 +49,7 @@ class EDAGUI(Frame):  # pragma: no cover
 
     def __init__(self, master=None, **kwargs) -> None:
         super().__init__(master)
-        self.master.title("eda_report")
+        self.master.title("eda-report")
         self.master.geometry("600x360")
         self.master.resizable(False, False)  # Fix window size
         self.master.wm_iconphoto(True, PhotoImage(data=icon))  # Add icon
@@ -57,11 +57,11 @@ class EDAGUI(Frame):  # pragma: no cover
         self.pack()
 
     def _create_widgets(self) -> None:
-        """Creates the widgets for the graphical user interface: A *canvas*
-        with the a *background image*, *introductory text*, and a *button* to
-        select a file.
+        """Creates the widgets for the graphical user interface: A Tk *Frame*
+        with the *canvas(background image)*, *introductory text*, and a
+        *button* to select files to analyse.
         """
-        self.canvas = Canvas(self, width=600, height=400)
+        self.canvas = Canvas(self, width=600, height=360)
 
         # Set background image
         self.bg_image = PhotoImage(data=background_image)
@@ -70,7 +70,7 @@ class EDAGUI(Frame):  # pragma: no cover
         # Add title
         self.canvas.create_text(
             (180, 80),
-            text="eda_report",
+            text="eda-report",
             width=500,
             font=("Courier", 35, "bold"),
             fill="black",
@@ -118,6 +118,7 @@ class EDAGUI(Frame):  # pragma: no cover
         """
         self.current_action["text"] = "Waiting for input file..."
         self._get_data_from_file()
+
         if hasattr(self, "data"):
             self.current_action["text"] = "Waiting for report title..."
             self._get_report_title()
@@ -138,10 +139,11 @@ class EDAGUI(Frame):  # pragma: no cover
                 output_filename=self.save_name,
                 target_variable=self.target_variable,
             )
-
             self.current_action["text"] = ""
             showinfo(message=f"Done! Report saved as {self.save_name!r}.")
-            del self.data  # Clear stale data
+
+            # Clear stale data to free up memory
+            del self.data
 
     def _get_data_from_file(self, retries=1) -> None:
         """Creates a file dialog to help navigate to and select a file to
@@ -158,20 +160,19 @@ class EDAGUI(Frame):  # pragma: no cover
         if file_name:
             # Load the file's data as a DataFrame
             self.data = df_from_file(file_name)
-        elif not file_name and retries > 0:  # If no file is selected
+        elif retries > 0:
             # Ask the user whether they'd like to retry
             if askretrycancel(message="Please select a file to continue"):
                 self._get_data_from_file(retries - 1)
             else:
-                self.master.quit()  # Quit if the user turns down retry prompt
+                self.master.quit()
         else:
-            self.master.quit()  # Quit if no file selected and retry is spent
+            self.master.quit()
 
     def _get_report_title(self) -> None:
         """Creates a simple dialog to capture text input for the desired
         report title.
         """
-        # Prompt user for report title
         report_title = askstring(
             title="Report Title",
             prompt="Please enter your preferred title for the report:",
@@ -197,12 +198,12 @@ class EDAGUI(Frame):  # pragma: no cover
                 validate_target_variable(
                     data=self.data, target_variable=self.target_variable
                 )
-            except InputError as error:
+            except TargetVariableError as error:
                 self.target_variable = None
                 showwarning(
                     title="Invalid Target Variable", message=error.message
                 )
-        else:  # If user doesn't wish to supply a target variable
+        else:
             self.target_variable = None
 
     def _get_graph_color(self) -> None:
@@ -213,7 +214,7 @@ class EDAGUI(Frame):  # pragma: no cover
         color = askcolor(
             color="cyan", title="Please select a color for the graphs"
         )[-1]
-        self.graph_color = color if color is not None else "orangered"
+        self.graph_color = color or "cyan"
 
     def _get_save_as_name(self) -> None:
         """Create a file dialog to help select a destination folder and file
@@ -225,14 +226,4 @@ class EDAGUI(Frame):  # pragma: no cover
             filetypes=(("Word document", "*.docx"),),
             title="Please select Save As file name",
         )
-        self.save_name = save_name if save_name else "eda-report.docx"
-
-
-def run_in_gui() -> None:
-    """Starts the *graphical user interface* to the application.
-
-    This provides the entry point for the ``eda_report`` console script
-    (command).
-    """
-    app = EDAGUI()
-    app.mainloop()
+        self.save_name = save_name or "eda-report.docx"
