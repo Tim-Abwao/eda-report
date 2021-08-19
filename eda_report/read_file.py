@@ -1,12 +1,12 @@
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 import pandas as pd
 
 from eda_report.exceptions import InputError
 
 
-def df_from_file(filepath: Union[str, Path]) -> pd.DataFrame:
+def df_from_file(filepath: Optional[Union[str, Path]] = None) -> pd.DataFrame:
     """Reads a file, and loads its contents as a ``pandas``
     :class:`~pandas.DataFrame`.
 
@@ -20,7 +20,7 @@ def df_from_file(filepath: Union[str, Path]) -> pd.DataFrame:
 
     Parameters
     ----------
-    filepath : Path, str
+    filepath : Optional[Union[str, Path]] = None
         The path to a file.
 
     Returns
@@ -34,6 +34,9 @@ def df_from_file(filepath: Union[str, Path]) -> pd.DataFrame:
         If the supplied filepath is invalid, for instance if the file is of an
         incorrect format or does not exist.
     """
+    if filepath is None:
+        return None
+
     file = Path(filepath)
 
     if file.suffix == ".csv":
