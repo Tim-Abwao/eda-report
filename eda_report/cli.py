@@ -1,10 +1,11 @@
 import argparse
 
 from eda_report.document import ReportDocument
+from eda_report.gui import EDAGUI
 from eda_report.read_file import df_from_file
 
 
-def process_cli_args(*args) -> argparse.Namespace:
+def process_cli_args() -> argparse.Namespace:
     """Captures and parses input from the command line interface using the
     :mod:`argparse` module from the Python standard library.
 
@@ -14,12 +15,15 @@ def process_cli_args(*args) -> argparse.Namespace:
         A class with parsed arguments as attributes.
     """
     parser = argparse.ArgumentParser(
-        prog="eda_cli",
+        prog="eda-report",
         description="Automatically analyse data and generate reports.",
     )
 
     parser.add_argument(
-        "infile", type=df_from_file, help="A .csv or .xlsx file to analyse."
+        "-i",
+        "--infile",
+        type=df_from_file,
+        help="A .csv or .xlsx file to analyse.",
     )
 
     parser.add_argument(
@@ -50,18 +54,14 @@ def process_cli_args(*args) -> argparse.Namespace:
             "The target variable (dependent feature), used to color-code "
             "plotted values. An integer value is treated as a column index, "
             "whereas a string is treated as a column label."
-            " (Default: %(default)s)"
         ),
     )
 
     # Parse arguments
-    if args:
-        return parser.parse_args(args)
-    else:
-        return parser.parse_args()
+    return parser.parse_args()
 
 
-def run_from_cli():  # pragma: no cover
+def run_from_cli():
     """Creates an exploratory data analysis report in *Word* format using input
     from the command line interface.
 
@@ -75,10 +75,16 @@ def run_from_cli():  # pragma: no cover
     """
     args = process_cli_args()
 
-    ReportDocument(
-        args.infile,
-        title=args.title,
-        graph_color=args.color,
-        output_filename=args.outfile,
-        target_variable=args.target,
-    )
+    if args.infile is None:
+        # Launch graphical user interface to select and analyse a file
+        app = EDAGUI()
+        app.mainloop()
+
+    else:
+        return ReportDocument(
+            args.infile,
+            title=args.title,
+            graph_color=args.color,
+            output_filename=args.outfile,
+            target_variable=args.target,
+        )
