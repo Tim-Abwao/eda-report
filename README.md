@@ -1,10 +1,10 @@
-# Automated Exploratory Data Analysis
+# `eda-report` - Automated Exploratory Data Analysis
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Tim-Abwao/auto-eda/HEAD?filepath=eda_report%20basics.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Tim-Abwao/eda-report/HEAD?filepath=eda_report%20basics.ipynb)
 [![PyPI version](https://badge.fury.io/py/eda-report.svg)](https://badge.fury.io/py/eda-report)
-[![Python 3.7 | 3.9](https://github.com/Tim-Abwao/auto-eda/actions/workflows/test-python3.7-3.9.yml/badge.svg)](https://github.com/Tim-Abwao/auto-eda/actions/workflows/test-python3.7-3.9.yml)
+[![Python 3.7 | 3.9](https://github.com/Tim-Abwao/eda-report/actions/workflows/test-python3.7-3.9.yml/badge.svg)](https://github.com/Tim-Abwao/eda-report/actions/workflows/test-python3.7-3.9.yml)
 [![Documentation Status](https://readthedocs.org/projects/eda-report/badge/?version=latest)](https://eda-report.readthedocs.io/en/latest/?badge=latest)
-[![codecov](https://codecov.io/gh/Tim-Abwao/auto-eda/branch/main/graph/badge.svg?token=KNQD8XZCWG)](https://codecov.io/gh/Tim-Abwao/auto-eda)
+[![codecov](https://codecov.io/gh/Tim-Abwao/eda-report/branch/main/graph/badge.svg?token=KNQD8XZCWG)](https://codecov.io/gh/Tim-Abwao/eda-report)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 A Python program to help automate the exploratory data analysis and reporting process.
@@ -167,5 +167,5 @@ Visit the [official documentation][docs] for more details.
 [4]: https://seaborn.pydata.org/
 [5]: https://python-docx.readthedocs.io/en/latest/
 [6]: https://pypi.org/project/eda_report/
-[screencast]: https://raw.githubusercontent.com/Tim-Abwao/auto-eda/dev/docs/source/_static/screencast.gif
+[screencast]: https://raw.githubusercontent.com/Tim-Abwao/eda-report/dev/docs/source/_static/screencast.gif
 [docs]: https://eda-report.readthedocs.io/

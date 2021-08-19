@@ -10,7 +10,7 @@ Simplify the `exploratory data analysis`_ and reporting process:
       An overview of the characteristics of the input data, summary statistics & plots for each variable, and pair-wise comparisons for all numeric variables present. You can afterwards easily edit the report to your liking. Made with `python-docx`_.
 
 .. image:: https://mybinder.org/badge_logo.svg
-   :target: https://mybinder.org/v2/gh/Tim-Abwao/auto-eda/HEAD?filepath=eda_report%20basics.ipynb
+   :target: https://mybinder.org/v2/gh/Tim-Abwao/eda-report/HEAD?filepath=eda_report%20basics.ipynb
 
 .. _exploratory data analysis: https://en.wikipedia.org/wiki/Exploratory_data_analysis
 .. _pandas: https://pandas.pydata.org/
