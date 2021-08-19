@@ -1,15 +1,9 @@
+from io import BytesIO
+
 from eda_report import get_word_report
 from eda_report.document import ReportDocument
 from pandas.core.frame import DataFrame
 from seaborn import load_dataset
-from io import BytesIO
-
-import pytest
-
-
-@pytest.fixture(scope="session")
-def temp_data_dir(tmp_path_factory):
-    return tmp_path_factory.mktemp("data")
 
 
 class TestReportWithIdealInput:

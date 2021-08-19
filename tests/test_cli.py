@@ -1,64 +1,86 @@
+from eda_report.gui import EDAGUI
 from pandas import DataFrame
-from eda_report.cli import process_cli_args
+from eda_report.cli import run_from_cli
 import sys
+import pytest
+
+
+@pytest.fixture(scope="session")
+def temp_data_dir(tmp_path_factory):
+    return tmp_path_factory.mktemp("data")
 
 
 class TestCLIArgumentParsing:
-    def test_with_all_args(self, tmp_path):
+    def test_with_all_args(self, temp_data_dir, monkeypatch):
 
-        cli_test_dir = tmp_path / "cli-tests"
-        cli_test_dir.mkdir()
-        csv_file = cli_test_dir / "data.csv"
-        csv_file.write_text("1, 2, 3\n")
+        csv_file = temp_data_dir / "data.csv"
+        csv_file.write_text("a,b,c\n1,2,3\n4,5,6\n")
 
-        args = process_cli_args(
-            f"{csv_file}",
-            "-o",
-            "cli-test-1.docx",
-            "-t",
-            "CLI Test",
-            "-c",
-            "teal",
-            "-T",
-            "0",
+        # Simulate supplying all args
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            [
+                "eda-report",
+                "-i",
+                f"{csv_file}",
+                "-o",
+                f"{temp_data_dir}/cli-test-1.docx",
+                "-t",
+                "CLI Test",
+                "-c",
+                "teal",
+                "-T",
+                "a",
+            ],
         )
+
+        report = run_from_cli()
+
         # Check whether the supplied arguments were set
-        assert isinstance(args.infile, DataFrame)
-        assert args.outfile == "cli-test-1.docx"
-        assert args.title == "CLI Test"
-        assert args.color == "teal"
-        assert args.target == "0"
+        assert isinstance(report.variables.data, DataFrame)
+        assert report.OUTPUT_FILENAME == f"{temp_data_dir}/cli-test-1.docx"
+        assert report.TITLE == "CLI Test"
+        assert report.GRAPH_COLOR == "teal"
+        assert report.TARGET_VARIABLE.name == "a"
 
-    def test_with_default_args(self, tmp_path):
+    def test_with_default_args(self, temp_data_dir, monkeypatch):
 
-        cli_test_dir = tmp_path / "cli-tests"
-        cli_test_dir.mkdir()
-        excel_file = cli_test_dir / "data.xlsx"
+        excel_file = temp_data_dir / "data.xlsx"
         DataFrame([1, 2, 3]).to_excel(
             excel_file, index=False, engine="openpyxl"
         )
 
-        args = process_cli_args(f"{excel_file}")
+        # Supply the input file it has no default.
+        monkeypatch.setattr(sys, "argv", ["eda-report", "-i", f"{excel_file}"])
+        report = run_from_cli()
 
         # Check if the default arguments were set
-        assert isinstance(args.infile, DataFrame)
-        assert args.outfile == "eda-report.docx"
-        assert args.title == "Exploratory Data Analysis Report"
-        assert args.color == "cyan"
-        assert args.target is None
+        assert isinstance(report.variables.data, DataFrame)
+        assert report.OUTPUT_FILENAME == "eda-report.docx"
+        assert report.TITLE == "Exploratory Data Analysis Report"
+        assert report.GRAPH_COLOR == "cyan"
+        assert report.TARGET_VARIABLE is None
 
-    def test_with_args_from_stdin(self, tmp_path, monkeypatch):
+    def test_without_optional_args(self, tmp_path, monkeypatch, capsys):
 
         cli_test_dir = tmp_path / "cli-tests"
         cli_test_dir.mkdir()
         csv_file = cli_test_dir / "data.csv"
         csv_file.write_text("1, 2, 3\n")
 
-        monkeypatch.setattr(sys, "argv", ["eda_cli", f"{csv_file}"])
+        def test_gui(gui):
+            # Ensure that gui is an instance of eda_report.gui.EDAGUI
+            assert isinstance(gui, EDAGUI)
+            print("Graphical user interface running in Tk mainloop.")
 
-        args = process_cli_args()
+        monkeypatch.setattr(EDAGUI, "mainloop", test_gui)
 
-        assert args.outfile == "eda-report.docx"
-        assert args.title == "Exploratory Data Analysis Report"
-        assert args.color == "cyan"
-        assert args.target is None
+        monkeypatch.setattr(sys, "argv", ["eda-report"])
+
+        run_from_cli()
+
+        captured = capsys.readouterr()
+        assert (
+            "Graphical user interface running in Tk mainloop." in captured.out
+        )

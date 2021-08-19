@@ -1,13 +1,16 @@
 import pytest
-
-from pandas import DataFrame, Series
-from eda_report.exceptions import InputError
+from eda_report.exceptions import (
+    EmptyDataError,
+    InputError,
+    TargetVariableError,
+)
 from eda_report.validate import (
-    clean_column_names,
+    clean_column_labels,
     validate_multivariate_input,
     validate_target_variable,
     validate_univariate_input,
 )
+from pandas import DataFrame, Series
 
 
 class TestMultivariateInputValidation:
@@ -42,6 +45,12 @@ class TestMultivariateInputValidation:
             "Expected a pandas.Dataframe object, but got <class 'int'>."
             in str(error.value)
         )
+
+    def test_empty_input(self):
+        # Check that empty input rasies an EmptyDataError
+        with pytest.raises(EmptyDataError) as error:
+            validate_multivariate_input(DataFrame())
+        assert "The supplied data has length zero." in str(error.value)
 
 
 class TestUnivariateInputValidation:
@@ -89,7 +98,7 @@ class TestTargetValidation:
     def test_invalid_column_index(self):
         # Check that an input error is raised for a column index that is out
         # of bounds.
-        with pytest.raises(InputError) as error:
+        with pytest.raises(TargetVariableError) as error:
             validate_target_variable(data=self.data, target_variable=10)
         # Check that the error message is as expected
         assert "Column index 10 is not in the range [0, 5]." in str(
@@ -106,7 +115,7 @@ class TestTargetValidation:
     def test_invalid_column_label(self):
         # Check that an invalid column label raises an input error.
         # In this case, check that "X" is not a column in the data.
-        with pytest.raises(InputError) as error:
+        with pytest.raises(TargetVariableError) as error:
             validate_target_variable(data=self.data, target_variable="X")
         # Check that the error message is as expected
         assert "'X' is not in ['A', 'B', 'C', 'D', 'E']" in str(error.value)
@@ -146,7 +155,7 @@ class TestTargetValidation:
 def test_column_cleaning():
     dataframe = DataFrame([[0, 1], [1, 2]])
     # Check if columns [0, 1, ...] are changed to ["var_1", "var_2", ...]
-    assert clean_column_names(dataframe).columns.to_list() == [
+    assert clean_column_labels(dataframe).columns.to_list() == [
         "var_1",
         "var_2",
     ]
