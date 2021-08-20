@@ -1,8 +1,9 @@
+import sys
+
+import pytest
+from eda_report.cli import run_from_cli
 from eda_report.gui import EDAGUI
 from pandas import DataFrame
-from eda_report.cli import run_from_cli
-import sys
-import pytest
 
 
 @pytest.fixture(scope="session")
@@ -62,19 +63,19 @@ class TestCLIArgumentParsing:
         assert report.GRAPH_COLOR == "cyan"
         assert report.TARGET_VARIABLE is None
 
-    def test_without_optional_args(self, tmp_path, monkeypatch, capsys):
+    def test_without_optional_args(self, temp_data_dir, monkeypatch, capsys):
 
-        cli_test_dir = tmp_path / "cli-tests"
-        cli_test_dir.mkdir()
-        csv_file = cli_test_dir / "data.csv"
-        csv_file.write_text("1, 2, 3\n")
+        csv_file = temp_data_dir / "data.csv"
+        csv_file.write_text("1,2,3\na,b,c\n")
 
-        def test_gui(gui):
-            # Ensure that gui is an instance of eda_report.gui.EDAGUI
-            assert isinstance(gui, EDAGUI)
+        def mock_gui_init(gui):
+            pass
+
+        def mock_gui_mainloop(gui):
             print("Graphical user interface running in Tk mainloop.")
 
-        monkeypatch.setattr(EDAGUI, "mainloop", test_gui)
+        monkeypatch.setattr(EDAGUI, "__init__", mock_gui_init)
+        monkeypatch.setattr(EDAGUI, "mainloop", mock_gui_mainloop)
 
         monkeypatch.setattr(sys, "argv", ["eda-report"])
 
