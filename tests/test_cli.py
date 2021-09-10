@@ -1,5 +1,6 @@
 import sys
 
+from pathlib import Path
 import pytest
 from eda_report.cli import run_from_cli
 from eda_report.gui import EDAGUI
@@ -45,7 +46,7 @@ class TestCLIArgumentParsing:
         assert report.GRAPH_COLOR == "teal"
         assert report.TARGET_VARIABLE.name == "a"
 
-    def test_with_default_args(self, temp_data_dir, monkeypatch):
+    def test_with_only_input_file(self, temp_data_dir, monkeypatch):
 
         excel_file = temp_data_dir / "data.xlsx"
         DataFrame([1, 2, 3]).to_excel(
@@ -62,6 +63,8 @@ class TestCLIArgumentParsing:
         assert report.TITLE == "Exploratory Data Analysis Report"
         assert report.GRAPH_COLOR == "cyan"
         assert report.TARGET_VARIABLE is None
+
+        Path("eda-report.docx").unlink()  # Remove resutant report
 
     def test_without_optional_args(self, temp_data_dir, monkeypatch, capsys):
 
