@@ -76,7 +76,7 @@ class BasePlot:
         #: otherwise.
         self.COLOR_CODE_GRAPHS = (
             True
-            if self.HUE is not None and self.HUE.nunique() in range(1, 11)
+            if self.HUE is not None and self.HUE.nunique() in range(2, 11)
             else False
         )
         self._COLOR_CODED_GRAPHS = set()
@@ -274,8 +274,6 @@ class PlotUnivariate(BasePlot):
             sns.countplot(data=data_with_hue, x="data", hue="_hue_", ax=ax)
             self._COLOR_CODED_GRAPHS.add("bar_plot")
         else:
-
-            top_10 = self.variable.data.value_counts().nlargest(10)
             ax.bar(top_10.index.to_list(), top_10)
 
         ax.tick_params(axis="x", rotation=45)

@@ -1,7 +1,25 @@
-from eda_report.plotting import PlotMultiVariate, PlotUnivariate
+from eda_report.plotting import PlotMultiVariate, PlotUnivariate, BasePlot
 from eda_report.univariate import Variable
 from eda_report.multivariate import MultiVariable
 from io import BytesIO
+
+
+class TestBasePlot:
+
+    with_constant_hue = BasePlot(graph_color="navy", hue=[1] * 7)
+    with_valid_hue = BasePlot(graph_color="purple", hue=range(8))
+    with_high_cardinality = BasePlot(graph_color="yellow", hue=range(15))
+
+    def test_color(self):
+        assert self.with_constant_hue.GRAPH_COLOR == "navy"
+        assert self.with_valid_hue.GRAPH_COLOR == "purple"
+        assert self.with_high_cardinality.GRAPH_COLOR == "yellow"
+
+    def test_color_coding(self):
+        # Should be False with constant and high cardinality hues
+        assert self.with_constant_hue.COLOR_CODE_GRAPHS is False
+        assert self.with_valid_hue.COLOR_CODE_GRAPHS
+        assert self.with_high_cardinality.COLOR_CODE_GRAPHS is False
 
 
 class TestPlotMultiVariate:
@@ -14,6 +32,7 @@ class TestPlotMultiVariate:
 
     def test_color_coding(self):
         assert self.plots.COLOR_CODE_GRAPHS
+        # The heatmap and pairwise scatterplots need no color coding
         assert self.plots._COLOR_CODED_GRAPHS == set()
 
     def test_graphs(self):
