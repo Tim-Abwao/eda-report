@@ -1,5 +1,5 @@
 import pkgutil
-from tkinter import Button, Canvas, Frame, Label, PhotoImage
+from tkinter import Button, Canvas, Frame, Label, PhotoImage, StringVar
 from tkinter.colorchooser import askcolor
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter.messagebox import askretrycancel, askyesno, showinfo, showwarning
@@ -10,17 +10,15 @@ from eda_report.exceptions import TargetVariableError
 from eda_report.read_file import df_from_file
 from eda_report.validate import validate_target_variable
 
-# Load background image and icon
 background_image = pkgutil.get_data(__name__, "images/background.png")
 icon = pkgutil.get_data(__name__, "images/icon.png")
 
-# Introductory text
-description = """
-A simple application to help speed up exploratory data analysis and reporting.
-
-Select a file to analyse, and it will be automatically summarised. The result\
- is a report in Word format, complete with summary statistics and graphs.
-"""
+description = (
+    "A simple application to help speed up exploratory data analysis and "
+    "reporting. Select a file to analyse, and it will be automatically "
+    "summarised. The result is a report in Word format, complete with summary"
+    " statistics and graphs."
+)
 
 
 class EDAGUI(Frame):  # pragma: no cover
@@ -69,44 +67,50 @@ class EDAGUI(Frame):  # pragma: no cover
 
         # Add title
         self.canvas.create_text(
-            (180, 80),
-            text="eda-report",
-            width=500,
-            font=("Courier", 35, "bold"),
+            (90, 45),
+            anchor="nw",
             fill="black",
+            font=("Courier", 35, "bold"),
+            text="eda-report",
         )
 
         # Add introductory text
         self.canvas.create_text(
-            (300, 190),
+            (40, 105),
+            anchor="nw",
+            fill="black",
+            font=("Courier", 12),
             text=description,
             width=500,
-            font=("Times", 13, "italic"),
-            fill="black",
         )
 
         # Add a button to select input files
         self.button = Button(
             self,
-            text="Select a file",
-            default="active",
-            bg="teal",
-            fg="white",
+            bg="#204060",
             command=self._create_report,
+            default="active",
+            fg="white",
+            font=("Courier", 11),
             relief="flat",
+            text="Select a file",
         )
         self.canvas.create_window(
-            (170, 260), anchor="nw", height=40, width=250, window=self.button
+            (175, 250), anchor="nw", height=40, width=250, window=self.button
         )
 
-        # Display current action
-        self.current_action = Label(
-            self, font=("Courier", 10, "italic"), bg="#dfddde"
+        # Show current action
+        self.current_action = StringVar()
+        self.display_current_action = Label(
+            self,
+            bg="#dfddde",
+            font=("Courier", 10, "italic"),
+            textvariable=self.current_action,
         )
         self.canvas.create_window(
-            (140, 325),
+            (140, 315),
             anchor="nw",
-            window=self.current_action,
+            window=self.display_current_action,
         )
 
         self.canvas.pack()
@@ -116,19 +120,20 @@ class EDAGUI(Frame):  # pragma: no cover
         :class:`~eda_report.document.ReportDocument` object to generate a
         report.
         """
-        self.current_action["text"] = "Waiting for input file..."
+        self.current_action.set("Waiting for input file...")
         self._get_data_from_file()
 
-        if hasattr(self, "data"):
-            self.current_action["text"] = "Waiting for report title..."
+        if self.data is not None:
+            self.current_action.set("Waiting for report title...")
             self._get_report_title()
-            self.current_action["text"] = "Waiting for target variable..."
+
+            self.current_action.set("Waiting for target variable...")
             self._get_target_variable()
-            self.current_action["text"] = "Waiting for graph color..."
+
+            self.current_action.set("Waiting for graph color...")
             self._get_graph_color()
-            self.current_action[
-                "text"
-            ] = "Analysing data & compiling the report..."
+
+            self.current_action.set("Analysing data & compiling the report...")
             self._get_save_as_name()
 
             # Generate the report using the collected arguments
@@ -139,7 +144,7 @@ class EDAGUI(Frame):  # pragma: no cover
                 output_filename=self.save_name,
                 target_variable=self.target_variable,
             )
-            self.current_action["text"] = ""
+            self.current_action.set("")
             showinfo(message=f"Done! Report saved as {self.save_name!r}.")
 
             # Clear stale data to free up memory
@@ -158,16 +163,16 @@ class EDAGUI(Frame):  # pragma: no cover
             ),
         )
         if file_name:
-            # Load the file's data as a DataFrame
             self.data = df_from_file(file_name)
         elif retries > 0:
-            # Ask the user whether they'd like to retry
             if askretrycancel(message="Please select a file to continue"):
                 self._get_data_from_file(retries - 1)
             else:
-                self.master.quit()
+                # No data if retry prompt is cancelled
+                self.data = None
         else:
-            self.master.quit()
+            # No data if no file is selected and retry has been used up
+            self.data = None
 
     def _get_report_title(self) -> None:
         """Creates a simple dialog to capture text input for the desired
@@ -179,11 +184,7 @@ class EDAGUI(Frame):  # pragma: no cover
             initialvalue="Exploratory Data Analysis Report",
         )
 
-        self.report_title = (
-            report_title
-            if report_title
-            else "Exploratory Data Analysis Report"
-        )
+        self.report_title = report_title or "Exploratory Data Analysis Report"
 
     def _get_target_variable(self) -> None:
         """Inquire about the target variable, and create a text box to
@@ -222,6 +223,7 @@ class EDAGUI(Frame):  # pragma: no cover
         """
         # Propmt user for desired output file-name
         save_name = asksaveasfilename(
+            initialdir=".",
             initialfile="eda-report.docx",
             filetypes=(("Word document", "*.docx"),),
             title="Please select Save As file name",
