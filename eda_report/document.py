@@ -357,10 +357,12 @@ class ReportDocument(ReportContent):
             Flags whether the first row is a header, by default False.
         """
         if header:
-            data.loc["", :] = data.columns
-            # Sort the index in ascending order, to ensure that column names
-            # end up as the first row.
-            data.sort_index(inplace=True)
+            # Add a row of column labels
+            data_with_header = data.copy()
+            data_with_header.loc["", :] = data.columns
+
+            # Ensure that column labels are in the first row
+            data = data_with_header.sort_index()
 
         table = self.document.add_table(
             rows=len(data),
