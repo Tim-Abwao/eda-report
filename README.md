@@ -9,11 +9,11 @@
 
 A Python program to help automate the exploratory data analysis and reporting process.
 
-Input data is processed and analysed using [pandas][1]' built-in methods, and graphs are plotted using [matplotlib][3] & [seaborn][4]. The results are then nicely packaged as a *Word (.docx)* document using [python-docx][5].
+Input data is processed and analysed using [pandas][pandas]' built-in methods, and graphs are plotted using [matplotlib][matplotlib] & [seaborn][seaborn]. The results are then nicely packaged as a *Word (.docx)* document using [python-docx][python-docx].
 
 ## Installation
 
-You can install the package from [PyPI][6] using:
+You can install the package from [PyPI][eda-report-pypi] using:
 
 ```bash
 pip install eda-report
@@ -33,6 +33,7 @@ eda-report
 
 You will be prompted to set a *report title*, *target variable (optional)*, *graph color* and *output filename*, after which the contents of the input file will be analysed, and the results will be saved in a *Word (.docx)* document.
 
+>**NOTE:** For help with `Tk` - related issues, consider visiting [TkDocs][tkdocs].
 ### 2. Command Line Interface
 
 To analyse a file named `input.csv`, just supply its path to the `eda-report` command:
@@ -162,11 +163,11 @@ Univariate analysis: 100%|██████████████████
 
 Visit the [official documentation][docs] for more details.
 
-[1]: https://pandas.pydata.org/
-[2]: https://numpy.org/
-[3]: https://matplotlib.org/
-[4]: https://seaborn.pydata.org/
-[5]: https://python-docx.readthedocs.io/en/latest/
-[6]: https://pypi.org/project/eda-report/
+[pandas]: https://pandas.pydata.org/
+[matplotlib]: https://matplotlib.org/
+[seaborn]: https://seaborn.pydata.org/
+[python-docx]: https://python-docx.readthedocs.io/en/latest/
+[eda-report-pypi]: https://pypi.org/project/eda-report/
 [screencast]: https://raw.githubusercontent.com/Tim-Abwao/eda-report/dev/docs/source/_static/screencast.gif
 [docs]: https://eda-report.readthedocs.io/
+[tkdocs]: https://tkdocs.com/index.html
