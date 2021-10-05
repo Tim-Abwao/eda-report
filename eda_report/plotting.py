@@ -82,7 +82,7 @@ class BasePlot:
         self._COLOR_CODED_GRAPHS = set()
 
 
-class PlotUnivariate(BasePlot):
+class PlotVariable(BasePlot):
     """This defines objects that plot instances of
     :class:`~eda_report.univariate.Variable`, which have one-dimensional data.
 
@@ -297,7 +297,7 @@ class PlotUnivariate(BasePlot):
         return savefig(fig)
 
 
-class PlotMultiVariate(BasePlot):
+class PlotMultiVariable(BasePlot):
     """This defines objects that plot instances of
     :class:`~eda_report.multivariate.MultiVariable`, which have
     two-dimensional data.

@@ -1,4 +1,4 @@
-from eda_report.plotting import PlotMultiVariate, PlotUnivariate, BasePlot
+from eda_report.plotting import PlotMultiVariable, PlotVariable, BasePlot
 from eda_report.univariate import Variable
 from eda_report.multivariate import MultiVariable
 from io import BytesIO
@@ -22,10 +22,10 @@ class TestBasePlot:
         assert self.with_high_cardinality.COLOR_CODE_GRAPHS is False
 
 
-class TestPlotMultiVariate:
+class TestPlotMultiVariable:
 
     data = MultiVariable([["a", 1, 2], ["b", 2, 3]])
-    plots = PlotMultiVariate(data, graph_color="blue", hue=data.data["var_1"])
+    plots = PlotMultiVariable(data, graph_color="blue", hue=data.data["var_1"])
 
     def test_graph_color(self):
         assert self.plots.GRAPH_COLOR == "blue"
@@ -46,13 +46,13 @@ class TestPlotMultiVariate:
             assert isinstance(scatter_plot, BytesIO)
 
 
-class TestPlotUnivariate:
+class TestPlotVariable:
 
     numeric_variable = Variable(range(7))
     categorical_variable = Variable(list("abcde"))
 
-    plots_numeric = PlotUnivariate(numeric_variable, hue=list("abcacba"))
-    plots_categorical = PlotUnivariate(
+    plots_numeric = PlotVariable(numeric_variable, hue=list("abcacba"))
+    plots_categorical = PlotVariable(
         categorical_variable, graph_color="olive", hue=range(5)
     )
 

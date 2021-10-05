@@ -7,7 +7,7 @@ from pandas.core.frame import DataFrame
 from tqdm import tqdm
 
 from eda_report.multivariate import MultiVariable
-from eda_report.plotting import PlotMultiVariate, PlotUnivariate
+from eda_report.plotting import PlotMultiVariable, PlotVariable
 from eda_report.univariate import Variable
 from eda_report.validate import validate_target_variable
 
@@ -50,7 +50,7 @@ class ReportContent:
         )
         self.TITLE = title
         self.intro_text = self._get_introductory_summary()
-        self.multivariate_graphs = PlotMultiVariate(
+        self.multivariate_graphs = PlotMultiVariable(
             self.variables,
             graph_color=self.GRAPH_COLOR,
             hue=self.TARGET_VARIABLE,
@@ -107,7 +107,7 @@ class ReportContent:
                 f"{name.capitalize()} is a {var.var_type} variable with"
                 f" {unique_vals}. {var.missing} of its values are missing."
             ),
-            "graphs": PlotUnivariate(
+            "graphs": PlotVariable(
                 variable=var,
                 graph_color=self.GRAPH_COLOR,
                 hue=self.TARGET_VARIABLE,
