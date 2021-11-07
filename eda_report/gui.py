@@ -1,9 +1,21 @@
 import pkgutil
-from tkinter import Button, Canvas, Frame, Label, PhotoImage, StringVar
-from tkinter.colorchooser import askcolor
-from tkinter.filedialog import askopenfilename, asksaveasfilename
-from tkinter.messagebox import askretrycancel, askyesno, showinfo, showwarning
-from tkinter.simpledialog import askstring
+
+try:
+    from tkinter import Button, Canvas, Frame, Label, PhotoImage, StringVar
+    from tkinter.colorchooser import askcolor
+    from tkinter.filedialog import askopenfilename, asksaveasfilename
+    from tkinter.messagebox import (
+        askretrycancel,
+        askyesno,
+        showinfo,
+        showwarning,
+    )
+    from tkinter.simpledialog import askstring
+except ImportError as error:
+    print(
+        f"{error}. Please visit https://tkdocs.com/tutorial/install.html",
+        "for help installing it.",
+    )
 
 from eda_report.document import ReportDocument
 from eda_report.exceptions import TargetVariableError
