@@ -3,7 +3,7 @@ from typing import Optional, Union
 
 from eda_report.document import ReportDocument
 
-__version__ = "2.2.2"
+__version__ = "2.2.3"
 
 
 def get_word_report(
