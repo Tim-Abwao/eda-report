@@ -155,7 +155,7 @@ class Variable:
             most_common_items = self.data.value_counts().head()
             n = len(self.data)
             self.most_common_items = most_common_items.apply(
-                lambda x: f"{x} ({x / n:.2%})"
+                lambda x: f"{x:,} ({x / n:.2%})"
             ).to_frame()
 
             return summary.to_frame()
@@ -172,4 +172,4 @@ class Variable:
         if missing_values == 0:
             return None
         else:
-            return f"{missing_values} ({missing_values / len(self.data):.2%})"
+            return f"{missing_values:,} ({missing_values / len(self.data):.2%})"

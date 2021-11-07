@@ -72,12 +72,12 @@ class ReportContent:
         if num_rows == 1:
             rows = "1 row (observation)"
         else:
-            rows = f"{num_rows} rows (observations)"
+            rows = f"{num_rows:,} rows (observations)"
 
         if num_cols == 1:
             cols = "1 column (feature)"
         else:
-            cols = f"{num_cols} columns (features)"
+            cols = f"{num_cols:,} columns (features)"
 
         # Get numeric column info
         if self.variables.numeric_cols is None:
@@ -100,7 +100,7 @@ class ReportContent:
         if var.num_unique == 1:
             unique_vals = "1 unique value"
         else:
-            unique_vals = f"{var.num_unique} unique values"
+            unique_vals = f"{var.num_unique:,} unique values"
 
         return {
             "description": (
