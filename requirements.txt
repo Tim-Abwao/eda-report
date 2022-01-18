@@ -5,6 +5,7 @@ asttokens==2.0.5
 attrs==21.4.0
 Babel==2.9.1
 backcall==0.2.0
+beautifulsoup4==4.10.0
 black==21.12b0
 bleach==4.1.0
 certifi==2021.10.8
@@ -16,11 +17,11 @@ debugpy==1.5.1
 decorator==5.1.1
 defusedxml==0.7.1
 docutils==0.17.1
--e git+https://github.com/tim-abwao/eda-report.git@7af01c1c0b5ff3aebd761519b30c82a05f0a960a#egg=eda_report
 entrypoints==0.3
 et-xmlfile==1.1.0
 executing==0.8.2
 fonttools==4.28.5
+furo==2022.1.2
 idna==3.3
 imagesize==1.3.0
 importlib-metadata==4.10.1
@@ -78,6 +79,7 @@ seaborn==0.11.2
 Send2Trash==1.8.0
 six==1.16.0
 snowballstemmer==2.2.0
+soupsieve==2.3.1
 Sphinx==4.4.0
 sphinxcontrib-applehelp==1.0.2
 sphinxcontrib-devhelp==1.0.2
