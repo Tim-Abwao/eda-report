@@ -46,9 +46,7 @@ def clean_column_labels(data: DataFrame) -> DataFrame:
     return data
 
 
-def warn_if_target_data_has_high_cardinality(
-    target_data: Series, threshold: int = 10
-) -> None:
+def check_cardinality(target_data: Series, threshold: int = 10) -> None:
     """Check whether the ``target_data`` is suitable for color-coding or has
     too many unique values (> ``threshold``).
 
@@ -60,11 +58,13 @@ def warn_if_target_data_has_high_cardinality(
         Maximum allowable cardinality, by default 10
     """
     if target_data.nunique() > threshold:
-        logging.warning(
-            f"Target variable '{target_data.name}' not used to color-code "
-            "graphs since it has high cardinality "
-            f"({target_data.nunique()}) which would clutter graphs."
+        message = (
+            f"Target variable '{target_data.name}' not used to group values. "
+            f"It has high cardinality ({target_data.nunique()}) "
+            f"and would clutter graphs."
         )
+        logging.warning(message)
+        raise TargetVariableError(message)
 
 
 def validate_multivariate_input(data: Iterable) -> DataFrame:
@@ -190,7 +190,7 @@ def validate_target_variable(
                 f"Column index {target_variable} is not in the range"
                 f" [0, {data.columns.size}]."
             )
-        warn_if_target_data_has_high_cardinality(target_data)
+        check_cardinality(target_data)
         return target_data
     elif isinstance(target_variable, str):
         try:
@@ -199,7 +199,7 @@ def validate_target_variable(
             raise TargetVariableError(
                 f"{target_variable!r} is not in {data.columns.to_list()}"
             )
-        warn_if_target_data_has_high_cardinality(target_data)
+        check_cardinality(target_data)
         return target_data
     else:
         # If target_variable is neither an index(int) or label(str)

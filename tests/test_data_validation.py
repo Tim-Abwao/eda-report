@@ -139,17 +139,19 @@ class TestTargetValidation:
         ) in caplog.text
 
     def test_target_variable_with_excess_categories(self, caplog):
-        # Check that target variables with more than 10 unique values log a
-        # warning that color-coding won't be applied.
-        _data = DataFrame([range(11)] * 2).T
-        assert validate_target_variable(data=_data, target_variable=1).equals(
-            _data.iloc[:, 1]
+        # Check that target variables with more than 10 unique values raise an
+        # error and log a warning that color-coding won't be applied.
+        _data = DataFrame([range(11)] * 2, index=["X", "Y"]).T
+        expected_message = (
+            "Target variable 'Y' not used to group values. "
+            "It has high cardinality (11) and would clutter graphs."
         )
-        # Check that the warning message is as expected
-        assert (
-            "Target variable '1' not used to color-code graphs since it has "
-            "high cardinality (11) which would clutter graphs."
-        ) in caplog.text
+        with pytest.raises(TargetVariableError) as error:
+            assert validate_target_variable(
+                data=_data, target_variable=1
+            ).equals(_data.iloc[:, 1])
+        assert expected_message in str(error.value)
+        assert expected_message in caplog.text
 
 
 def test_column_cleaning():
