@@ -68,12 +68,10 @@ class MultiVariable:
             The string representation of the ``MultiVariable`` instance.
         """
         # Get a list of numeric features
-        numeric_cols = (
-            "" if self.numeric_cols is None else list(self.numeric_cols)
-        )
+        numeric_cols = "" if self.numeric_cols is None else self.numeric_cols
         # Get a list of categorical features
         categoric_cols = (
-            "" if self.categorical_cols is None else (self.categorical_cols)
+            "" if self.categorical_cols is None else self.categorical_cols
         )
         correlation_description = (
             self._corr_description
@@ -233,7 +231,8 @@ class MultiVariable:
                 [
                     f"{var_pair[0]} & {var_pair[1]} --> {corr_description}"
                     for var_pair, corr_description in sorted(
-                        self.correlation_descriptions.items()
+                        self.correlation_descriptions.items(),
+                        key=lambda x: x[1],
                     )
                 ]
             )

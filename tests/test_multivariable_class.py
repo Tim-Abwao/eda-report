@@ -1,13 +1,13 @@
 from itertools import combinations
-import pytest
 
+import pytest
+from eda_report import summarize
 from pandas import DataFrame
-from eda_report.multivariate import MultiVariable
 
 
 class TestMixedMultiVariables:
 
-    multivariable = MultiVariable(
+    multivariable = summarize(
         DataFrame(
             {
                 "A": range(50),
@@ -81,7 +81,7 @@ class TestMixedMultiVariables:
 
 class TestBivariateAnalysis:
 
-    multivariable = MultiVariable(
+    multivariable = summarize(
         DataFrame(
             {
                 "A": range(10),
@@ -249,7 +249,7 @@ class TestBivariateAnalysis:
         )
 
     def test_bivariate_analysis_in_categorical_data(self, caplog, capsys):
-        categorical_multivariable = MultiVariable(["a", "b", "c"])
+        categorical_multivariable = summarize(["a", "b", "c"])
 
         assert str(categorical_multivariable) == (
             "\t\t\tOVERVIEW\n\t\t\t========\nNumeric features: \nCategorical"
@@ -277,7 +277,7 @@ class TestBivariateAnalysis:
     def test_bivariate_analysis_in_univariate_numeric_data(
         self, caplog, capsys
     ):
-        numeric_1D = MultiVariable(range(5))
+        numeric_1D = summarize(range(5))
 
         assert str(numeric_1D) == (
             "\t\t\tOVERVIEW\n\t\t\t========\nNumeric features: var_1\n"
