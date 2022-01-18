@@ -2,7 +2,7 @@
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Tim-Abwao/eda-report/HEAD?filepath=eda-report-basics.ipynb)
 [![PyPI version](https://badge.fury.io/py/eda-report.svg)](https://badge.fury.io/py/eda-report)
-[![Python 3.7 | 3.10](https://github.com/Tim-Abwao/eda-report/actions/workflows/test-python3.7-3.10.yml/badge.svg)](https://github.com/Tim-Abwao/eda-report/actions/workflows/test-python3.7-3.10.yml)
+[![Python 3.8 - 3.10](https://github.com/Tim-Abwao/eda-report/actions/workflows/test-python3.8-3.10.yml/badge.svg)](https://github.com/Tim-Abwao/eda-report/actions/workflows/test-python3.8-3.10.yml)
 [![Documentation Status](https://readthedocs.org/projects/eda-report/badge/?version=latest)](https://eda-report.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/Tim-Abwao/eda-report/branch/main/graph/badge.svg?token=KNQD8XZCWG)](https://codecov.io/gh/Tim-Abwao/eda-report)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
