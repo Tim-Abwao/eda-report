@@ -15,11 +15,10 @@ from eda_report.univariate import Variable
 from eda_report.validate import validate_univariate_input
 
 # Matplotlib configuration
-matplotlib.rc("figure", autolayout=True, dpi=150, figsize=(6, 3.8))
-matplotlib.rc("savefig")
+matplotlib.rc("figure", autolayout=True, dpi=250, figsize=(6.4, 4))
 matplotlib.rc("font", family="serif")
 matplotlib.rc("axes.spines", top=False, right=False)
-matplotlib.rc("axes", titlesize=12)
+matplotlib.rc("axes", titlesize=12, titleweight=500)
 matplotlib.use("agg")  # use non-interactive matplotlib back-end
 
 
@@ -74,10 +73,8 @@ class BasePlot:
         #: bool: A flag that determines whether or not to use the supplied
         #: ``hue``. True if ``hue`` has manageable cardinality, False
         #: otherwise.
-        self.COLOR_CODE_GRAPHS = (
-            True
-            if self.HUE is not None and self.HUE.nunique() in range(2, 11)
-            else False
+        self.COLOR_CODE_GRAPHS = (  # True if below condition holds
+            self.HUE is not None and self.HUE.nunique() in range(2, 11)
         )
         self._COLOR_CODED_GRAPHS = set()
 
@@ -125,7 +122,7 @@ class PlotVariable(BasePlot):
         if self.variable.var_type == "numeric":
             self.graphs = {
                 "boxplot": self._plot_boxplot(),
-                "histogram": self._plot_histogram(),
+                "histogram": self._plot_distplot(),
                 "prob_plot": self._plot_prob_plot(),
                 "run_plot": self._plot_run_plot(),
             }
@@ -154,13 +151,13 @@ class PlotVariable(BasePlot):
         ax.set_title(f"Box-plot of {self.variable.name}")
         return savefig(fig)
 
-    def _plot_histogram(self) -> BytesIO:
-        """Get a histogram for a numeric variable.
+    def _plot_distplot(self) -> BytesIO:
+        """Get a distplot for a numeric variable.
 
         Returns
         -------
         BytesIO
-            The histogram in PNG format as bytes in a file-object.
+            The distplot in PNG format as bytes in a file-object.
         """
         fig = Figure()
         ax = fig.subplots()
@@ -276,7 +273,7 @@ class PlotVariable(BasePlot):
         else:
             ax.bar(top_10.index.to_list(), top_10)
 
-        ax.tick_params(axis="x", rotation=45)
+        ax.tick_params(axis="x", rotation=90)
 
         if self.variable.num_unique > 10:
             ax.set_title(
@@ -292,6 +289,7 @@ class PlotVariable(BasePlot):
                 f"{p.get_height():,}",
                 ha="left",
                 xy=(p.get_x(), p.get_height() * 1.02),
+                size=7,
             )
 
         return savefig(fig)
@@ -368,6 +366,7 @@ class PlotMultiVariable(BasePlot):
         sns.heatmap(
             self.multivariable.correlation_df,
             annot=True,
+            center=0,
             yticklabels=True,
             mask=np.triu(self.multivariable.correlation_df),
             ax=ax,
@@ -403,6 +402,6 @@ class PlotMultiVariable(BasePlot):
             palette=f"dark:{self.GRAPH_COLOR}_r",
         )
         ax1.set_title(f"Scatter-plot - {var1} vs {var2}".title(), size=9)
-        ax2.set_title("Empirical Cummulative Distribution Functions", size=9)
+        ax2.set_title("Empirical Cummulative Distribution Plot", size=9)
 
         return savefig(fig)
