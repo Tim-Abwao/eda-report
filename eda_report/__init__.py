@@ -2,6 +2,7 @@ from collections.abc import Iterable
 from typing import Optional, Union
 
 from eda_report.document import ReportDocument
+from eda_report.multivariate import MultiVariable
 
 __version__ = "2.2.4"
 
@@ -59,3 +60,19 @@ def get_word_report(
         target_variable=target_variable,
         table_style=table_style,
     )
+
+
+def summarize(data: Iterable) -> MultiVariable:
+    """Get a statistical summary of the supplied dataset.
+
+    Parameters
+    ----------
+    data : Iterable
+        The data to analyse.
+
+    Returns
+    -------
+    MultiVariable
+        Analysis results, with components as attributes.
+    """
+    return MultiVariable(data)
