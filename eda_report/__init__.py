@@ -74,5 +74,10 @@ def summarize(data: Iterable) -> MultiVariable:
     -------
     MultiVariable
         Analysis results, with components as attributes.
+
+    Example
+    -------
+    .. literalinclude:: examples.txt
+       :lines: 85-113
     """
     return MultiVariable(data)
