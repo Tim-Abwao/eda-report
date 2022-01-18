@@ -53,7 +53,9 @@ jobs:
         run: |
           pip install -r requirements-dev.txt
           pip install pytest-cov
-          pytest --cov=./ --cov-report=xml
+          # Remove cached tests
+          find -name "*.pyc" -delete
+          pytest --cov=./ --cov-report=xml tests/
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
