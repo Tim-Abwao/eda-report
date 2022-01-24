@@ -19,7 +19,7 @@ logging.basicConfig(
 
 
 class ReportContent:
-    """This defines objects that analyse data and store results as textual
+    """Creates objects that analyse data, and stores the results as textual
     summaries and graphs.
 
     Parameters
@@ -161,15 +161,14 @@ class ReportContent:
 
 
 class ReportDocument(ReportContent):
-    """This defines objects that produce *Word* documents with analysis
-    results.
+    """Creates a :class:`~docx.document.Document`  with analysis results.
 
     The :class:`ReportContent` class is used to analyse the data and
     generate text and graph content. Then the :class:`~docx.document.Document`
     class from the `python-docx`_ package is used to publish the results as a
     *Word* document.
 
-    The report is consists of 3 main sections:
+    The report consists of 3 main sections:
 
     #. An *Overview* of the data and its features.
     #. *Univariate Analysis*: Summary statistics and graphs for each feature.

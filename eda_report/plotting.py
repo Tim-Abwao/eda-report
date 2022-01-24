@@ -1,6 +1,6 @@
+from collections.abc import Iterable
 from io import BytesIO
 from typing import Optional
-from collections.abc import Iterable
 
 import matplotlib
 import numpy as np
@@ -49,8 +49,7 @@ def savefig(figure: Figure) -> BytesIO:
 class BasePlot:
     """The base class for plotting objects.
 
-    This is where general plot settings such as the the color palette and hue
-    are set.
+    Contains general plot settings, such as the the color palette and hue.
 
     Parameters
     ----------
@@ -80,8 +79,11 @@ class BasePlot:
 
 
 class PlotVariable(BasePlot):
-    """This defines objects that plot instances of
-    :class:`~eda_report.univariate.Variable`, which have one-dimensional data.
+    """Plots instances of :class:`~eda_report.univariate.Variable`:
+
+    - *Box-plots*, *dist-plots*, *normal-probability-plots* and *run-plots*
+      for numeric variables.
+    - *Bar-plots* for categorical variables.
 
     Parameters
     ----------
@@ -296,9 +298,10 @@ class PlotVariable(BasePlot):
 
 
 class PlotMultiVariable(BasePlot):
-    """This defines objects that plot instances of
-    :class:`~eda_report.multivariate.MultiVariable`, which have
-    two-dimensional data.
+    """Plots instances of :class:`~eda_report.multivariate.MultiVariable`.
+
+    Produces a *correlation heatmap*, *scatter-plots* and *ecdf-plots* if
+    multiple numeric columns are present.
 
     Parameters
     ----------

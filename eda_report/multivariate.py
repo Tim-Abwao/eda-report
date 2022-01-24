@@ -9,10 +9,10 @@ from eda_report.validate import validate_multivariate_input
 
 
 class MultiVariable:
-    """The defines objects that analyse data with *multiple columns*.
+    """Creates objects that analyse data with *multiple columns*.
 
-    Input data is held as a :class:`pandas.DataFrame` in order
-    to leverage pandas_ built-in statistical methods, as well as functions
+    Input data is held as a :class:`pandas.DataFrame` in order to leverage
+    pandas_ built-in statistical methods, as well as functions
     from the `SciPy ecosystem`_.
 
     .. _pandas: https://pandas.pydata.org/
@@ -26,7 +26,7 @@ class MultiVariable:
     Example
     -------
     .. literalinclude:: examples.txt
-       :lines: 28-57
+       :lines: 87-116
     """
 
     def __init__(self, data: Iterable) -> None:

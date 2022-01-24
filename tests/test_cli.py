@@ -1,6 +1,6 @@
 import sys
-
 from pathlib import Path
+
 import pytest
 from eda_report.cli import run_from_cli
 from eda_report.gui import EDAGUI

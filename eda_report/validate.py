@@ -1,7 +1,7 @@
 import logging
 from collections.abc import Iterable
-from typing import Optional, Union
 from types import GeneratorType
+from typing import Optional, Union
 
 from pandas import DataFrame, RangeIndex, Series
 from pandas.api.types import is_numeric_dtype
@@ -14,16 +14,17 @@ from eda_report.exceptions import (
 
 
 def clean_column_labels(data: DataFrame) -> DataFrame:
-    """Makes sure that *columns* have *meaningful* names.
+    """Makes sure that columns have *meaningful* names.
 
-    When an ``Iterable`` is used to create a ``DataFrame`` and no column names
-    are provided, the column labels by default are set as a
-    :class:`~pandas.RangeIndex` — [0, 1, 2, ...].
+    When creating a ``DataFrame`` from an ``Iterable``, if no column names
+    are provided, the columns are set as a :class:`~pandas.RangeIndex` —
+    [0, 1, 2, ...] (default).
 
     This function renames such columns to ['var_1', 'var_2, 'var_3', ...],
-    making references and comparisons much more intuitive. It also ensures
-    that column labels are of type ``str`` to allow sorting and the use of
-    string methods.
+    making references and comparisons much more intuitive.
+
+    It also ensures that column labels are all of similar type (``str``) to
+    allow sorting and the use of string methods.
 
     Parameters
     ----------
@@ -47,15 +48,20 @@ def clean_column_labels(data: DataFrame) -> DataFrame:
 
 
 def check_cardinality(target_data: Series, threshold: int = 10) -> None:
-    """Check whether the ``target_data`` is suitable for color-coding or has
-    too many unique values (> ``threshold``).
+    """Assesses whether the ``target_data`` is suitable for grouping
+    (color-coding graphs), or has too many unique values (> ``threshold``).
 
     Parameters
     ----------
     target_data : Series
         The data intended to color-code graphs.
     threshold : int, optional
-        Maximum allowable cardinality, by default 10
+        Maximum allowable cardinality, by default 10.
+
+    Raises
+    ------
+    TargetVariableError
+        If the `target_data` has cardinality outside the acceptable range.
     """
     if target_data.nunique() > threshold:
         message = (

@@ -5,7 +5,10 @@ Simplify the `exploratory data analysis`_ and reporting process:
 
 #. Automatically analyse a dataset.
 #. Get revealing visualisations.
-      *Box-plots*, *histograms*, *probability-plots*, *run-plots* and *scatter-plots* for numeric variables; *bar-plots* for categorical variables. Created with `matplotlib`_ and `seaborn`_.
+     - *Box-plots*, *dist-plots*, *normal-probability-plots*, *run-plots* and *scatter-plots* for numeric variables
+     - *Bar-plots* for categorical variables.
+
+   Created with `matplotlib`_ and `seaborn`_.
 #. Generate a report in *Word* (.docx) format.
       An overview of the characteristics of the input data, summary statistics & plots for each variable, and pair-wise comparisons for all numeric variables present. You can afterwards easily edit the report to your liking. Made with `python-docx`_.
 

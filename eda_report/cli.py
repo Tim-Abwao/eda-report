@@ -73,17 +73,14 @@ def run_from_cli():
     ``python -m eda_report``). It is also the entry point for the
     ``eda-report`` command (console script).
 
-    Running the ``eda-report`` command without any arguments launches the
-    graphical user interface.
-
     Arguments passed from the command line are captured using the
     :func:`~eda_report.cli.process_cli_args` function, and then used to create
-    a :class:`~eda_report.document.ReportDocument` object.
+    a :class:`~eda_report.document.ReportDocument`.
 
     Example
     --------
     .. literalinclude:: examples.txt
-       :lines: 60-83
+       :lines: 3-26
     """
     args = process_cli_args()
 

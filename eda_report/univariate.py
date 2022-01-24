@@ -3,23 +3,27 @@ from textwrap import shorten
 from typing import Optional
 
 from pandas import DataFrame
-from pandas.api.types import (is_bool_dtype, is_datetime64_any_dtype,
-                              is_numeric_dtype)
+from pandas.api.types import (
+    is_bool_dtype,
+    is_datetime64_any_dtype,
+    is_numeric_dtype,
+)
 
 from eda_report.validate import validate_univariate_input
 
 
 class Variable:
-    """This defines objects for analysing one-dimensional datasets.
+    """Creates objects that analyse one-dimensional datasets.
 
-    The input data is internally handled as a :class:`~pandas.Series` in order
+    The result is a concise summary of the data's statistical properties.
+
+    Input data is internally held as a :class:`~pandas.Series` in order
     to leverage pandas_ built-in statistical methods, as well as functions
     from the `SciPy ecosystem`_.
 
     .. _pandas: https://pandas.pydata.org/
     .. _SciPy ecosystem: https://www.scipy.org/
 
-    The result is a concise summary of the data's statistical properties.
 
     Parameters
     ----------
@@ -32,7 +36,7 @@ class Variable:
     --------
 
     .. literalinclude:: examples.txt
-       :lines: 3-23
+       :lines: 63-83
     """
 
     def __init__(self, data: Iterable, *, name: str = None) -> None:
@@ -58,8 +62,8 @@ class Variable:
         #: list: The *unique values* present in the ``Variable``.
         self.unique = sorted(self.data.dropna().unique())
 
-        #: str: *Missing value information* in the form
-        #: ``number (percentage%)``.
+        #: str: The number of *missing values* in the form
+        #: ``number (percentage%)`` e.g "4 (16.67%)".
         self.missing = self._get_missing_values_info()
 
     def __repr__(self) -> str:
@@ -172,4 +176,6 @@ class Variable:
         if missing_values == 0:
             return None
         else:
-            return f"{missing_values:,} ({missing_values / len(self.data):.2%})"
+            return (
+                f"{missing_values:,} ({missing_values / len(self.data):.2%})"
+            )

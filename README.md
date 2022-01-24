@@ -34,6 +34,7 @@ eda-report
 You will be prompted to set a *report title*, *target variable (optional)*, *graph color* and *output filename*, after which the contents of the input file will be analysed, and the results will be saved in a *Word (.docx)* document.
 
 >**NOTE:** For help with `Tk` - related issues, consider visiting [TkDocs][tkdocs].
+
 ### 2. Command Line Interface
 
 To analyse a file named `input.csv`, just supply its path to the `eda-report` command:
@@ -86,39 +87,13 @@ optional arguments:
 
 ### 3. Interactive Mode
 
-#### 3.1 Analyse univariate data
+#### 3.1 Analyse data
 
 ```python
->>> from eda_report.univariate import Variable
->>> Variable(range(20), name="1 to 20")
-        Overview
-        ========
-Name: 1 to 20
-Type: numeric
-Unique Values: 20 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, [...]
-Missing Values: None
-          ***
-      Summary Statistics
-                         1 to 20
-Number of observations  20.00000
-Average                  9.50000
-Standard Deviation       5.91608
-Minimum                  0.00000
-Lower Quartile           4.75000
-Median                   9.50000
-Upper Quartile          14.25000
-Maximum                 19.00000
-Skewness                 0.00000
-Kurtosis                -1.20000
-```
-
-#### 3.2 Analyse multivariate data
-
-```python
->>> from eda_report.multivariate import MultiVariable
+>>> import eda_report
 >>> from seaborn import load_dataset
->>> data = load_dataset("iris")
->>> MultiVariable(data)
+>>> iris_data = load_dataset("iris")
+>>> eda_report.summarize(iris_data)
                         OVERVIEW
                         ========
 Numeric features: sepal_length, sepal_width, petal_length, petal_width
@@ -139,22 +114,18 @@ species   150      3  setosa   50        33.33%
                           ***
           Bivariate Analysis (Correlation)
           --------------------------------
-petal_length & petal_width --> very strong positive correlation (0.96)
-sepal_length & petal_length --> strong positive correlation (0.87)
 sepal_length & petal_width --> strong positive correlation (0.82)
+sepal_length & petal_length --> strong positive correlation (0.87)
+petal_length & petal_width --> very strong positive correlation (0.96)
 sepal_length & sepal_width --> very weak negative correlation (-0.12)
-sepal_width & petal_length --> weak negative correlation (-0.43)
 sepal_width & petal_width --> weak negative correlation (-0.37)
+sepal_width & petal_length --> weak negative correlation (-0.43)
 ```
 
-#### 3.3 Generate a report
+#### 3.2 Generate a report
 
 ```python
->>> from eda_report import get_word_report
->>> from seaborn import load_dataset
-
->>> data = load_dataset("iris")
->>> get_word_report(data)
+>>> eda_report.get_word_report(iris_data)
 Bivariate analysis: 100%|███████████████████████████████████| 6/6 numeric pairs.
 Univariate analysis: 100%|███████████████████████████████████| 5/5 features.
 [INFO 17:31:37.880] Done. Results saved as 'eda-report.docx'

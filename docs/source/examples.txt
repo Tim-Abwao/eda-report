@@ -1,62 +1,5 @@
-Variable
---------
->>> from eda_report.univariate import Variable
->>> Variable(range(20), name="1 to 20")
-        Overview
-        ========
-Name: 1 to 20
-Type: numeric
-Unique Values: 20 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, [...]
-Missing Values: None
-          ***
-      Summary Statistics
-                         1 to 20
-Number of observations  20.00000
-Average                  9.50000
-Standard Deviation       5.91608
-Minimum                  0.00000
-Lower Quartile           4.75000
-Median                   9.50000
-Upper Quartile          14.25000
-Maximum                 19.00000
-Skewness                 0.00000
-Kurtosis                -1.20000
-
-
-MultiVariable
--------------
->>> from eda_report.multivariate import MultiVariable
->>> from seaborn import load_dataset
->>> data = load_dataset("iris")
->>> MultiVariable(data)
-                        OVERVIEW
-                        ========
-Numeric features: sepal_length, sepal_width, petal_length, petal_width
-Categorical features: species
-                          ***
-          Summary Statistics (Numeric features)
-          -------------------------------------
-              count    mean     std  min  25%   50%  75%  max  skewness  kurtosis
-sepal_length  150.0  5.8433  0.8281  4.3  5.1  5.80  6.4  7.9    0.3149   -0.5521
-sepal_width   150.0  3.0573  0.4359  2.0  2.8  3.00  3.3  4.4    0.3190    0.2282
-petal_length  150.0  3.7580  1.7653  1.0  1.6  4.35  5.1  6.9   -0.2749   -1.4021
-petal_width   150.0  1.1993  0.7622  0.1  0.3  1.30  1.8  2.5   -0.1030   -1.3406
-                          ***
-          Summary Statistics (Categorical features)
-          -----------------------------------------
-        count unique     top freq relative freq
-species   150      3  setosa   50        33.33%
-                          ***
-          Bivariate Analysis (Correlation)
-          --------------------------------
-petal_length & petal_width --> very strong positive correlation (0.96)
-sepal_length & petal_length --> strong positive correlation (0.87)
-sepal_length & petal_width --> strong positive correlation (0.82)
-sepal_length & sepal_width --> very weak negative correlation (-0.12)
-sepal_width & petal_length --> weak negative correlation (-0.43)
-sepal_width & petal_width --> weak negative correlation (-0.37)
-
-
+CLI
+---
 $ eda-report -h
 usage: eda-report [-h] [-i INFILE] [-o OUTFILE] [-t TITLE] [-c COLOR]
                   [-T TARGET]
@@ -82,9 +25,69 @@ optional arguments:
                         as a column index, whereas a string is treated as a
                         column label.
 
+eda_report.summarize
+--------------------
+>>> import eda_report
 >>> from seaborn import load_dataset
 >>> iris_data = load_dataset("iris")
 >>> eda_report.summarize(iris_data)
+                        OVERVIEW
+                        ========
+Numeric features: sepal_length, sepal_width, petal_length, petal_width
+Categorical features: species
+                          ***
+          Summary Statistics (Numeric features)
+          -------------------------------------
+              count    mean     std  min  25%   50%  75%  max  skewness  kurtosis
+sepal_length  150.0  5.8433  0.8281  4.3  5.1  5.80  6.4  7.9    0.3149   -0.5521
+sepal_width   150.0  3.0573  0.4359  2.0  2.8  3.00  3.3  4.4    0.3190    0.2282
+petal_length  150.0  3.7580  1.7653  1.0  1.6  4.35  5.1  6.9   -0.2749   -1.4021
+petal_width   150.0  1.1993  0.7622  0.1  0.3  1.30  1.8  2.5   -0.1030   -1.3406
+                          ***
+          Summary Statistics (Categorical features)
+          -----------------------------------------
+        count unique     top freq relative freq
+species   150      3  setosa   50        33.33%
+                          ***
+          Bivariate Analysis (Correlation)
+          --------------------------------
+sepal_length & petal_width --> strong positive correlation (0.82)
+sepal_length & petal_length --> strong positive correlation (0.87)
+petal_length & petal_width --> very strong positive correlation (0.96)
+sepal_length & sepal_width --> very weak negative correlation (-0.12)
+sepal_width & petal_width --> weak negative correlation (-0.37)
+sepal_width & petal_length --> weak negative correlation (-0.43)
+
+eda_report.univariate.Variable
+------------------------------
+>>> from eda_report.univariate import Variable
+>>> Variable(range(20), name="1 to 20")
+                Overview
+                ========
+Name: 1 to 20
+Type: numeric
+Unique Values: 20 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, [...]
+Missing Values: None
+                  ***
+          Summary Statistics
+                         1 to 20
+Number of observations  20.00000
+Average                  9.50000
+Standard Deviation       5.91608
+Minimum                  0.00000
+Lower Quartile           4.75000
+Median                   9.50000
+Upper Quartile          14.25000
+Maximum                 19.00000
+Skewness                 0.00000
+Kurtosis                -1.20000
+
+eda_report.multivariate.MultiVariable
+-------------------------------------
+>>> from eda_report.multivariate import MultiVariable
+>>> from seaborn import load_dataset
+>>> data = load_dataset("iris")
+>>> MultiVariable(data)
                         OVERVIEW
                         ========
 Numeric features: sepal_length, sepal_width, petal_length, petal_width

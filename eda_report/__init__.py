@@ -18,10 +18,6 @@ def get_word_report(
 ) -> ReportDocument:
     """Analyses input data, and generates a report in *Word* (*.docx*) format.
 
-    This is simply a wrapper around the
-    :class:`~eda_report.document.ReportDocument` class, and the arguments
-    supplied are passed to it.
-
     Parameters
     ----------
     data : Iterable
@@ -42,7 +38,7 @@ def get_word_report(
     Returns
     -------
     ReportDocument
-        The report object.
+        The report document.
 
     Example
     --------
@@ -78,6 +74,6 @@ def summarize(data: Iterable) -> MultiVariable:
     Example
     -------
     .. literalinclude:: examples.txt
-       :lines: 85-113
+       :lines: 30-59
     """
     return MultiVariable(data)

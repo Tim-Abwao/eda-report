@@ -34,27 +34,29 @@ description = (
 
 
 class EDAGUI(Frame):  # pragma: no cover
-    """This is the blueprint for the :mod:`tkinter` - based *graphical user
+    """The blueprint for the :mod:`tkinter` - based *graphical user
     interface* to the application.
 
-    The graphical window is a :class:`tkinter.Frame`, with a brief description
-    of what the application does, and a *button*.
+    The "Select a file" button launches a *file-dialog* to navigate to and
+    select a file to analyse.
 
     .. figure:: _static/screencast.*
        :alt: an image of the graphical user interface
-
-    The button launches a *file-dialog* to navigate to and select a file to
-    analyse.
 
     If a valid file is selected, *text-input widgets* and a *color-picker
     tool* pop up to help set the report's *title*, *target variable(optional)*
     and *graph color*.
 
-    Afterwards, a file-dialog to set the desired location and name for the
-    report appears.
+    Afterwards, another file-dialog appears to set the desired location and
+    name for the generated report.
 
-    The :class:`~eda_report.document.ReportDocument` class is then used to
-    create the exploratory data analysis report.
+    A :class:`~eda_report.document.ReportDocument` object is then created
+    using the collected info.
+
+    .. hint::
+        For help with `Tk` - related issues, consider visiting `TkDocs`_.
+
+    .. _`TkDocs`: https://tkdocs.com/index.html
     """
 
     def __init__(self, master=None, **kwargs) -> None:

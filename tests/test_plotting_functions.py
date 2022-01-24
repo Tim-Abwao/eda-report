@@ -1,7 +1,8 @@
-from eda_report.plotting import PlotMultiVariable, PlotVariable, BasePlot
-from eda_report.univariate import Variable
-from eda_report.multivariate import MultiVariable
 from io import BytesIO
+
+from eda_report.multivariate import MultiVariable
+from eda_report.plotting import BasePlot, PlotMultiVariable, PlotVariable
+from eda_report.univariate import Variable
 
 
 class TestBasePlot:
