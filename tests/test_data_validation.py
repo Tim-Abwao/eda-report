@@ -50,7 +50,7 @@ class TestMultivariateInputValidation:
         # Check that empty input rasies an EmptyDataError
         with pytest.raises(EmptyDataError) as error:
             validate_multivariate_input(DataFrame())
-        assert "The supplied data has length zero." in str(error.value)
+        assert "No data to process." in str(error.value)
 
 
 class TestUnivariateInputValidation:
@@ -69,10 +69,13 @@ class TestUnivariateInputValidation:
             validate_univariate_input((x ** 2 for x in self.data)), Series
         )
 
-    def test_null_input(self):
-        with pytest.raises(InputError) as error:
-            validate_univariate_input(None)
+    def test_empty_input(self):
+        with pytest.raises(EmptyDataError) as error:
+            validate_univariate_input(x for x in [])
         assert "No data to process." in str(error.value)
+
+    def test_null_input(self):
+        assert validate_univariate_input(None) is None
 
     def test_invalid_input(self):
         # Check that invalid input rasies an InputError
@@ -89,8 +92,7 @@ class TestTargetValidation:
     data = DataFrame([range(5)] * 3, columns=list("ABCDE"))
 
     def test_valid_column_index(self):
-        # Check that a valid column index returns the appropriate column label.
-        # In this case, check that the column at index 3 is "D".
+        # Check that a valid column index returns the appropriate column data.
         assert validate_target_variable(
             data=self.data, target_variable=3
         ).equals(self.data.get("D"))
@@ -100,24 +102,20 @@ class TestTargetValidation:
         # of bounds.
         with pytest.raises(TargetVariableError) as error:
             validate_target_variable(data=self.data, target_variable=10)
-        # Check that the error message is as expected
         assert "Column index 10 is not in the range [0, 5]." in str(
             error.value
         )
 
     def test_valid_column_label(self):
-        # Check that a valid column label is returned.
-        # In this case, check that column "D" is present (returned).
+        # Check that a valid column label returns the appropriate column data.
         assert validate_target_variable(
             data=self.data, target_variable="D"
         ).equals(self.data.get("D"))
 
     def test_invalid_column_label(self):
         # Check that an invalid column label raises an input error.
-        # In this case, check that "X" is not a column in the data.
         with pytest.raises(TargetVariableError) as error:
             validate_target_variable(data=self.data, target_variable="X")
-        # Check that the error message is as expected
         assert "'X' is not in ['A', 'B', 'C', 'D', 'E']" in str(error.value)
 
     def test_null_input(self):
@@ -155,9 +153,8 @@ class TestTargetValidation:
 
 
 def test_column_cleaning():
-    dataframe = DataFrame([[0, 1], [1, 2]])
+    df1 = DataFrame([[0, 1], [1, 2]])
+    df2 = DataFrame([[1, 2], [3, 4]], columns=[1, 2])
     # Check if columns [0, 1, ...] are changed to ["var_1", "var_2", ...]
-    assert clean_column_labels(dataframe).columns.to_list() == [
-        "var_1",
-        "var_2",
-    ]
+    assert clean_column_labels(df1).columns.to_list() == ["var_1", "var_2"]
+    assert clean_column_labels(df2).columns.to_list() == ["var_1", "var_2"]

@@ -1,6 +1,5 @@
 import logging
 from collections.abc import Iterable
-from types import GeneratorType
 from typing import Optional, Union
 
 from pandas import DataFrame, RangeIndex, Series
@@ -37,13 +36,13 @@ def clean_column_labels(data: DataFrame) -> DataFrame:
         The data, with reader-friendly column names.
     """
     # Prepend "var_" to entirely numeric column labels
-    if isinstance(data.columns, RangeIndex) or is_numeric_dtype(data.columns):
+    if isinstance(data.columns, RangeIndex):
         data.columns = [f"var_{i+1}" for i in data.columns]
+    elif is_numeric_dtype(data.columns):
+        data.columns = [f"var_{i}" for i in data.columns]
         return data
-
-    # Ensure all column labels are of type str to allow sorting, and so that
-    # string methods can be used.
-    data.columns = [str(col) for col in data.columns]
+    else:
+        data.columns = [str(col) for col in data.columns]
     return data
 
 
@@ -90,27 +89,23 @@ def validate_multivariate_input(data: Iterable) -> DataFrame:
 
     Raises
     ------
+    EmptyDataError
+        If the ``data`` has no items.
     InputError
         If the ``data`` cannot be cast as a :class:`~pandas.DataFrame`.
-    EmptyDataError
-        If the ``data`` has no rows (has length zero).
     """
-    if isinstance(data, DataFrame):
-        data_frame = data
-    else:
-        try:
-            data_frame = DataFrame(data)
-        except Exception:
-            raise InputError(
-                f"Expected a pandas.Dataframe object, but got {type(data)}."
-            )
-        # Attempt to infer better dtypes for object columns.
-        data_frame = data_frame.infer_objects()
-
+    try:
+        data_frame = DataFrame(data)
+    except Exception:
+        raise InputError(
+            f"Expected a pandas.Dataframe object, but got {type(data)}."
+        )
     # The data should not be empty
     if len(data_frame) == 0:
-        raise EmptyDataError("The supplied data has length zero.")
+        raise EmptyDataError("No data to process.")
 
+    # Attempt to infer better dtypes for columns.
+    data_frame = data_frame.infer_objects()
     return clean_column_labels(data_frame)
 
 
@@ -135,30 +130,24 @@ def validate_univariate_input(
 
     Raises
     ------
+    EmptyDataError
+        If the ``data`` is has no items.
     InputError
         If the ``data`` cannot be cast as a :class:`~pandas.Series`.
     """
-    if isinstance(data, GeneratorType):
-        return Series(data, name=name)
-
-    elif issubclass(type(data), Iterable) and len(list(data)) > 0:
-
-        if isinstance(data, Series):
-            name_ = name or data.name
-            return data.rename(name_)
-
-        else:
-            try:
-                data = Series(data, name=name)
-            except Exception:
-                raise InputError(
-                    f"Expected a one-dimensional sequence, "
-                    f"but got {type(data)}."
-                )
-            else:
-                return data
+    if data is None:
+        return None
     else:
-        raise InputError("No data to process.")
+        try:
+            series = Series(data, name=name)
+        except Exception:
+            raise InputError(
+                f"Expected a one-dimensional sequence, but got {type(data)}."
+            )
+    if series.shape[0] == 0:
+        raise EmptyDataError("No data to process.")
+    else:
+        return series
 
 
 def validate_target_variable(
@@ -187,7 +176,6 @@ def validate_target_variable(
     """
     if target_variable is None:
         return None
-
     elif isinstance(target_variable, int):
         try:
             target_data = data.iloc[:, target_variable]
