@@ -64,13 +64,13 @@ class TestPlotVariable:
     def test_color_coding(self):
         assert self.plots_numeric._COLOR_CODED_GRAPHS == {
             "box_plot",
-            "dist_plot"
+            "kde_plot"
         }
 
     def test_graphs(self):
         assert set(self.plots_numeric.graphs.keys()) == {
             "box_plot",
-            "dist_plot",
+            "kde_plot",
             "prob_plot",
         }
         assert "bar_plot" in self.plots_categorical.graphs

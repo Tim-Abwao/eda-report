@@ -124,7 +124,7 @@ class PlotVariable(BasePlot):
         if self.variable.var_type == "numeric":
             self.graphs = {
                 "box_plot": self._plot_box(),
-                "dist_plot": self._plot_dist(),
+                "kde_plot": self._plot_dist(),
                 "prob_plot": self._plot_prob(),
             }
         else:  # {"boolean", "categorical", "datetime"}:
@@ -166,13 +166,11 @@ class PlotVariable(BasePlot):
         """
         fig = Figure()
         ax = fig.subplots()
-        sns.histplot(
-            x=self.variable.data, ax=ax, hue=self.HUE, bins=25, kde=True
-        )
+        sns.kdeplot(x=self.variable.data, ax=ax, fill=True, hue=self.HUE)
         ax.set_title(f"Distribution plot of {self.variable.name}")
 
         if self.HUE is not None:
-            self._COLOR_CODED_GRAPHS.add("dist_plot")
+            self._COLOR_CODED_GRAPHS.add("kde_plot")
 
         return savefig(fig)
 
