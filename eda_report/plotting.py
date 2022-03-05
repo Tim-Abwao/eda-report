@@ -303,11 +303,12 @@ class PlotMultiVariable(BasePlot):
         sns.heatmap(
             self.multivariable.correlation_df,
             annot=True,
-            center=0,
-            yticklabels=True,
-            mask=np.triu(self.multivariable.correlation_df),
             ax=ax,
-            cmap=sns.light_palette(self.GRAPH_COLOR, as_cmap=True),
+            center=0,
+            cmap="coolwarm",
+            linewidths=2,
+            mask=np.triu(self.multivariable.correlation_df),
+            yticklabels=True,
         )
         ax.tick_params(rotation=45)
         fig.suptitle("Correlation in Numeric Columns", size=15)
