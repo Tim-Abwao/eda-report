@@ -63,7 +63,7 @@ class BasePlot:
         self, *, graph_color: str = "cyan", hue: Optional[Iterable] = None
     ) -> None:
         self.GRAPH_COLOR = graph_color
-        self.HUE = None if hue is None else validate_univariate_input(hue)
+        self.HUE = validate_univariate_input(hue)
         sns.set_palette(
             f"dark:{self.GRAPH_COLOR}_r",
             n_colors=2 if self.HUE is None else self.HUE.nunique(),
@@ -123,14 +123,14 @@ class PlotVariable(BasePlot):
         """
         if self.variable.var_type == "numeric":
             self.graphs = {
-                "boxplot": self._plot_boxplot(),
-                "histogram": self._plot_distplot(),
-                "prob_plot": self._plot_prob_plot(),
+                "box_plot": self._plot_box(),
+                "dist_plot": self._plot_dist(),
+                "prob_plot": self._plot_prob(),
             }
         else:  # {"boolean", "categorical", "datetime"}:
             self.graphs = {"bar_plot": self._plot_bar()}
 
-    def _plot_boxplot(self) -> BytesIO:
+    def _plot_box(self) -> BytesIO:
         """Get a boxplot for a numeric variable.
 
         Returns
@@ -140,19 +140,23 @@ class PlotVariable(BasePlot):
         """
         fig = Figure()
         ax = fig.subplots()
-
-        if self.COLOR_CODE_GRAPHS:
-            sns.boxplot(y=self.variable.data, x=self.HUE, ax=ax)
-            self._COLOR_CODED_GRAPHS.add("boxplot")
-        else:
-            ax.boxplot(self.variable.data.dropna(), vert=False, notch=True)
-            ax.set_yticklabels([""])  # Remove y-tick label
-            ax.set_xlabel(f"{self.variable.name}")
-
+        sns.boxplot(
+            x=self.variable.data,
+            y=self.HUE,
+            ax=ax,
+            fliersize=4,
+            notch=True,
+            saturation=0.85,
+            width=0.2,
+        )
         ax.set_title(f"Box-plot of {self.variable.name}")
+
+        if self.HUE is not None:
+            self._COLOR_CODED_GRAPHS.add("box_plot")
+
         return savefig(fig)
 
-    def _plot_distplot(self) -> BytesIO:
+    def _plot_dist(self) -> BytesIO:
         """Get a distplot for a numeric variable.
 
         Returns
@@ -162,25 +166,17 @@ class PlotVariable(BasePlot):
         """
         fig = Figure()
         ax = fig.subplots()
-
-        if self.COLOR_CODE_GRAPHS:
-            hue = self.HUE
-            self._COLOR_CODED_GRAPHS.add("histogram")
-        else:
-            hue = None
-
         sns.histplot(
-            x=self.variable.data,
-            hue=hue,
-            kde=True,
-            ax=ax,
-            palette=f"dark:{self.GRAPH_COLOR}_r",
+            x=self.variable.data, ax=ax, hue=self.HUE, bins=25, kde=True
         )
-
         ax.set_title(f"Distribution plot of {self.variable.name}")
+
+        if self.HUE is not None:
+            self._COLOR_CODED_GRAPHS.add("dist_plot")
+
         return savefig(fig)
 
-    def _plot_prob_plot(self) -> BytesIO:
+    def _plot_prob(self) -> BytesIO:
         """Get a probability plot for a numeric variable.
 
         Returns
@@ -215,24 +211,12 @@ class PlotVariable(BasePlot):
 
         # Include no more than 10 of the most common values
         top_10 = self.variable.data.value_counts().nlargest(10)
-
-        if self.COLOR_CODE_GRAPHS:
-            data_with_hue = (
-                self.variable.data.to_frame(name="data")
-                .assign(_hue_=self.HUE.values)
-                .query("data in @top_10.index")
-            )
-            sns.countplot(data=data_with_hue, x="data", hue="_hue_", ax=ax)
-            self._COLOR_CODED_GRAPHS.add("bar_plot")
-        else:
-            ax.bar(top_10.index.to_list(), top_10)
-
+        sns.barplot(x=top_10.index, y=top_10, ax=ax)
         ax.tick_params(axis="x", rotation=90)
 
-        if self.variable.num_unique > 10:
+        if num_unique := self.variable.num_unique > 10:
             ax.set_title(
-                f"Bar-plot of {self.variable.name} (Top 10 of "
-                f"{self.variable.num_unique})"
+                f"Bar-plot of {self.variable.name} (Top 10 of {num_unique})"
             )
         else:
             ax.set_title(f"Bar-plot of {self.variable.name}")
@@ -240,10 +224,10 @@ class PlotVariable(BasePlot):
         # Annotate bars
         for p in ax.patches:
             ax.annotate(
-                f"{p.get_height():,}",
-                ha="left",
-                xy=(p.get_x(), p.get_height() * 1.02),
-                size=7,
+                f"{p.get_height():,.0f}",
+                ha="center",
+                size=8,
+                xy=(p.get_x() + p.get_width() / 2, p.get_height() * 1.02),
             )
 
         return savefig(fig)
