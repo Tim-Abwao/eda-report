@@ -333,10 +333,10 @@ class PlotMultiVariable(BasePlot):
 
         sns.regplot(x=var1, y=var2, data=self.multivariable.data, ax=ax1)
 
+        pair_data = self.multivariable.data.loc[:, [var1, var2]]
+        normalized_data = (pair_data - pair_data.mean()) / pair_data.std()
         sns.ecdfplot(
-            data=self.multivariable.data.loc[:, [var1, var2]],
-            ax=ax2,
-            palette=f"dark:{self.GRAPH_COLOR}_r",
+            data=normalized_data, ax=ax2, palette=f"dark:{self.GRAPH_COLOR}_r"
         )
         ax1.set_title(f"Scatter-plot - {var1} vs {var2}".title(), size=9)
         ax2.set_title("Empirical Cummulative Distribution Plot", size=9)
