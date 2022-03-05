@@ -126,7 +126,6 @@ class PlotVariable(BasePlot):
                 "boxplot": self._plot_boxplot(),
                 "histogram": self._plot_distplot(),
                 "prob_plot": self._plot_prob_plot(),
-                "run_plot": self._plot_run_plot(),
             }
         else:  # {"boolean", "categorical", "datetime"}:
             self.graphs = {"bar_plot": self._plot_bar()}
@@ -201,53 +200,6 @@ class PlotVariable(BasePlot):
         ax.set_title(f"Probability Plot of {self.variable.name}")
         ax.set_xlabel("Theoretical Quantiles (~ Standard Normal)")
         ax.set_ylabel("Ordered Values")
-        return savefig(fig)
-
-    def _plot_run_plot(self) -> BytesIO:
-        """Get a run plot for a numeric variable.
-
-        Returns
-        -------
-        BytesIO
-            The run plot in PNG format as bytes in a file-object.
-        """
-        fig = Figure()
-        ax = fig.subplots()
-
-        if self.COLOR_CODE_GRAPHS:
-            sns.lineplot(
-                x=self.variable.data.index,
-                y=self.variable.data,
-                hue=self.HUE,
-                ax=ax,
-                palette=f"dark:{self.GRAPH_COLOR}_r",
-            )
-            self._COLOR_CODED_GRAPHS.add("run-plot")
-        else:
-            ax.plot(self.variable.data, marker=".", color=self.GRAPH_COLOR)
-
-        ax.tick_params(axis="x", rotation=45)
-        ax.set_title(f"Run Plot of {self.variable.name}")
-        ax.set_ylabel("Observed Value")
-        ax.set_xlabel("Index")
-
-        # Get x-axis boundaries
-        xmin, xmax = self.variable.data.index[[0, -1]]
-
-        # Get percentiles and plot them as horizontal lines
-        p5 = self.variable.data.quantile(0.05)
-        p50 = self.variable.data.quantile(0.5)
-        p95 = self.variable.data.quantile(0.95)
-
-        ax.hlines(p5, xmin, xmax, "grey", "--")
-        ax.text(xmax, p5, " $5^{th}$ Percentile")
-
-        ax.hlines(p50, xmin, xmax, "grey", "--")
-        ax.text(xmax, p50, " Median")
-
-        ax.hlines(p95, xmin, xmax, "grey", "--")
-        ax.text(xmax, p95, " $95^{th}$ Percentile")
-
         return savefig(fig)
 
     def _plot_bar(self) -> BytesIO:
