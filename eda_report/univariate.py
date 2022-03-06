@@ -2,7 +2,7 @@ from collections.abc import Iterable
 from textwrap import shorten
 from typing import Optional
 
-from pandas import DataFrame
+from pandas import DataFrame, Series
 from pandas.api.types import (
     is_bool_dtype,
     is_datetime64_any_dtype,
@@ -13,9 +13,8 @@ from eda_report.validate import validate_univariate_input
 
 
 class Variable:
-    """Creates objects that analyse one-dimensional datasets.
-
-    The result is a concise summary of the data's statistical properties.
+    """Creates objects that describe the general properties of one-dimensional
+    datasets, such as data type and missing values.
 
     Input data is internally held as a :class:`~pandas.Series` in order
     to leverage pandas_ built-in statistical methods, as well as functions
@@ -40,8 +39,6 @@ class Variable:
     """
 
     def __init__(self, data: Iterable, *, name: str = None) -> None:
-        """Initialise an instance of :class:`~eda_report.univariate.Variable`.
-        """
         self.data = validate_univariate_input(data, name=name)
 
         #: Optional[str]: The ``Variable``'s *name*. If no name is specified
@@ -53,9 +50,6 @@ class Variable:
         #: *"categorical"*, *"datetime"* or *"numeric"*.
         self.var_type = self._get_variable_type()
 
-        #: :class:`~pandas.DataFrame`: The ``Variables`` *Summary statistics*.
-        self.statistics = self._get_summary_statistics()
-
         #: int: The *number of unique values* present in the ``Variable``.
         self.num_unique = self.data.nunique()
 
@@ -66,29 +60,6 @@ class Variable:
         #: ``number (percentage%)`` e.g "4 (16.67%)".
         self.missing = self._get_missing_values_info()
 
-    def __repr__(self) -> str:
-        """Get the string representation of the ``Variable``.
-
-        Returns
-        -------
-        str
-            A summary of the ``Variable``'s properties.
-        """
-        return "\n".join(
-            [
-                "\t\tOverview",
-                "\t\t========",
-                f"Name: {self.name}",
-                f"Type: {self.var_type}",
-                "Unique Values: "
-                + f"{shorten(f'{self.num_unique} -> {self.unique}', 60)}",
-                f"Missing Values: {self.missing}",
-                "\t\t  ***",
-                "\t  Summary Statistics",
-                f"{self.statistics}",
-            ]
-        )
-
     def rename(self, name: Optional[str] = None) -> None:
         """Rename the ``Variable`` as specified.
 
@@ -98,7 +69,6 @@ class Variable:
             The name to assign to the ``Variable``, by default None.
         """
         self.name = self.data.name = name
-        self.statistics.set_axis([name], axis=1, inplace=True)
         if hasattr(self, "most_common_items"):
             self.most_common_items.set_axis([name], axis=1, inplace=True)
 
@@ -111,58 +81,25 @@ class Variable:
         """
         if is_numeric_dtype(self.data):
             if is_bool_dtype(self.data) or set(self.data.dropna()) == {0, 1}:
+                # Consider boolean data as categorical
+                self.data = self.data.astype("category")
                 return "boolean"
+            elif self.data.nunique() / len(self.data) <= 0.1:
+                # Consider numeric data with <= 10% unique values categorical
+                self.data = self.data.astype("category").cat.as_ordered()
+                return "categorical"
             else:
                 return "numeric"
         elif is_datetime64_any_dtype(self.data):
-            self.data = self.data.dt.strftime("%c")
             return "datetime"
         else:
-            # Handle object, string, etc as categorical
-            return "categorical"
-
-    def _get_summary_statistics(self) -> DataFrame:
-        """Get summary statistics for the column/feature."""
-        if self.var_type == "numeric":
-            summary = self.data.describe().set_axis(
-                [
-                    "Number of observations",
-                    "Average",
-                    "Standard Deviation",
-                    "Minimum",
-                    "Lower Quartile",
-                    "Median",
-                    "Upper Quartile",
-                    "Maximum",
-                ]
-            )
-            summary["Skewness"] = self.data.skew()
-            summary["Kurtosis"] = self.data.kurt()
-
-            return summary.round(7).to_frame()
-
-        else:  # {"boolean", "categorical", "datetime"}
-            if (self.data.shape[0] / self.data.nunique()) > 1.5:
-                # If less than 2-thirds of the values are unique
+            # If 1/3 or less of the values are unique, use categorical
+            if (self.data.nunique() / self.data.shape[0]) <= (1 / 3):
                 self.data = self.data.astype("category")
             else:
                 self.data = self.data.astype("object")
 
-            summary = self.data.describe()[["count", "unique", "top"]]
-            summary.index = [
-                "Number of observations",
-                "Unique values",
-                "Mode (Highest occurring value)",
-            ]
-
-            # Get most common items and their relative frequency (%)
-            most_common_items = self.data.value_counts().head()
-            n = len(self.data)
-            self.most_common_items = most_common_items.apply(
-                lambda x: f"{x:,} ({x / n:.2%})"
-            ).to_frame()
-
-            return summary.to_frame()
+            return "categorical"
 
     def _get_missing_values_info(self) -> str:
         """Get the number of missing values in the ``Variable``.
@@ -179,3 +116,148 @@ class Variable:
             return (
                 f"{missing_values:,} ({missing_values / len(self.data):.2%})"
             )
+
+
+class CategoricalVariable(Variable):
+    def __init__(self, data: Iterable, *, name: str = None) -> None:
+        super().__init__(data, name=name)
+
+        #: :class:`~pandas.DataFrame`: The ``Variables`` *Summary statistics*.
+        self.statistics = self._get_summary_statistics()
+
+    def __repr__(self) -> str:
+        """Get the string representation of the ``Variable``.
+
+        Returns
+        -------
+        str
+            A summary of the ``Variable``'s properties.
+        """
+        return "\n".join(
+            [
+                "\t\tOverview",
+                "\t\t========",
+                f"Name: {self.name}",
+                f"Type: {self.var_type}",
+                f"Number of Observations: {len(self.data)}",
+                "Unique Values: "
+                + f"{shorten(f'{self.num_unique} -> {self.unique}', 60)}",
+                f"Missing Values: {self.missing}\n",
+                "\t  Most Common Items",
+                "\t  -----------------",
+                f"{self._get_most_common().to_frame(name='')}",
+            ]
+        )
+
+    def _get_summary_statistics(self) -> None:
+        """Get summary statistics for the column/feature."""
+        return self.data.describe().set_axis(
+            [
+                "Number of observations",
+                "Unique values",
+                "Mode (Most frequent)",
+                "Maximum frequency",
+            ],
+            axis=0,
+        )
+
+    def _get_most_common(self) -> Series:
+        # Get most common items and their relative frequency (%)
+        most_common_items = self.data.value_counts().head()
+        n = len(self.data)
+        return most_common_items.apply(lambda x: f"{x:,} ({x / n:.2%})")
+
+
+class DatetimeVariable(Variable):
+    def __init__(self, data: Iterable, *, name: str = None) -> None:
+        super().__init__(data, name=name)
+
+    def __repr__(self) -> str:
+        """Get the string representation of the ``DatetimeVariable``.
+
+        Returns
+        -------
+        str
+            A summary of the ``DatetimeVariable``'s properties.
+        """
+        return "\n".join(
+            [
+                "\t\tOverview",
+                "\t\t========",
+                f"Name: {self.name}",
+                f"Type: {self.var_type}",
+                f"Number of Observations: {len(self.data)}",
+                f"Missing Values: {self.missing}\n",
+                "\t  Summary Statistics",
+                "\t  ------------------",
+                f"{self._get_summary_statistics().to_frame(name='')}",
+            ]
+        )
+
+    def _get_summary_statistics(self) -> DataFrame:
+        """Get summary statistics for the column/feature."""
+        return self.data.describe(datetime_is_numeric=True).set_axis(
+            [
+                "Number of observations",
+                "Average",
+                "Minimum",
+                "Lower Quartile",
+                "Median",
+                "Upper Quartile",
+                "Maximum",
+            ],
+            axis=0,
+        )
+
+
+class NumericVariable(Variable):
+    def __init__(self, data: Iterable, *, name: str = None) -> None:
+        super().__init__(data, name=name)
+        #: :class:`~pandas.DataFrame`: The ``NumericVariables`` *Summary
+        #: statistics*.
+        self.statistics = self._get_summary_statistics()
+
+    def __repr__(self) -> str:
+        """Get the string representation of the ``Variable``.
+
+        Returns
+        -------
+        str
+            A summary of the ``NumericVariable``'s properties.
+        """
+        return "\n".join(
+            [
+                "\t\tOverview",
+                "\t\t========",
+                f"Name: {self.name}",
+                f"Type: {self.var_type}",
+                "Unique Values: "
+                + f"{shorten(f'{self.num_unique} -> {self.unique}', 60)}",
+                f"Missing Values: {self.missing}\n",
+                "\t  Summary Statistics",
+                "\t  ------------------",
+                f"{self._get_summary_statistics().to_frame(name='')}",
+            ]
+        )
+
+    def _get_summary_statistics(self) -> DataFrame:
+        """Get summary statistics for the column/feature."""
+        summary_stats = self.data.describe().set_axis(
+            [
+                "Number of observations",
+                "Average",
+                "Standard Deviation",
+                "Minimum",
+                "Lower Quartile",
+                "Median",
+                "Upper Quartile",
+                "Maximum",
+            ]
+        )
+        summary_stats["Skewness"] = self.data.skew()
+        summary_stats["Kurtosis"] = self.data.kurt()
+
+        return summary_stats
+
+    def _test_for_normality(self):
+        pass
