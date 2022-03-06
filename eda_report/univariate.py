@@ -87,19 +87,17 @@ class Variable:
             elif self.data.nunique() / len(self.data) <= 0.1:
                 # Consider numeric data with <= 10% unique values categorical
                 self.data = self.data.astype("category").cat.as_ordered()
-                return "categorical"
+                return "numeric categories"
             else:
                 return "numeric"
         elif is_datetime64_any_dtype(self.data):
             return "datetime"
-        else:
+        elif (self.data.nunique() / self.data.shape[0]) <= (1 / 3):
             # If 1/3 or less of the values are unique, use categorical
-            if (self.data.nunique() / self.data.shape[0]) <= (1 / 3):
-                self.data = self.data.astype("category")
-            else:
-                self.data = self.data.astype("object")
-
-            return "categorical"
+            self.data = self.data.astype("category")
+        else:
+            self.data = self.data.astype("object")
+        return "categorical"
 
     def _get_missing_values_info(self) -> str:
         """Get the number of missing values in the ``Variable``.
@@ -118,12 +116,9 @@ class Variable:
             )
 
 
-class CategoricalVariable(Variable):
-    def __init__(self, data: Iterable, *, name: str = None) -> None:
-        super().__init__(data, name=name)
-
-        #: :class:`~pandas.DataFrame`: The ``Variables`` *Summary statistics*.
-        self.statistics = self._get_summary_statistics()
+class CategoricalVariable:
+    def __init__(self, variable: Variable) -> None:
+        self.variable = variable
 
     def __repr__(self) -> str:
         """Get the string representation of the ``Variable``.
@@ -133,16 +128,18 @@ class CategoricalVariable(Variable):
         str
             A summary of the ``Variable``'s properties.
         """
+        sample_values = shorten(
+            f"{self.variable.num_unique} -> {self.variable.unique}", 60
+        )
         return "\n".join(
             [
                 "\t\tOverview",
                 "\t\t========",
-                f"Name: {self.name}",
-                f"Type: {self.var_type}",
-                f"Number of Observations: {len(self.data)}",
-                "Unique Values: "
-                + f"{shorten(f'{self.num_unique} -> {self.unique}', 60)}",
-                f"Missing Values: {self.missing}\n",
+                f"Name: {self.variable.name}",
+                f"Type: {self.variable.var_type}",
+                f"Number of Observations: {len(self.variable.data)}",
+                f"Unique Values: {sample_values}",
+                f"Missing Values: {self.variable.missing}\n",
                 "\t  Most Common Items",
                 "\t  -----------------",
                 f"{self._get_most_common().to_frame(name='')}",
@@ -151,7 +148,7 @@ class CategoricalVariable(Variable):
 
     def _get_summary_statistics(self) -> None:
         """Get summary statistics for the column/feature."""
-        return self.data.describe().set_axis(
+        return self.variable.data.describe().set_axis(
             [
                 "Number of observations",
                 "Unique values",
@@ -163,14 +160,14 @@ class CategoricalVariable(Variable):
 
     def _get_most_common(self) -> Series:
         # Get most common items and their relative frequency (%)
-        most_common_items = self.data.value_counts().head()
-        n = len(self.data)
+        most_common_items = self.variable.data.value_counts().head()
+        n = len(self.variable.data)
         return most_common_items.apply(lambda x: f"{x:,} ({x / n:.2%})")
 
 
-class DatetimeVariable(Variable):
-    def __init__(self, data: Iterable, *, name: str = None) -> None:
-        super().__init__(data, name=name)
+class DatetimeVariable:
+    def __init__(self, variable: Variable) -> None:
+        self.variable = variable
 
     def __repr__(self) -> str:
         """Get the string representation of the ``DatetimeVariable``.
@@ -184,10 +181,10 @@ class DatetimeVariable(Variable):
             [
                 "\t\tOverview",
                 "\t\t========",
-                f"Name: {self.name}",
-                f"Type: {self.var_type}",
-                f"Number of Observations: {len(self.data)}",
-                f"Missing Values: {self.missing}\n",
+                f"Name: {self.variable.name}",
+                f"Type: {self.variable.var_type}",
+                f"Number of Observations: {len(self.variable.data)}",
+                f"Missing Values: {self.variable.missing}\n",
                 "\t  Summary Statistics",
                 "\t  ------------------",
                 f"{self._get_summary_statistics().to_frame(name='')}",
@@ -196,7 +193,7 @@ class DatetimeVariable(Variable):
 
     def _get_summary_statistics(self) -> DataFrame:
         """Get summary statistics for the column/feature."""
-        return self.data.describe(datetime_is_numeric=True).set_axis(
+        return self.variable.data.describe(datetime_is_numeric=True).set_axis(
             [
                 "Number of observations",
                 "Average",
@@ -210,12 +207,9 @@ class DatetimeVariable(Variable):
         )
 
 
-class NumericVariable(Variable):
-    def __init__(self, data: Iterable, *, name: str = None) -> None:
-        super().__init__(data, name=name)
-        #: :class:`~pandas.DataFrame`: The ``NumericVariables`` *Summary
-        #: statistics*.
-        self.statistics = self._get_summary_statistics()
+class NumericVariable:
+    def __init__(self, variable) -> None:
+        self.variable = variable
 
     def __repr__(self) -> str:
         """Get the string representation of the ``Variable``.
@@ -225,15 +219,17 @@ class NumericVariable(Variable):
         str
             A summary of the ``NumericVariable``'s properties.
         """
+        sample_values = shorten(
+            f"{self.variable.num_unique} -> {self.variable.unique}", 60
+        )
         return "\n".join(
             [
                 "\t\tOverview",
                 "\t\t========",
-                f"Name: {self.name}",
-                f"Type: {self.var_type}",
-                "Unique Values: "
-                + f"{shorten(f'{self.num_unique} -> {self.unique}', 60)}",
-                f"Missing Values: {self.missing}\n",
+                f"Name: {self.variable.name}",
+                f"Type: {self.variable.var_type}",
+                f"Unique Values: {sample_values}",
+                f"Missing Values: {self.variable.missing}\n",
                 "\t  Summary Statistics",
                 "\t  ------------------",
                 f"{self._get_summary_statistics().to_frame(name='')}",
@@ -242,7 +238,7 @@ class NumericVariable(Variable):
 
     def _get_summary_statistics(self) -> DataFrame:
         """Get summary statistics for the column/feature."""
-        summary_stats = self.data.describe().set_axis(
+        summary_stats = self.variable.data.describe().set_axis(
             [
                 "Number of observations",
                 "Average",
@@ -254,10 +250,21 @@ class NumericVariable(Variable):
                 "Maximum",
             ]
         )
-        summary_stats["Skewness"] = self.data.skew()
-        summary_stats["Kurtosis"] = self.data.kurt()
+        summary_stats["Skewness"] = self.variable.data.skew()
+        summary_stats["Kurtosis"] = self.variable.data.kurt()
 
         return summary_stats
 
     def _test_for_normality(self):
         pass
+
+
+def summarize_univariate(data, name=None):
+    variable = Variable(data, name=name)
+
+    if variable.var_type == "numeric":
+        return NumericVariable(variable)
+    elif variable.var_type == "datetime":
+        return DatetimeVariable(variable)
+    else:
+        return CategoricalVariable(variable)

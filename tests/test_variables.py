@@ -4,6 +4,7 @@ from eda_report.univariate import (
     DatetimeVariable,
     NumericVariable,
     Variable,
+    summarize_univariate,
 )
 from pandas import Series, Timestamp, date_range
 from pandas.api.types import (
@@ -14,16 +15,31 @@ from pandas.api.types import (
 )
 
 
-def test_dtype_detection():
-    assert Variable([True, False]).var_type == "boolean"
-    assert Variable([0, 1, 1, 0, 1]).var_type == "boolean"
-    assert Variable(list("abcdefg")).var_type == "categorical"
-    assert Variable([1, 2, 3] * 10).var_type == "categorical"
-    assert (
-        Variable(date_range("2022-01-01", periods=5, freq="D")).var_type
-        == "datetime"
-    )
-    assert Variable(range(15)).var_type == "numeric"
+class TestDtypeDetection:
+    def test_bool_detection(self):
+        boolean = summarize_univariate([True, False, True])
+        assert boolean.variable.var_type == "boolean"
+        assert isinstance(boolean, CategoricalVariable)
+
+    def test_categorical_detection(self):
+        categorical = summarize_univariate(list("abcdefg"))
+        assert categorical.variable.var_type == "categorical"
+        assert isinstance(categorical, CategoricalVariable)
+
+        categorical2 = summarize_univariate([1, 2, 3] * 10)
+        assert categorical2.variable.var_type == "numeric categories"
+        assert isinstance(categorical2, CategoricalVariable)
+
+    def test_datetime_detection(self):
+        datetime = summarize_univariate(
+            date_range("2022-01-01", periods=5, freq="D")
+        )
+        assert datetime.variable.var_type == "datetime"
+
+    def test_numeric_detection(self):
+        numeric = summarize_univariate(range(15))
+        assert numeric.variable.var_type == "numeric"
+        assert isinstance(numeric, NumericVariable)
 
 
 class TestGeneralVariable:
@@ -64,15 +80,19 @@ class TestGeneralVariable:
 
 class TestCategoricalVariables:
 
-    majority_unique = CategoricalVariable(["a", "b", "c", "d", None, "a"])
-    majority_repeating = CategoricalVariable(["a", "b", "c", "d"] * 3)
+    majority_unique = CategoricalVariable(
+        Variable(["a", "b", "c", "d", None, "a"])
+    )
+    majority_repeating = CategoricalVariable(
+        Variable(["a", "b", "c", "d"] * 3)
+    )
 
     def test_data_type(self):
-        assert is_object_dtype(self.majority_unique.data)
-        assert self.majority_unique.var_type == "categorical"
+        assert is_object_dtype(self.majority_unique.variable.data)
+        assert self.majority_unique.variable.var_type == "categorical"
 
-        assert is_categorical_dtype(self.majority_repeating.data)
-        assert self.majority_repeating.var_type == "categorical"
+        assert is_categorical_dtype(self.majority_repeating.variable.data)
+        assert self.majority_repeating.variable.var_type == "categorical"
 
     def test_summary_statistics(self):
         assert self.majority_unique._get_most_common().to_dict() == {
@@ -114,28 +134,28 @@ class TestCategoricalVariables:
 
 class TestBooleanVariables:
     # Boolean variables are treated as categorical. Only the var_type differs.
-    boolean_from_int = CategoricalVariable([1, 0, 1] * 5)
-    boolean_variable = CategoricalVariable([True, False, True] * 5)
+    boolean_from_int = CategoricalVariable(Variable([1, 0, 1] * 5))
+    boolean_variable = CategoricalVariable(Variable([True, False, True] * 5))
 
     def test_dtype(self):
-        assert is_categorical_dtype(self.boolean_from_int.data)
-        assert is_categorical_dtype(self.boolean_variable.data)
-        assert self.boolean_from_int.var_type == "boolean"
-        assert self.boolean_variable.var_type == "boolean"
+        assert is_categorical_dtype(self.boolean_from_int.variable.data)
+        assert is_categorical_dtype(self.boolean_variable.variable.data)
+        assert self.boolean_from_int.variable.var_type == "boolean"
+        assert self.boolean_variable.variable.var_type == "boolean"
 
 
 class TestDateTimeVariables:
 
-    variable = DatetimeVariable(
-        date_range("01-01-2022", periods=10, freq="D"), name="dates"
+    datetime = DatetimeVariable(
+        Variable(date_range("01-01-2022", periods=10, freq="D"), name="dates")
     )
 
     def test_data_type(self):
-        assert is_datetime64_any_dtype(self.variable.data)
-        assert self.variable.var_type == "datetime"
+        assert is_datetime64_any_dtype(self.datetime.variable.data)
+        assert self.datetime.variable.var_type == "datetime"
 
     def test_summary_statistics(self):
-        assert self.variable._get_summary_statistics().to_dict() == {
+        assert self.datetime._get_summary_statistics().to_dict() == {
             "Number of observations": 10,
             "Average": Timestamp("2022-01-05 12:00:00"),
             "Minimum": Timestamp("2022-01-01 00:00:00"),
@@ -146,7 +166,7 @@ class TestDateTimeVariables:
         }
 
     def test_repr(self):
-        assert str(self.variable) == (
+        assert str(self.datetime) == (
             "\t\tOverview\n\t\t========\nName: dates\nType: datetime\n"
             "Number of Observations: 10\nMissing Values: None\n\n\t  "
             "Summary Statistics\n\t  ------------------\n                   "
@@ -161,15 +181,15 @@ class TestDateTimeVariables:
 
 class TestNumericVariables:
 
-    variable = NumericVariable(data=range(50), name="1 to 50")
+    numeric = NumericVariable(Variable(data=range(50), name="1 to 50"))
 
     def test_data_type(self):
-        assert is_numeric_dtype(self.variable.data)
-        assert self.variable.var_type == "numeric"
+        assert is_numeric_dtype(self.numeric.variable.data)
+        assert self.numeric.variable.var_type == "numeric"
 
     def test_summary_statistics(self):
         assert (
-            self.variable._get_summary_statistics().to_dict()
+            self.numeric._get_summary_statistics().to_dict()
             == pytest.approx(
                 {
                     "Number of observations": 50.0,
