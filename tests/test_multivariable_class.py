@@ -57,12 +57,12 @@ class TestMixedVariables:
         assert self.multivariable.var_pairs == {("A", "D")}
 
         actual = self.multivariable.correlation_df.to_dict(orient="list")
-        assert actual == pytest.approx(
-            {
-                "A": [1.0, 0.21019754169815527],
-                "D": [0.21019754169815527, 1.0],
-            }
-        )
+        expected = {
+            "A": [1.0, 0.21019754169815527],
+            "D": [0.21019754169815527, 1.0],
+        }
+        for key, values in actual.items():
+            assert values == pytest.approx(expected[key])
         assert self.multivariable.correlation_descriptions == {
             ("A", "D"): "very weak positive correlation (0.21)"
         }
@@ -213,7 +213,8 @@ class TestNumericVariables:
                 1.0,
             ],
         }
-        assert actual == pytest.approx(expected)
+        for key, values in actual.items():
+            assert values == pytest.approx(expected[key])
 
         assert self.multivariable.correlation_descriptions == {
             ("F", "G"): "virtually no correlation (0.02)",
