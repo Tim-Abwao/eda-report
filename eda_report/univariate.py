@@ -69,8 +69,6 @@ class Variable:
             The name to assign to the ``Variable``, by default None.
         """
         self.name = self.data.name = name
-        if hasattr(self, "most_common_items"):
-            self.most_common_items.set_axis([name], axis=1, inplace=True)
 
     def _get_variable_type(self) -> str:
         """Determine the ``Variable``'s type.

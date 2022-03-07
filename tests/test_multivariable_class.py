@@ -287,3 +287,16 @@ class TestInsufficientNumericPairs:
         assert multivariable.correlation_descriptions == {
             ("B", "C"): "very strong positive correlation (1.00)"
         }
+
+        assert str(multivariable) == (
+            "\t\t\tOVERVIEW\n\t\t\t========\nNumeric features: A, B, C\n\n\n\t"
+            "  Summary Statistics (Numeric features)\n\t  -------------------"
+            "------------------\n   count  mean      std  min    25%   50%    "
+            "75%    max  skewness  kurtosis\nA   50.0   1.5   0.5051  1.0   "
+            "1.00   1.5   2.00    2.0       0.0   -2.0851\nB   50.0  24.5  "
+            "14.5774  0.0  12.25  24.5  36.75   49.0       0.0   -1.2000\nC   "
+            "50.0  51.0  29.1548  2.0  26.50  51.0  75.50  100.0       0.0   "
+            "-1.2000\n\n\n\t  Bivariate Analysis (Correlation)\n\t  ---------"
+            "-----------------------\nB & C --> very strong positive "
+            "correlation (1.00)"
+        )

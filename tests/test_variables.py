@@ -64,8 +64,8 @@ class TestGeneralVariable:
         assert self.unnamed_variable.name is None
 
     def test_renaming(self):
-        self.variable.rename("new name")
-        assert self.variable.name == "new name"
+        self.unnamed_variable.rename("new name")
+        assert self.unnamed_variable.name == "new name"
 
         self.variable.rename()
         assert self.variable.name is None
