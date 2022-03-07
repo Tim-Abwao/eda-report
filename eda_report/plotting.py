@@ -146,6 +146,7 @@ class PlotVariable(BasePlot):
             ax=ax,
             fliersize=4,
             notch=True,
+            orient="h",
             saturation=0.85,
             width=0.2,
         )
