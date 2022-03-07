@@ -1,6 +1,7 @@
 from itertools import combinations
 
 import pytest
+from eda_report import summarize
 from eda_report.multivariate import MultiVariable
 from eda_report.univariate import CategoricalVariable, NumericVariable
 from pandas import DataFrame
@@ -245,8 +246,8 @@ class TestCategoricalVariables:
     def test_bivariate_analysis(self, caplog):
         multivariable = MultiVariable([list("abcd")] * 4)
         assert (
-            "Skipped Bivariate Analysis: "
-            "Not enough numeric variables to compare."
+            "Skipped Bivariate Analysis: There are less than 2 numeric "
+            "variables having > 5% unique values."
         ) in caplog.text
         assert str(multivariable) == (
             "\t\t\tOVERVIEW\n\t\t\t========\n\nCategorical features: var_1, "
@@ -263,8 +264,8 @@ class TestInsufficientNumericPairs:
     def test_1d_numeric(self, caplog):
         numeric_1D = MultiVariable(range(11))
         assert (
-            "Skipped Bivariate Analysis: "
-            "Not enough numeric variables to compare."
+            "Skipped Bivariate Analysis: There are less than 2 numeric "
+            "variables having > 5% unique values."
         ) in str(caplog.text)
 
         assert str(numeric_1D) == (
@@ -301,3 +302,8 @@ class TestInsufficientNumericPairs:
             "-----------------------\nB & C --> very strong positive "
             "correlation (1.00)"
         )
+
+
+def test_summarize_function():
+    summary = summarize(range(15))
+    assert isinstance(summary, MultiVariable)

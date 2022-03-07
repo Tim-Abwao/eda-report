@@ -238,7 +238,7 @@ class MultiVariable:
             )
         else:
             logging.warning(
-                "Skipped Bivariate Analysis: "
-                "Not enough numeric variables to compare."
+                "Skipped Bivariate Analysis: There are less than 2 numeric "
+                "variables having > 5% unique values."
             )
             return None
