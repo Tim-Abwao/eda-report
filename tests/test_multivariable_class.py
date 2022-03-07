@@ -1,13 +1,14 @@
 from itertools import combinations
 
 import pytest
-from eda_report import summarize
+from eda_report.multivariate import MultiVariable
+from eda_report.univariate import CategoricalVariable, NumericVariable
 from pandas import DataFrame
 
 
-class TestMixedMultiVariables:
+class TestMixedVariables:
 
-    multivariable = summarize(
+    multivariable = MultiVariable(
         DataFrame(
             {
                 "A": range(50),
@@ -20,10 +21,9 @@ class TestMixedMultiVariables:
 
     def test_data_types(self):
         assert isinstance(self.multivariable.data, DataFrame)
-        assert self.multivariable.categorical_cols.columns.to_list() == [
-            "B",
-            "C",
-        ]
+
+        actual = self.multivariable.categorical_cols.columns.to_list()
+        assert actual == ["B", "C"]
         assert self.multivariable.numeric_cols.columns.to_list() == ["A", "D"]
 
     def test_categorical_summary_statistics(self):
@@ -56,35 +56,43 @@ class TestMixedMultiVariables:
     def test_correlation(self):
         assert self.multivariable.var_pairs == {("A", "D")}
 
-        expected = {
-            "A": [1.0, 0.21019754169815527],
-            "D": [0.21019754169815527, 1.0],
-        }
         actual = self.multivariable.correlation_df.to_dict(orient="list")
-        for key, values in actual.items():
-            assert values == pytest.approx(expected[key])
+        assert actual == pytest.approx(
+            {
+                "A": [1.0, 0.21019754169815527],
+                "D": [0.21019754169815527, 1.0],
+            }
+        )
         assert self.multivariable.correlation_descriptions == {
             ("A", "D"): "very weak positive correlation (0.21)"
         }
 
-    def test_multivariable_description(self, capsys):
-        self.multivariable.describe()
-        captured = capsys.readouterr()
-        assert captured.out == (
-            "\n\tSummary Statistics (Numeric columns):\n\n    count  mean"
-            "      std  min    25%   50%    75%   max  skewness  kurtosis\nA"
-            "   50.0  24.5  14.5774  0.0  12.25  24.5  36.75  49.0    0.0000"
-            "   -1.2000\nD   50.0   7.2   4.2426  1.0   3.00   7.0  11.00"
-            "  17.0    0.1309   -0.9598\n\n\tSummary Statistics (Categorical"
-            " columns):\n\n   count unique   top freq relative freq\nB    50"
-            "      6     a   10        20.00%\nC    50      2  True   26"
-            "        52.00%\n"
+    def test_repr(self):
+        assert str(self.multivariable) == (
+            "\t\t\tOVERVIEW\n\t\t\t========\nNumeric features: A, D\n"
+            "Categorical features: B, C\n\n\t  Summary Statistics (Numeric "
+            "features)\n\t  -------------------------------------\n   count  "
+            "mean      std  min    25%   50%    75%   max  skewness  kurtosis"
+            "\nA   50.0  24.5  14.5774  0.0  12.25  24.5  36.75  49.0    "
+            "0.0000   -1.2000\nD   50.0   7.2   4.2426  1.0   3.00   7.0  "
+            "11.00  17.0    0.1309   -0.9598\n\n\t  Summary Statistics "
+            "(Categorical features)\n\t  ------------------------------------"
+            "-----\n  count unique   top freq relative freq\nB    50      6  "
+            "   a   10        20.00%\nC    50      2  True   26        52.00%"
+            "\n\n\t  Bivariate Analysis (Correlation)\n\t  ------------------"
+            "--------------\nA & D --> very weak positive correlation (0.21)"
         )
 
+    def test_iteration(self):
+        variable_types = set(
+            type(var) for var in self.multivariable.iter_variables()
+        )
+        assert variable_types == {CategoricalVariable, NumericVariable}
 
-class TestBivariateAnalysis:
 
-    multivariable = summarize(
+class TestNumericVariables:
+
+    multivariable = MultiVariable(
         DataFrame(
             {
                 "A": range(10),
@@ -101,9 +109,7 @@ class TestBivariateAnalysis:
     def test_multivariable_attributes(self):
         assert self.multivariable.categorical_cols is None
         assert self.multivariable.categorical_stats is None
-        assert self.multivariable.numeric_cols.columns.to_list() == list(
-            "ABCDEFG"
-        )
+        assert list(self.multivariable.numeric_cols) == list("ABCDEFG")
         assert self.multivariable.numeric_stats.to_dict(
             orient="list"
         ) == pytest.approx(
@@ -207,8 +213,7 @@ class TestBivariateAnalysis:
                 1.0,
             ],
         }
-        for key, values in actual.items():
-            assert values == pytest.approx(expected[key])
+        assert actual == pytest.approx(expected)
 
         assert self.multivariable.correlation_descriptions == {
             ("F", "G"): "virtually no correlation (0.02)",
@@ -234,75 +239,51 @@ class TestBivariateAnalysis:
             ("E", "G"): "very weak negative correlation (-0.10)",
         }
 
-    def test_multivariable_description(self, capsys):
-        self.multivariable.describe()
-        captured = capsys.readouterr()
-        assert captured.out == (
-            "\n\tSummary Statistics (Numeric columns):\n\n    count  mean"
-            "     std  min   25%  50%   75%  max  skewness  kurtosis\nA   "
-            "10.0   4.5  3.0277  0.0  2.25  4.5  6.75  9.0    0.0000   "
-            "-1.2000\nB   10.0   5.3  3.4010  0.0  2.50  6.0  8.00  9.0"
-            "   -0.4271   -1.4977\nC   10.0   6.1  3.2128  0.0  4.25  7.5  "
-            "8.75  9.0   -0.9167   -0.3921\nD   10.0   6.1  3.2128  2.0  2.50"
-            "  7.5  9.00  9.0   -0.4644   -1.9554\nE   10.0   4.1  2.3781  "
-            "2.0  2.00  4.0  4.75  9.0    1.0917    0.6123\nF   10.0   3.8  "
-            "2.6583  0.0  2.00  3.5  4.75  9.0    0.7559    0.3744\nG   10.0"
-            "   5.5  3.4075  0.0  3.25  6.0  8.75  9.0   -0.4528   -1.3223"
-            "\n\nThere are no categorical columns.\n\n"
-        )
 
-    def test_bivariate_analysis_in_categorical_data(self, caplog, capsys):
-        categorical_multivariable = summarize(["a", "b", "c"])
-
-        assert str(categorical_multivariable) == (
-            "\t\t\tOVERVIEW\n\t\t\t========\nNumeric features: \nCategorical"
-            " features: var_1\n\t\t\t  ***\n\t  Summary Statistics (Numeric "
-            "features)\n\t  -------------------------------------\nN/A"
-            "\n\t\t\t  ***\n\t  Summary Statistics (Categorical features)\n\t"
-            "  -----------------------------------------\n      count unique "
-            "top freq relative freq\nvar_1     3      3   a    1        "
-            "33.33%\n\t\t\t  ***\n\t  Bivariate Analysis (Correlation)\n\t  "
-            "--------------------------------\nN/A"
-        )
+class TestCategoricalVariables:
+    def test_bivariate_analysis(self, caplog):
+        multivariable = MultiVariable([list("abcd")] * 4)
         assert (
             "Skipped Bivariate Analysis: "
             "Not enough numeric variables to compare."
         ) in caplog.text
+        assert str(multivariable) == (
+            "\t\t\tOVERVIEW\n\t\t\t========\n\nCategorical features: var_1, "
+            "var_2, var_3, var_4\n\n\n\t  Summary Statistics (Categorical "
+            "features)\n\t  -----------------------------------------\n      "
+            "count unique top freq relative freq\nvar_1     4      1   a    4"
+            "       100.00%\nvar_2     4      1   b    4       100.00%\nvar_3"
+            "     4      1   c    4       100.00%\nvar_4     4      1   d    "
+            "4       100.00%\n"
+        )
 
-        categorical_multivariable.describe()
-        captured = capsys.readouterr()
+
+class TestInsufficientNumericPairs:
+    def test_1d_numeric(self, caplog):
+        numeric_1D = MultiVariable(range(5))
         assert (
-            "There are no numeric columns.\n\n\n\tSummary Statistics "
-            "(Categorical columns):\n\n       count unique top freq relative"
-            " freq\nvar_1     3      3   a    1        33.33%\n"
-        ) in captured.out
-
-    def test_bivariate_analysis_in_univariate_numeric_data(
-        self, caplog, capsys
-    ):
-        numeric_1D = summarize(range(5))
+            "Skipped Bivariate Analysis: "
+            "Not enough numeric variables to compare."
+        ) in str(caplog.text)
 
         assert str(numeric_1D) == (
-            "\t\t\tOVERVIEW\n\t\t\t========\nNumeric features: var_1\n"
-            "Categorical features: \n\t\t\t  ***\n\t  Summary Statistics "
-            "(Numeric features)\n\t  -------------------------------------\n"
-            "       count  mean     std  min  25%  50%  75%  max  skewness  "
-            "kurtosis\nvar_1    5.0   2.0  1.5811  0.0  1.0  2.0  3.0  4.0"
-            "       0.0      -1.2\n\t\t\t  ***\n\t  Summary Statistics "
-            "(Categorical features)\n\t  ----------------------------------"
-            "-------\nN/A\n\t\t\t  ***\n\t  Bivariate Analysis (Correlation)"
-            "\n\t  --------------------------------\nN/A"
+            "\t\tOverview\n\t\t========\nName: var_1\nType: numeric\nUnique "
+            "Values: 5 -> [0, 1, 2, 3, 4]\nMissing Values: None\n\n\t  "
+            "Summary Statistics\n\t  ------------------\n                    "
+            "            \nNumber of observations  5.000000\nAverage         "
+            "        2.000000\nStandard Deviation      1.581139\nMinimum     "
+            "            0.000000\nLower Quartile          1.000000\nMedian  "
+            "                2.000000\nUpper Quartile          3.000000\n"
+            "Maximum                 4.000000\nSkewness                "
+            "0.000000\nKurtosis               -1.200000"
         )
-        assert (
-            "Skipped Bivariate Analysis: "
-            "Not enough numeric variables to compare."
-        ) in caplog.text
 
-        numeric_1D.describe()
-        captured = capsys.readouterr()
-        assert (
-            "\n\tSummary Statistics (Numeric columns):\n\n        count  mean"
-            "     std  min  25%  50%  75%  max  skewness  kurtosis\nvar_1    "
-            "5.0   2.0  1.5811  0.0  1.0  2.0  3.0  4.0       0.0      -1.2"
-            "\n\nThere are no categorical columns."
-        ) in captured.out
+    def test_omitted_numeric(self):
+        multivariable = MultiVariable(
+            {"A": [1, 2] * 25, "B": range(50), "C": range(2, 101, 2)}
+        )
+        # Check that A (0.04% unique, < 0.05 threshold) is excluded
+        assert multivariable.var_pairs == {("B", "C")}
+        assert multivariable.correlation_descriptions == {
+            ("B", "C"): "very strong positive correlation (1.00)"
+        }
