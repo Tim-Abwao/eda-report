@@ -8,7 +8,11 @@ from tqdm import tqdm
 
 from eda_report.multivariate import MultiVariable
 from eda_report.plotting import PlotMultiVariable, PlotVariable
-from eda_report.univariate import Variable
+from eda_report.univariate import (
+    CategoricalVariable,
+    DatetimeVariable,
+    NumericVariable,
+)
 from eda_report.validate import validate_target_variable
 
 logging.basicConfig(
@@ -59,13 +63,12 @@ class ReportContent:
         self.bivariate_summaries = self._get_bivariate_summaries()
 
     def _get_introductory_summary(self) -> str:
-        """Get a brief overview of the number of rows and the nature of
-        columns.
+        """Get an overview of the number of rows and the nature of columns.
 
         Returns
         -------
         str
-            An overview of the input data.
+            Introduction.
         """
         num_rows, num_cols = self.variables.data.shape
 
@@ -92,11 +95,13 @@ class ReportContent:
 
         return f"The dataset consists of {rows} and {cols}{numeric}."
 
-    def _describe_variable(self, name: str) -> dict:
-
-        # Perform univariate analysis using the Variable class
-        var = Variable(self.variables.data[name])
-
+    def _describe_variable(
+        self,
+        variable: Union[
+            CategoricalVariable, DatetimeVariable, NumericVariable
+        ],
+    ) -> dict:
+        var = variable.variable
         if var.num_unique == 1:
             unique_vals = "1 unique value"
         else:
@@ -104,7 +109,7 @@ class ReportContent:
 
         return {
             "description": (
-                f"{name.capitalize()} is a {var.var_type} variable with"
+                f"{var.name.capitalize()} is a {var.var_type} variable with"
                 f" {unique_vals}. {var.missing} of its values are missing."
             ),
             "graphs": PlotVariable(
@@ -112,7 +117,7 @@ class ReportContent:
                 graph_color=self.GRAPH_COLOR,
                 hue=self.TARGET_VARIABLE,
             ).graphs,
-            "statistics": var.statistics,
+            "statistics": variable._get_summary_statistics().to_frame(),
             "most_common_items": (
                 var.most_common_items
                 if hasattr(var, "most_common_items")
@@ -129,13 +134,14 @@ class ReportContent:
             Summaries of columns present.
         """
         return {
-            col: self._describe_variable(col)
-            for col in tqdm(
-                self.variables.data.columns,
+            var.variable.name: self._describe_variable(var)
+            for var in tqdm(
+                self.variables.iter_variables(),
                 bar_format="{desc}: {percentage:3.0f}%|{bar:35}| "
                 + "{n_fmt}/{total_fmt} features.",
                 desc="Univariate analysis",
                 dynamic_ncols=True,
+                total=self.variables.data.shape[1],
             )
         }
 
@@ -220,7 +226,7 @@ class ReportDocument(ReportContent):
         a .docx file.
         """
         self._create_title_page()
-        self._get_variable_info()
+        self._get_univariate_analysis()
 
         if hasattr(self.variables, "var_pairs"):
             self._get_bivariate_analysis()
@@ -233,17 +239,22 @@ class ReportDocument(ReportContent):
         self.document.add_heading(self.TITLE, level=0)
 
         self.document.add_paragraph(self.intro_text)
-        self.document.add_paragraph()
 
         self._get_numeric_overview_table()
         self._get_categorical_overview_table()
+        self.document.add_page_break()
+
+    def _format_heading_spacing(self, format, before=21, after=7):
+        format.space_before = Pt(before)
+        format.space_after = Pt(after)
 
     def _get_numeric_overview_table(self) -> None:
         """Create a table with an overview of the numeric features present."""
         if self.variables.numeric_cols is not None:
-            self.document.add_heading("Overview of Numeric Features", level=2)
-            self.document.add_paragraph()
-
+            heading = self.document.add_heading(
+                "Overview of Numeric Features", level=1
+            )
+            self._format_heading_spacing(heading.paragraph_format)
             # count | mean | std | min | 25% | 50% | 75% | max
             self._create_table(
                 data=self.variables.numeric_stats,
@@ -258,11 +269,10 @@ class ReportDocument(ReportContent):
         present.
         """
         if self.variables.categorical_cols is not None:
-            self.document.add_heading(
-                "Overview of Categorical Features", level=2
+            heading = self.document.add_heading(
+                "Overview of Categorical Features", level=1
             )
-            self.document.add_paragraph()
-
+            self._format_heading_spacing(heading.paragraph_format)
             # column-name | count | unique | top | freq | relative freq
             self._create_table(
                 data=self.variables.categorical_stats,
@@ -272,16 +282,25 @@ class ReportDocument(ReportContent):
                 style="Normal Table",
             )
 
-    def _get_variable_info(self) -> None:
+    def _get_univariate_analysis(self) -> None:
         """Get a brief introduction, summary statistics, and graphs for each
         individual variable.
         """
-        self.document.add_heading("A. Univariate Analysis", level=1)
-
+        univariate_heading = self.document.add_heading(
+            "1. Univariate Analysis", level=1
+        )
+        self._format_heading_spacing(
+            univariate_heading.paragraph_format, before=0, after=0
+        )
         for idx, var_name in enumerate(self.variable_descriptions, start=1):
             var_info = self.variable_descriptions[var_name]
 
-            self.document.add_heading(f"{idx}. {var_name}".title(), level=2)
+            heading = self.document.add_heading(
+                f"1.{idx}. {var_name}".title(), level=2
+            )
+            self._format_heading_spacing(
+                heading.paragraph_format, before=20, after=5
+            )
             self.document.add_paragraph(var_info["description"])
 
             self.document.add_heading("Summary Statistics", level=4)
@@ -295,7 +314,7 @@ class ReportDocument(ReportContent):
                 )
 
             for graph in var_info["graphs"].values():
-                self.document.add_picture(graph, width=Inches(5.4))
+                self.document.add_picture(graph, width=Inches(4.4))
 
         self.document.add_page_break()
 
@@ -304,10 +323,11 @@ class ReportDocument(ReportContent):
         variables.
         """
         bivariate_heading = self.document.add_heading(
-            "B. Bivariate Analysis (Correlation)", level=1
+            "2. Bivariate Analysis (Correlation)", level=1
         )
-        bivariate_heading.paragraph_format.space_before = Pt(0)
-        self.document.add_paragraph()
+        self._format_heading_spacing(
+            bivariate_heading.paragraph_format, before=0
+        )
 
         self.document.add_picture(
             self.multivariate_graphs["correlation_heatmap"], width=Inches(6.7)
@@ -315,15 +335,17 @@ class ReportDocument(ReportContent):
         self.document.add_page_break()
 
         for idx, var_pair in enumerate(self.bivariate_summaries, start=1):
-            self.document.add_heading(
-                f"{idx}. {var_pair[0]} vs {var_pair[1]}".title(), level=2
+            heading = self.document.add_heading(
+                f"2.{idx} {var_pair[0]} vs {var_pair[1]}".title(), level=2
+            )
+            self._format_heading_spacing(
+                heading.paragraph_format, before=20, after=5
             )
             self.document.add_paragraph(self.bivariate_summaries[var_pair])
             self.document.add_picture(
                 self.multivariate_graphs["scatterplots"][var_pair],
                 width=Inches(6),
             )
-            self.document.add_paragraph()
 
             # Add a page break after every 2 pairs
             if idx % 2 == 0:
@@ -387,5 +409,9 @@ class ReportDocument(ReportContent):
         self.document.add_paragraph()
 
     def _save_file(self) -> None:
+        for section in self.document.sections:
+            section.left_margin = Inches(1.2)
+            section.right_margin = Inches(1.2)
+
         """Save the document as a file."""
         self.document.save(self.OUTPUT_FILENAME)

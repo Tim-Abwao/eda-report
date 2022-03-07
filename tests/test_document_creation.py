@@ -69,10 +69,10 @@ class TestReportWithIdealInput:
 
     def test_variable_descriptions(self):
         assert list(self.report.variable_descriptions.keys()) == [
-            "sepal_length",
-            "sepal_width",
             "petal_length",
             "petal_width",
+            "sepal_length",
+            "sepal_width",
             "species",
         ]
 

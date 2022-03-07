@@ -15,7 +15,7 @@ from eda_report.univariate import Variable
 from eda_report.validate import validate_univariate_input
 
 # Matplotlib configuration
-matplotlib.rc("figure", autolayout=True, dpi=250, figsize=(6.4, 4))
+matplotlib.rc("figure", autolayout=True, dpi=250, figsize=(6.5, 4))
 matplotlib.rc("font", family="serif")
 matplotlib.rc("axes.spines", top=False, right=False)
 matplotlib.rc("axes", titlesize=12, titleweight=500)
@@ -72,10 +72,10 @@ class BasePlot:
         #: bool: A flag that determines whether or not to use the supplied
         #: ``hue``. True if ``hue`` has manageable cardinality, False
         #: otherwise.
-        self.COLOR_CODE_GRAPHS = (  # True if below condition holds
+        self.COLOR_GROUPS = (  # True if below condition holds
             self.HUE is not None and self.HUE.nunique() in range(2, 11)
         )
-        self._COLOR_CODED_GRAPHS = set()
+        self._COLOR_GROUPED_GRAPHS = set()
 
 
 class PlotVariable(BasePlot):
@@ -152,7 +152,7 @@ class PlotVariable(BasePlot):
         ax.set_title(f"Box-plot of {self.variable.name}")
 
         if self.HUE is not None:
-            self._COLOR_CODED_GRAPHS.add("box_plot")
+            self._COLOR_GROUPED_GRAPHS.add("box_plot")
 
         return savefig(fig)
 
@@ -170,7 +170,7 @@ class PlotVariable(BasePlot):
         ax.set_title(f"Distribution plot of {self.variable.name}")
 
         if self.HUE is not None:
-            self._COLOR_CODED_GRAPHS.add("kde_plot")
+            self._COLOR_GROUPED_GRAPHS.add("kde_plot")
 
         return savefig(fig)
 
@@ -204,15 +204,20 @@ class PlotVariable(BasePlot):
         BytesIO
             The barplot in PNG format as bytes in a file-object.
         """
-        fig = Figure(figsize=(6, 4), linewidth=1)
+        fig = Figure()
         ax = fig.subplots()
 
         # Include no more than 10 of the most common values
         top_10 = self.variable.data.value_counts().nlargest(10)
-        sns.barplot(x=top_10.index, y=top_10, ax=ax)
+        sns.barplot(
+            x=list(top_10.index),
+            y=top_10,
+            ax=ax,
+            palette=f"dark:{self.GRAPH_COLOR}_r",
+        )
         ax.tick_params(axis="x", rotation=90)
 
-        if num_unique := self.variable.num_unique > 10:
+        if (num_unique := self.variable.num_unique) > 10:
             ax.set_title(
                 f"Bar-plot of {self.variable.name} (Top 10 of {num_unique})"
             )
@@ -239,7 +244,7 @@ class PlotMultiVariable(BasePlot):
 
     Parameters
     ----------
-    variable : MultiVariable
+    variables : MultiVariable
         The data to plot.
     graph_color : str, optional
         The color to apply to the generated graphs, by default "cyan".
@@ -258,28 +263,28 @@ class PlotMultiVariable(BasePlot):
 
     def __init__(
         self,
-        multivariable: MultiVariable,
+        variables: MultiVariable,
         *,
         graph_color: str = "cyan",
         hue: Optional[Series] = None,
     ) -> None:
         super().__init__(graph_color=graph_color, hue=hue)
-        self.multivariable = multivariable
+        self.variables = variables
         self._plot_graphs()
 
     def _plot_graphs(self) -> None:
         """Get a heatmap of the correlation in all numeric columns, and
         scatter-plots & ecdf-plots of numeric column pairs.
         """
-        if hasattr(self.multivariable, "var_pairs"):
+        if hasattr(self.variables, "var_pairs"):
             self.bivariate_scatterplots = {
                 (var_pair): self._regression_plot(*var_pair)
                 for var_pair in tqdm(
-                    self.multivariable.var_pairs,
+                    self.variables.var_pairs,
                     bar_format="{desc}: {percentage:3.0f}%|{bar:35}| "
                     + "{n_fmt}/{total_fmt} numeric pairs.",
-                    dynamic_ncols=True,
                     desc="Bivariate analysis",
+                    dynamic_ncols=True,
                 )
             }
             self.graphs = {
@@ -297,17 +302,18 @@ class PlotMultiVariable(BasePlot):
         BytesIO
             The heatmap in PNG format as bytes in a file-like object.
         """
-        fig = Figure(figsize=(6, 6))
+        fig = Figure(figsize=(7, 7))
         ax = fig.subplots()
 
         sns.heatmap(
-            self.multivariable.correlation_df,
+            self.variables.correlation_df,
             annot=True,
             ax=ax,
             center=0,
             cmap="coolwarm",
             linewidths=2,
-            mask=np.triu(self.multivariable.correlation_df),
+            mask=np.triu(self.variables.correlation_df),
+            square=True,
             yticklabels=True,
         )
         ax.tick_params(rotation=45)
@@ -332,9 +338,9 @@ class PlotMultiVariable(BasePlot):
         fig = Figure(figsize=(8.2, 4))
         ax1, ax2 = fig.subplots(nrows=1, ncols=2)
 
-        sns.regplot(x=var1, y=var2, data=self.multivariable.data, ax=ax1)
+        sns.regplot(x=var1, y=var2, data=self.variables.data, ax=ax1)
 
-        pair_data = self.multivariable.data.loc[:, [var1, var2]]
+        pair_data = self.variables.data.loc[:, [var1, var2]]
         normalized_data = (pair_data - pair_data.mean()) / pair_data.std()
         sns.ecdfplot(
             data=normalized_data, ax=ax2, palette=f"dark:{self.GRAPH_COLOR}_r"
