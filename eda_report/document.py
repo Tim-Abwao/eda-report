@@ -306,13 +306,6 @@ class ReportDocument(ReportContent):
             self.document.add_heading("Summary Statistics", level=4)
             self._create_table(var_info["statistics"], column_widths=[2.5, 2])
 
-            # Add most-common-items table, if present
-            if var_info.get("most_common_items") is not None:
-                self.document.add_heading("Most Common Values", level=4)
-                self._create_table(
-                    var_info["most_common_items"], column_widths=(2.5, 2)
-                )
-
             for graph in var_info["graphs"].values():
                 self.document.add_picture(graph, width=Inches(4.4))
 
