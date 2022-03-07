@@ -82,12 +82,13 @@ class Variable:
                 # Consider boolean data as categorical
                 self.data = self.data.astype("category")
                 return "boolean"
-            elif self.data.nunique() / len(self.data) <= 0.1:
-                # Consider numeric data with <= 10% unique values categorical
+            elif self.data.nunique() <= 10:
+                # Consider numeric data with <= 10 unique values categorical
                 self.data = self.data.astype("category").cat.as_ordered()
-                return "numeric categories"
+                return "numeric (<10 levels)"
             else:
                 return "numeric"
+
         elif is_datetime64_any_dtype(self.data):
             return "datetime"
         elif (self.data.nunique() / self.data.shape[0]) <= (1 / 3):

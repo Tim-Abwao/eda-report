@@ -260,7 +260,7 @@ class TestCategoricalVariables:
 
 class TestInsufficientNumericPairs:
     def test_1d_numeric(self, caplog):
-        numeric_1D = MultiVariable(range(5))
+        numeric_1D = MultiVariable(range(11))
         assert (
             "Skipped Bivariate Analysis: "
             "Not enough numeric variables to compare."
@@ -268,14 +268,14 @@ class TestInsufficientNumericPairs:
 
         assert str(numeric_1D) == (
             "\t\tOverview\n\t\t========\nName: var_1\nType: numeric\nUnique "
-            "Values: 5 -> [0, 1, 2, 3, 4]\nMissing Values: None\n\n\t  "
-            "Summary Statistics\n\t  ------------------\n                    "
-            "            \nNumber of observations  5.000000\nAverage         "
-            "        2.000000\nStandard Deviation      1.581139\nMinimum     "
-            "            0.000000\nLower Quartile          1.000000\nMedian  "
-            "                2.000000\nUpper Quartile          3.000000\n"
-            "Maximum                 4.000000\nSkewness                "
-            "0.000000\nKurtosis               -1.200000"
+            "Values: 11 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]\nMissing Values:"
+            " None\n\n\t  Summary Statistics\n\t  ------------------\n       "
+            "                          \nNumber of observations  11.000000\n"
+            "Average                  5.000000\nStandard Deviation       "
+            "3.316625\nMinimum                  0.000000\nLower Quartile     "
+            "      2.500000\nMedian                   5.000000\nUpper Quartile"
+            "           7.500000\nMaximum                 10.000000\nSkewness"
+            "                 0.000000\nKurtosis                -1.200000"
         )
 
     def test_omitted_numeric(self):

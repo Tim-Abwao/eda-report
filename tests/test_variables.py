@@ -26,8 +26,10 @@ class TestDtypeDetection:
         assert categorical.variable.var_type == "categorical"
         assert isinstance(categorical, CategoricalVariable)
 
+        # Numeric variables with less than 10 unique values are stored as
+        # categorical.
         categorical2 = summarize_univariate([1, 2, 3] * 10)
-        assert categorical2.variable.var_type == "numeric categories"
+        assert categorical2.variable.var_type == "numeric (<10 levels)"
         assert isinstance(categorical2, CategoricalVariable)
 
     def test_datetime_detection(self):
@@ -44,7 +46,7 @@ class TestDtypeDetection:
 
 class TestGeneralVariable:
 
-    variable = Variable([1, 2, 3, 5, 8, None], name="some-variable")
+    variable = Variable(list(range(11)) + [None], name="some-variable")
     unnamed_variable = Variable(list("ababdea"))
 
     def test_data_type(self):
@@ -56,7 +58,7 @@ class TestGeneralVariable:
         assert self.unnamed_variable.var_type == "categorical"
 
     def test_missing_values(self):
-        assert self.variable.missing == "1 (16.67%)"
+        assert self.variable.missing == "1 (8.33%)"
         assert self.unnamed_variable.missing is None
 
     def test_name(self):
@@ -64,15 +66,17 @@ class TestGeneralVariable:
         assert self.unnamed_variable.name is None
 
     def test_renaming(self):
-        self.unnamed_variable.rename("new name")
+        self.unnamed_variable.rename(name="new name")
         assert self.unnamed_variable.name == "new name"
 
         self.variable.rename()
         assert self.variable.name is None
 
     def test_unique_values(self):
-        assert self.variable.num_unique == 5
-        assert self.variable.unique == pytest.approx([1.0, 2.0, 3.0, 5.0, 8.0])
+        assert self.variable.num_unique == 11
+        assert self.variable.unique == pytest.approx(
+            [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+        )
 
         assert self.unnamed_variable.num_unique == 4
         assert self.unnamed_variable.unique == list("abde")

@@ -16,11 +16,11 @@ class TestBasePlot:
         assert self.with_valid_hue.GRAPH_COLOR == "purple"
         assert self.with_high_cardinality.GRAPH_COLOR == "yellow"
 
-    def test_color_coding(self):
+    def test_color_groups(self):
         # Should be False with constant and high cardinality hues
-        assert self.with_constant_hue.COLOR_CODE_GRAPHS is False
-        assert self.with_valid_hue.COLOR_CODE_GRAPHS
-        assert self.with_high_cardinality.COLOR_CODE_GRAPHS is False
+        assert self.with_constant_hue.COLOR_GROUPS is False
+        assert self.with_valid_hue.COLOR_GROUPS
+        assert self.with_high_cardinality.COLOR_GROUPS is False
 
 
 class TestPlotMultiVariable:
@@ -32,9 +32,9 @@ class TestPlotMultiVariable:
         assert self.plots.GRAPH_COLOR == "blue"
 
     def test_color_coding(self):
-        assert self.plots.COLOR_CODE_GRAPHS
-        # The heatmap and pairwise scatterplots need no color coding
-        assert self.plots._COLOR_CODED_GRAPHS == set()
+        assert self.plots.COLOR_GROUPS
+        # No grouping in heatmap and pairwise plots
+        assert self.plots._COLOR_GROUPED_GRAPHS == set()
 
     def test_graphs(self):
         assert "correlation_heatmap" in self.plots.graphs
@@ -49,7 +49,7 @@ class TestPlotMultiVariable:
 
 class TestPlotVariable:
 
-    numeric_variable = Variable(range(7))
+    numeric_variable = Variable(range(15))
     categorical_variable = Variable(list("abcde"))
 
     plots_numeric = PlotVariable(numeric_variable, hue=list("abcacba"))
@@ -61,10 +61,10 @@ class TestPlotVariable:
         assert self.plots_numeric.GRAPH_COLOR == "cyan"
         assert self.plots_categorical.GRAPH_COLOR == "olive"
 
-    def test_color_coding(self):
-        assert self.plots_numeric._COLOR_CODED_GRAPHS == {
+    def test_color_grouping(self):
+        assert self.plots_numeric._COLOR_GROUPED_GRAPHS == {
             "box_plot",
-            "kde_plot"
+            "kde_plot",
         }
 
     def test_graphs(self):
