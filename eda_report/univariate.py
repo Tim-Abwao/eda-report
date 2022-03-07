@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from textwrap import shorten
 from typing import Optional
-
+from scipy import stats
 from pandas import DataFrame, Series
 from pandas.api.types import (
     is_bool_dtype,
@@ -231,7 +231,10 @@ class NumericVariable:
                 f"Missing Values: {self.variable.missing}\n",
                 "\t  Summary Statistics",
                 "\t  ------------------",
-                f"{self._get_summary_statistics().to_frame(name='')}",
+                f"{self._get_summary_statistics().to_frame(name='')}\n",
+                "\t  Tests for Normality",
+                "\t  -------------------",
+                f"{self._test_for_normality()}"
             ]
         )
 
@@ -254,8 +257,34 @@ class NumericVariable:
 
         return summary_stats
 
-    def _test_for_normality(self):
-        pass
+    def _test_for_normality(self, alpha=0.05):
+        data = self.variable.data.dropna()
+        tests = [
+            "D'Agostino's K-squared test",
+            # "Cramér–von Mises test",
+            "Kolmogorov-Smirnov test",
+        ]
+        p_values = [
+            stats.normaltest(data).pvalue,
+            # stats.cramervonmises(data, "norm").pvalue,
+            stats.kstest(data, "norm", N=200).pvalue,
+        ]
+        conclusion = f"Conclusion at α = {alpha}"
+        results = DataFrame(
+            {
+                "p-value": p_values,
+                conclusion: [p_value > alpha for p_value in p_values],
+            },
+            index=tests,
+        )
+        results[conclusion] = results[conclusion].map(
+            {
+                True: "Possibly normal",
+                False: "Unlikely to be normal",
+            }
+        )
+        results["p-value"] = results["p-value"].apply(lambda x: f"{x:.7f}")
+        return results
 
 
 def summarize_univariate(data, name=None):

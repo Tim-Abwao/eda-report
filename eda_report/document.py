@@ -118,9 +118,9 @@ class ReportContent:
                 hue=self.TARGET_VARIABLE,
             ).graphs,
             "statistics": variable._get_summary_statistics().to_frame(),
-            "most_common_items": (
-                var.most_common_items
-                if hasattr(var, "most_common_items")
+            "normality_tests": (
+                variable._test_for_normality()
+                if var.var_type == "numeric"
                 else None
             ),
         }
@@ -308,6 +308,18 @@ class ReportDocument(ReportContent):
 
             for graph in var_info["graphs"].values():
                 self.document.add_picture(graph, width=Inches(4.4))
+
+            if (norm_tests := var_info["normality_tests"]) is not None:
+
+                self.document.add_heading("Tests for Normality", level=4)
+                # type | p-value | conclusion
+                self._create_table(
+                    data=norm_tests,
+                    header=True,
+                    column_widths=(2.2, 1, 2),
+                    font_size=8.5,
+                    style="Normal Table",
+                )
 
         self.document.add_page_break()
 

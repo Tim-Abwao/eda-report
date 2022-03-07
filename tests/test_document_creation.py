@@ -80,7 +80,7 @@ class TestReportWithIdealInput:
 class TestReportWithLimitedInput:
 
     data = DataFrame(
-        {"categorical": list("ABCDEFGHIJKL"), "numeric": range(12)}
+        {"categorical": list("ABCDEFGHIJKL" * 2), "numeric": range(24)}
     )
     report = get_word_report(
         data,

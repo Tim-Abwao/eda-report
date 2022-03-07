@@ -262,7 +262,7 @@ class TestCategoricalVariables:
 
 class TestInsufficientNumericPairs:
     def test_1d_numeric(self, caplog):
-        numeric_1D = MultiVariable(range(11))
+        numeric_1D = MultiVariable(range(25))
         assert (
             "Skipped Bivariate Analysis: There are less than 2 numeric "
             "variables having > 5% unique values."
@@ -270,14 +270,19 @@ class TestInsufficientNumericPairs:
 
         assert str(numeric_1D) == (
             "\t\tOverview\n\t\t========\nName: var_1\nType: numeric\nUnique "
-            "Values: 11 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]\nMissing Values:"
-            " None\n\n\t  Summary Statistics\n\t  ------------------\n       "
-            "                          \nNumber of observations  11.000000\n"
-            "Average                  5.000000\nStandard Deviation       "
-            "3.316625\nMinimum                  0.000000\nLower Quartile     "
-            "      2.500000\nMedian                   5.000000\nUpper Quartile"
-            "           7.500000\nMaximum                 10.000000\nSkewness"
-            "                 0.000000\nKurtosis                -1.200000"
+            "Values: 25 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, "
+            "[...]\nMissing Values: None\n\n\t  Summary Statistics\n\t  "
+            "------------------\n                                 \nNumber of"
+            " observations  25.000000\nAverage                 12.000000\n"
+            "Standard Deviation       7.359801\nMinimum                  "
+            "0.000000\nLower Quartile           6.000000\nMedian             "
+            "     12.000000\nUpper Quartile          18.000000\nMaximum      "
+            "           24.000000\nSkewness                 0.000000\nKurtosis"
+            "                -1.200000\n\n\t  Tests for Normality\n\t  ------"
+            "-------------\n                               p-value Conclusion"
+            " at α = 0.05\nD'Agostino's K-squared test  0.0749432        "
+            "Possibly normal\nKolmogorov-Smirnov test      0.0000000  Unlikely"
+            " to be normal"
         )
 
     def test_omitted_numeric(self):
