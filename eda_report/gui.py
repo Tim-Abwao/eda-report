@@ -44,14 +44,11 @@ class EDAGUI(Frame):  # pragma: no cover
        :alt: an image of the graphical user interface
 
     If a valid file is selected, *text-input widgets* and a *color-picker
-    tool* pop up to help set the report's *title*, *target variable(optional)*
-    and *graph color*.
+    tool* pop up to help set the report's *title*, *target variable(optional,
+    to group values)* and *graph color*.
 
     Afterwards, another file-dialog appears to set the desired location and
     name for the generated report.
-
-    A :class:`~eda_report.document.ReportDocument` object is then created
-    using the collected info.
 
     .. hint::
         For help with `Tk` - related issues, consider visiting `TkDocs`_.

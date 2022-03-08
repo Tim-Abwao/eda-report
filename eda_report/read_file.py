@@ -1,14 +1,13 @@
 from pathlib import Path
-from typing import Optional, Union
+from typing import Union
 
 import pandas as pd
 
 from eda_report.exceptions import InputError
 
 
-def df_from_file(filepath: Optional[Union[str, Path]] = None) -> pd.DataFrame:
-    """Reads a file, and loads its contents as a ``pandas``
-    :class:`~pandas.DataFrame`.
+def df_from_file(filepath: Union[str, Path]) -> pd.DataFrame:
+    """Reads a file, and loads its contents as a :class:`~pandas.DataFrame`.
 
     File formats are currently restricted to *csv* and *excel*, since these
     are the most often used to store data.
@@ -18,25 +17,17 @@ def df_from_file(filepath: Optional[Union[str, Path]] = None) -> pd.DataFrame:
         * :func:`pandas.read_csv`
         * :func:`pandas.read_excel`
 
-    Parameters
-    ----------
-    filepath : Optional[Union[str, Path]] = None
-        The path to a file.
 
-    Returns
-    -------
-    :class:`~pandas.DataFrame`
-        The specified file's contents.
+    Args:
+        filepath (Union[str, Path]): The path to a file.
 
-    Raises
-    ------
-    InputError
-        If the supplied filepath is invalid, for instance if the file is of an
-        incorrect format or does not exist.
+    Raises:
+        InputError: If the supplied filepath is invalid, for instance if the
+            file is of an incorrect format or does not exist.
+
+    Returns:
+        pandas.core.frame.DataFrame: The specified file's contents.
     """
-    if filepath is None:
-        return None
-
     file = Path(filepath)
 
     if file.suffix == ".csv":

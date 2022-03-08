@@ -11,13 +11,11 @@ class InputError(Error):
     In most cases, an attempt is made to cast the erroneous input into the
     proper type, and this *Exception* is raised if it fails.
 
-    Parameters
-    ----------
-    message : str
-        A brief description of the mishap detected.
+    Args:
+        message (str): A brief description of the mishap detected.
     """
 
-    def __init__(self, message) -> None:
+    def __init__(self, message: str) -> None:
         self.message = message
 
 

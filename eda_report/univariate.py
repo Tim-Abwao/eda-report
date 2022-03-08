@@ -25,7 +25,7 @@ class BaseVariable:
     .. _pandas: https://pandas.pydata.org/
     .. _SciPy ecosystem: https://www.scipy.org/
 
-     Args:
+    Args:
         data (Iterable): The data to analyse.
         name (str, optional): The name to assign the variable. Defaults to
             None.
@@ -107,8 +107,16 @@ class BaseVariable:
 class CategoricalVariable:
     """Get descriptive statistics for one-dimensional categorical datasets.
 
+    .. note::
+       Not meant to be used directly: use the :func:`eda_report.summarize`
+       function instead.
+
     Args:
         variable (BaseVariable): The data to analyse.
+
+    Example:
+        .. literalinclude:: examples.txt
+           :lines: 6-23
     """
 
     def __init__(self, variable: BaseVariable) -> None:
@@ -163,8 +171,16 @@ class CategoricalVariable:
 class DatetimeVariable:
     """Get descriptive statistics for one-dimensional datetime datasets.
 
+    .. note::
+       Not meant to be used directly: use the :func:`eda_report.summarize`
+       function instead.
+
     Args:
         variable (BaseVariable): The data to analyse.
+
+    Example:
+        .. literalinclude:: examples.txt
+           :lines: 27-46
     """
 
     def __init__(self, variable: BaseVariable) -> None:
@@ -208,8 +224,16 @@ class DatetimeVariable:
 class NumericVariable:
     """Get descriptive statistics for one-dimensional numeric datasets.
 
+    .. note::
+       Not meant to be used directly: use the :func:`eda_report.summarize`
+       function instead.
+
     Args:
         variable (BaseVariable): The data to analyse.
+
+    Example:
+        .. literalinclude:: examples.txt
+           :lines: 50-77
     """
 
     def __init__(self, variable) -> None:

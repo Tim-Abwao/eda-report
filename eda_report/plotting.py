@@ -23,22 +23,18 @@ matplotlib.use("agg")  # use non-interactive matplotlib back-end
 
 
 def savefig(figure: Figure) -> BytesIO:
-    """Saves the contents of a :class:`~matplotlib.figure.Figure` in PNG format,
-    as bytes in a file-like object.
+    """Saves the contents of a :class:`~matplotlib.figure.Figure` in PNG
+    format, as bytes in a file-like object.
 
     This is a utility function helpful in by-passing the *filesystem*. Graphs
     are stored in :class:`~io.BytesIO` objects, and can then be read
     directly as *attributes*, thus allowing rapid in-memory access.
 
-    Parameters
-    ----------
-    figure : Figure
-        A matplotlib figure with graph content.
+    Args:
+        figure (Figure): A matplotlib figure with graph content.
 
-    Returns
-    -------
-    BytesIO
-        A graph in PNG format as bytes.
+    Returns:
+        BytesIO: A graph in PNG format as bytes.
     """
     graph = BytesIO()
     figure.savefig(graph, format="png")
@@ -47,16 +43,13 @@ def savefig(figure: Figure) -> BytesIO:
 
 
 class BasePlot:
-    """The base class for plotting objects.
+    """Defines general plot settings, such as the the color palette and hue.
 
-    Contains general plot settings, such as the the color palette and hue.
-
-    Parameters
-    ----------
-    graph_color : str, optional
-        The color to apply to the generated graphs, by default "cyan".
-    hue : Optional[Iterable]
-        Data to use to group values & color-code graphs, by default None.
+    Args:
+        graph_color (str, optional): The color to apply to the generated
+            graphs. Defaults to "cyan".
+        hue (Optional[Iterable], optional): Data to use to group values.
+            Defaults to None.
     """
 
     def __init__(
@@ -70,8 +63,7 @@ class BasePlot:
         )
 
         #: bool: A flag that determines whether or not to use the supplied
-        #: ``hue``. True if ``hue`` has manageable cardinality, False
-        #: otherwise.
+        #: ``hue`` to group values. True if ``hue`` has manageable cardinality.
         self.COLOR_GROUPS = (  # True if below condition holds
             self.HUE is not None and self.HUE.nunique() in range(2, 11)
         )
@@ -81,24 +73,20 @@ class BasePlot:
 class PlotVariable(BasePlot):
     """Plots instances of :class:`~eda_report.univariate.Variable`:
 
-    - *Box-plots*, *dist-plots*, *normal-probability-plots* and *run-plots*
-      for numeric variables.
+    - *Box-plots*, *dist-plots* and *normal-probability-plots* for
+      numeric variables.
     - *Bar-plots* for categorical variables.
 
-    Parameters
-    ----------
-    variable : Variable
-        The data to plot.
-    graph_color : str, optional
-        The color to apply to the generated graphs, by default "cyan".
-    hue : Optional[Iterable]
-        Data to use to group values & color-code graphs, by default None.
+    Args:
+        variable (Variable): The data to plot.
+        graph_color (str, optional): The color to apply to the generated
+            graphs. Defaults to "cyan".
+        hue (Optional[Series], optional): Data to use to group values.
+            Defaults to None.
 
     Attributes
-    ----------
-    graphs : Dict[str, BytesIO]
-        A dictionary of graphs, with graph names as keys and file-objects
-        containing plotted graphs as values.
+        graphs (Dict[str, BytesIO]): A dictionary of graphs, with graph names
+           as keys and file-objects containing plotted graphs as values.
     """
 
     def __init__(
@@ -115,8 +103,8 @@ class PlotVariable(BasePlot):
     def _plot_graphs(self) -> None:
         """Plot graphs based on the ``Variable`` type.
 
-        For **numeric** variables, a *box-plot*, *histogram*, *probability
-        plot* and *run plot* are produced.
+        For **numeric** variables, a *box-plot*, *dist-plot* and *probability
+        plot* are produced.
 
         For **categorical**, **boolean** or **datetime** objects, only a *bar
         plot* is produced.
@@ -133,10 +121,8 @@ class PlotVariable(BasePlot):
     def _plot_box(self) -> BytesIO:
         """Get a boxplot for a numeric variable.
 
-        Returns
-        -------
-        BytesIO
-            The boxplot in PNG format as bytes in a file-object.
+        Returns:
+            BytesIO: The boxplot in PNG format.
         """
         fig = Figure()
         ax = fig.subplots()
@@ -158,12 +144,10 @@ class PlotVariable(BasePlot):
         return savefig(fig)
 
     def _plot_dist(self) -> BytesIO:
-        """Get a distplot for a numeric variable.
+        """Get a dist-plot for a numeric variable.
 
-        Returns
-        -------
-        BytesIO
-            The distplot in PNG format as bytes in a file-object.
+        Returns:
+            BytesIO: The dist-plot in PNG format.
         """
         fig = Figure()
         ax = fig.subplots()
@@ -178,10 +162,8 @@ class PlotVariable(BasePlot):
     def _plot_prob(self) -> BytesIO:
         """Get a probability plot for a numeric variable.
 
-        Returns
-        -------
-        BytesIO
-            The probability plot in PNG format as bytes in a file-object.
+        Returns:
+            BytesIO: The probability plot in PNG.
         """
         fig = Figure()
         ax = fig.subplots()
@@ -200,10 +182,8 @@ class PlotVariable(BasePlot):
     def _plot_bar(self) -> BytesIO:
         """Get a barplot for a categorical, boolean or datetime variable.
 
-        Returns
-        -------
-        BytesIO
-            The barplot in PNG format as bytes in a file-object.
+        Returns:
+            BytesIO: The barplot in PNG format.
         """
         fig = Figure()
         ax = fig.subplots()
@@ -240,26 +220,25 @@ class PlotVariable(BasePlot):
 class PlotMultiVariable(BasePlot):
     """Plots instances of :class:`~eda_report.multivariate.MultiVariable`.
 
-    Produces a *correlation heatmap*, *scatter-plots* and *ecdf-plots* if
-    multiple numeric columns are present.
+    Produces a *correlation heatmap*, *scatter-plots* and *ecdf-plots*, if
+    2 or more numeric columns are present, with more than 5% of their values
+    unique.
 
-    Parameters
-    ----------
-    variables : MultiVariable
-        The data to plot.
-    graph_color : str, optional
-        The color to apply to the generated graphs, by default "cyan".
-    hue : Optional[Iterable]
-        Data to use to group values & color-code graphs, by default None.
+    Args:
+        variables (MultiVariable): The data to plot.
+        graph_color (str, optional): The color to apply to the generated
+            graphs. Defaults to "cyan".
+        hue (Optional[Series], optional): Data to use to group values.
+            Defaults to None.
 
     Attributes
     ----------
-    graphs : Dict[str, Union[BytesIO, dict[tuple(str, str), BytesIO]]]
-        A dictionary of graphs, with graph names as keys, and file-objects
-        containing the plotted graphs as values.
+        graphs (Dict[str, Union[BytesIO, dict[tuple(str, str), BytesIO]]]):
+            A dictionary of graphs, with graph names as keys, and file-objects
+            containing the plotted graphs as values.
 
-        Bi-variate scatterplots are further nested in a dict of
-        :class:`~io.BytesIO` objects, with tuples (col_i, col_j) as keys.
+            Bi-variate scatterplots are further nested in a dict of
+            :class:`~io.BytesIO` objects, with tuples (col_i, col_j) as keys.
     """
 
     def __init__(
@@ -298,10 +277,8 @@ class PlotMultiVariable(BasePlot):
     def _plot_correlation_heatmap(self) -> BytesIO:
         """Get a heatmap of the correlation among all numeric columns.
 
-        Returns
-        -------
-        BytesIO
-            The heatmap in PNG format as bytes in a file-like object.
+        Returns:
+            BytesIO: The heatmap in PNG format as bytes in a file-like object.
         """
         fig = Figure(figsize=(7, 7))
         ax = fig.subplots()
@@ -325,16 +302,11 @@ class PlotMultiVariable(BasePlot):
     def _regression_plot(self, var1: str, var2: str) -> BytesIO:
         """Get a scatter-plot and ecdf-plot for the provided numeric columns.
 
-        Parameters
-        ----------
-        var1, var2 : str
-            A numeric column label.
+        Args:
+            var1, var2 (str): A numeric column label.
 
-        Returns
-        -------
-        BytesIO
-            The scatter-plot and ecdf-plot (subplots) in PNG format as bytes
-            in a file-like object.
+        Returns:
+            BytesIO: The scatter-plot and ecdf-plot (subplots) in PNG format.
         """
         fig = Figure(figsize=(8.2, 4))
         ax1, ax2 = fig.subplots(nrows=1, ncols=2)

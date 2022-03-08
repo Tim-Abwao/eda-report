@@ -9,10 +9,12 @@ def process_cli_args() -> argparse.Namespace:
     """Captures and parses input from the command line interface using the
     :mod:`argparse` module from the Python standard library.
 
-    Returns
-    -------
-    argparse.Namespace
-        A class with parsed arguments as attributes.
+    Returns:
+        argparse.Namespace: A class with parsed arguments as attributes.
+
+    Example:
+        .. literalinclude:: examples.txt
+           :lines: 117-140
     """
     parser = argparse.ArgumentParser(
         prog="eda-report",
@@ -55,9 +57,9 @@ def process_cli_args() -> argparse.Namespace:
         "-T",
         "--target",
         help=(
-            "The target variable (dependent feature), used to color-code "
-            "plotted values. An integer value is treated as a column index, "
-            "whereas a string is treated as a column label."
+            "The target variable (dependent feature), used to group plotted "
+            "values. An integer value is treated as a column index, whereas "
+            "a string is treated as a column label."
         ),
     )
 
@@ -65,7 +67,7 @@ def process_cli_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def run_from_cli():
+def run_from_cli() -> None:
     """Creates an exploratory data analysis report in *Word* format using input
     from the command line interface.
 
@@ -76,11 +78,6 @@ def run_from_cli():
     Arguments passed from the command line are captured using the
     :func:`~eda_report.cli.process_cli_args` function, and then used to create
     a :class:`~eda_report.document.ReportDocument`.
-
-    Example
-    --------
-    .. literalinclude:: examples.txt
-       :lines: 3-26
     """
     args = process_cli_args()
 

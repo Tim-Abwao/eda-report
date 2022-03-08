@@ -25,42 +25,35 @@ def clean_column_labels(data: DataFrame) -> DataFrame:
     It also ensures that column labels are all of similar type (``str``) to
     allow sorting and the use of string methods.
 
-    Parameters
-    ----------
-    data : DataFrame
-        Data to inspect and perhaps edit.
+    Args:
+        data (DataFrame, optional): Data to inspect and perhaps edit. Defaults
+            to 77.
 
-    Returns
-    -------
-    DataFrame
-        The data, with reader-friendly column names.
+    Returns:
+        DataFrame: The ``data``, with reader-friendly column names.
     """
-    # Prepend "var_" to entirely numeric column labels
     if isinstance(data.columns, RangeIndex):
         data.columns = [f"var_{i+1}" for i in data.columns]
     elif is_numeric_dtype(data.columns):
         data.columns = [f"var_{i}" for i in data.columns]
         return data
     else:
-        data.columns = [str(col) for col in data.columns]
+        data.columns = data.columns.map(str)
     return data
 
 
-def check_cardinality(target_data: Series, threshold: int = 10) -> None:
-    """Assesses whether the ``target_data`` is suitable for grouping
-    (color-coding graphs), or has too many unique values (> ``threshold``).
+def check_cardinality(target_data: Series, *, threshold: int = 10) -> None:
+    """Assesses whether the ``target_data`` is suitable for grouping values,
+    or has too many unique values (> ``threshold``).
 
-    Parameters
-    ----------
-    target_data : Series
-        The data intended to color-code graphs.
-    threshold : int, optional
-        Maximum allowable cardinality, by default 10.
+    Args:
+        target_data (Series): The data intended to group values.
+        threshold (int, optional): Maximum allowable cardinality. Defaults to
+            10.
 
-    Raises
-    ------
-    TargetVariableError
-        If the `target_data` has cardinality outside the acceptable range.
+    Raises:
+        TargetVariableError: If the `target_data` has cardinality outside the
+            acceptable range.
     """
     if target_data.nunique() > threshold:
         message = (
@@ -73,26 +66,21 @@ def check_cardinality(target_data: Series, threshold: int = 10) -> None:
 
 
 def validate_multivariate_input(data: Iterable) -> DataFrame:
-    """Ensures that *multivariate input data* is of type :class:`pandas.DataFrame`.
+    """Ensures that *multivariate input data* is of type
+    :class:`pandas.DataFrame`.
 
     If it isn't, this attempts to explicitly cast it as a ``DataFrame``.
 
-    Parameters
-    ----------
-    data : Iterable
-        The data to analyse.
+    Args:
+        data (Iterable): The data to analyse.
 
-    Returns
-    -------
-    DataFrame
-        The input data as a ``DataFrame``.
+    Raises:
+        InputError: If the ``data`` cannot be cast as a
+            :class:`~pandas.DataFrame`.
+        EmptyDataError: If the ``data`` has no items.
 
-    Raises
-    ------
-    EmptyDataError
-        If the ``data`` has no items.
-    InputError
-        If the ``data`` cannot be cast as a :class:`~pandas.DataFrame`.
+    Returns:
+        DataFrame: The input data as a ``DataFrame``
     """
     try:
         data_frame = DataFrame(data)
@@ -111,29 +99,23 @@ def validate_multivariate_input(data: Iterable) -> DataFrame:
 
 def validate_univariate_input(
     data: Iterable, *, name: Optional[str] = None
-) -> Series:
+) -> Union[Series, None]:
     """Ensures that *univariate input data* is of type :class:`pandas.Series`.
 
     If it isn't, this attempts to explicitly cast it as a ``Series``.
 
-    Parameters
-    ----------
-    data : Iterable
-        The data to analyse.
-    name : Optional[str]
-        The name to assign the data, by default None.
+    Args:
+        data (Iterable): The data to analyse.
+        name (Optional[str], optional): The name to assign the data. Defaults
+            to None.
 
-    Returns
-    -------
-    Series
-        The input data as a ``Series``.
+    Raises:
+        InputError: If the ``data`` cannot be cast as a
+            :class:`~pandas.Series`.
+        EmptyDataError: If the ``data`` has no items.
 
-    Raises
-    ------
-    EmptyDataError
-        If the ``data`` is has no items.
-    InputError
-        If the ``data`` cannot be cast as a :class:`~pandas.Series`.
+    Returns:
+        Union[Series, None]: The input data as a ``Series``.
     """
     if data is None:
         return None
@@ -156,23 +138,17 @@ def validate_target_variable(
     """Ensures that the specified *target variable* (column label or index) is
     present in the data.
 
-    Parameters
-    ----------
-    data : DataFrame
-        The data being analysed.
-    target_variable : Union[int, str]
-        A column label or index.
+    Args:
+        data (DataFrame): The data being analysed.
+        target_variable (Union[int, str]): A column label or index.
 
-    Returns
-    -------
-    union[Series, None]
-        The target variable's data if ``target_variable`` is valid, or None.
+    Raises:
+        TargetVariableError: If the supplied column label does not exist, or
+            the supplied column index is out of bounds.
 
-    Raises
-    ------
-    TargetVariableError
-        If the supplied column label does not exist, or the supplied column
-        index is out of bounds.
+    Returns:
+        Union[Series, None]: The target variable's data if ``target_variable``
+        is valid, or None.
     """
     if target_variable is None:
         return None

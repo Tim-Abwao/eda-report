@@ -13,7 +13,7 @@ You can also install the latest stable version right from the `GitHub repository
     $ pip install https://github.com/tim-abwao/eda-report/archive/main.tar.gz
 
 .. hint::
-    Consider using a `virtual environment`_. Virtual environments are a great way to ensure that you install the right versions of dependencies, while avoiding breaking other Python packages in your system.
+   Consider using a `virtual environment`_. Virtual environments are a great way to ensure that you install the right versions of dependencies, while avoiding breaking other Python packages in your system.
 
 .. _virtual environment: https://docs.python.org/3/tutorial/venv.html#virtual-environments-and-packages
 .. _Python Package Index: https://pypi.org/project/eda-report/

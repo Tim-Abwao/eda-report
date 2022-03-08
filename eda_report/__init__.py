@@ -16,37 +16,28 @@ def get_word_report(
     output_filename: str = "eda-report.docx",
     table_style: str = "Table Grid",
 ) -> ReportDocument:
-    """Analyses input data, and generates a report in *Word* (*.docx*) format.
+    """Analyses data, and generates a report in *Word* (*.docx*) format.
 
-    Parameters
-    ----------
-    data : Iterable
-        The data to analyse.
-    target_variable : Optional[Union[str, int]]
-        The column to use to group values and color-code graphs.
-    title : str, optional
-        The title to assign the report, by default "Exploratory Data Analysis
-        Report"
-    graph_color : str, optional
-        The color to apply to the graphs, by default "cyan"
-    output_filename : str, optional
-        The file name or path to save the document to, by default
-        "eda-report.docx"
-    table_style : str, optional
-        The style to apply to the tables created, by default "Table Grid"
+    Args:
+        data (Iterable): The data to analyse.
+        title (str, optional): The title to assign the report. Defaults to
+            "Exploratory Data Analysis Report".
+        graph_color (str, optional): The color to apply to the graphs.
+            Defaults to "cyan".
+        target_variable (Optional[Union[str, int]], optional): The column to
+            use to group values. Defaults to None.
+        output_filename (str, optional): The file name or path to save the
+            document to. Defaults to "eda-report.docx".
+        table_style (str, optional): The style to apply to the tables created.
+            Defaults to "Table Grid".
 
-    Returns
-    -------
-    ReportDocument
-        The report document.
+    Returns:
+        ReportDocument: Document with analysis results.
 
-    Example
-    --------
-    >>> eda_report.get_word_report([[1, 2], [3, 4]])
-    Bivariate analysis: 100%|█████████████████████████████| 1/1 numeric pairs.
-    Univariate analysis: 100%|█████████████████████████████████| 2/2 features.
-    [INFO 00:16:16.821] Done. Results saved as 'eda-report.docx'
-    <eda_report.document.ReportDocument object at 0x7fc3f7efaa90>
+    Example:
+        .. literalinclude:: examples.txt
+           :lines: 147-153
+
     """
     return ReportDocument(
         data,
@@ -59,21 +50,17 @@ def get_word_report(
 
 
 def summarize(data: Iterable) -> MultiVariable:
-    """Get a statistical summary of the supplied dataset.
+    """Get summary statistics for the supplied data.
 
-    Parameters
-    ----------
-    data : Iterable
-        The data to analyse.
+    Args:
+        data (Iterable): The data to analyse.
 
-    Returns
-    -------
-    MultiVariable
-        Analysis results, with components as attributes.
+    Returns:
+        MultiVariable: Analysis results.
 
-    Example
-    -------
-    .. literalinclude:: examples.txt
-       :lines: 30-59
+    Examples:
+        .. literalinclude:: examples.txt
+           :lines: 158-215
+
     """
     return MultiVariable(data)

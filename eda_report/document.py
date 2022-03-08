@@ -3,16 +3,13 @@ from typing import Iterable, Optional, Sequence, Union
 
 from docx import Document
 from docx.shared import Inches, Pt
+from docx.text.parfmt import ParagraphFormat
 from pandas.core.frame import DataFrame
 from tqdm import tqdm
 
 from eda_report.multivariate import MultiVariable
 from eda_report.plotting import PlotMultiVariable, PlotVariable
-from eda_report.univariate import (
-    CategoricalVariable,
-    DatetimeVariable,
-    NumericVariable,
-)
+from eda_report.univariate import Variable
 from eda_report.validate import validate_target_variable
 
 logging.basicConfig(
@@ -23,20 +20,16 @@ logging.basicConfig(
 
 
 class ReportContent:
-    """Creates objects that analyse data, and stores the results as textual
-    summaries and graphs.
+    """Analyses data, then prepares textual summaries and graphs.
 
-    Parameters
-    ----------
-    data : Iterable
-        The data to analyse.
-    target_variable : Optional[Union[str, int]]
-        The column to use to group values and color-code graphs.
-    title : str, optional
-        The title to assign the report, by default "Exploratory Data Analysis
-        Report"
-    graph_color : str, optional
-        The color to apply to the graphs, by default "cyan"
+    Args:
+        data (Iterable): The data to analyse.
+        title (str, optional): The title to assign the report. Defaults to
+            "Exploratory Data Analysis Report".
+        graph_color (str, optional): The color to apply to the graphs.
+            Defaults to "cyan".
+        target_variable (Optional[Union[str, int]], optional): The column to
+            use to group values. Defaults to None.
     """
 
     def __init__(
@@ -65,10 +58,8 @@ class ReportContent:
     def _get_introductory_summary(self) -> str:
         """Get an overview of the number of rows and the nature of columns.
 
-        Returns
-        -------
-        str
-            Introduction.
+        Returns:
+            str: Introduction
         """
         num_rows, num_cols = self.variables.data.shape
 
@@ -95,32 +86,36 @@ class ReportContent:
 
         return f"The dataset consists of {rows} and {cols}{numeric}."
 
-    def _describe_variable(
-        self,
-        variable: Union[
-            CategoricalVariable, DatetimeVariable, NumericVariable
-        ],
-    ) -> dict:
-        var = variable.variable
-        if var.num_unique == 1:
+    def _describe_variable(self, variable: Variable) -> dict:
+        """Get summary statistics for a variable.
+
+        Args:
+            variable (Variable): The data to analyse.
+
+        Returns:
+            dict: Summary statistics
+        """
+        var = variable.contents
+        if variable.num_unique == 1:
             unique_vals = "1 unique value"
         else:
-            unique_vals = f"{var.num_unique:,} unique values"
+            unique_vals = f"{variable.num_unique:,} unique values"
 
         return {
             "description": (
-                f"{var.name.capitalize()} is a {var.var_type} variable with"
-                f" {unique_vals}. {var.missing} of its values are missing."
+                f"{variable.name.capitalize()} is a {variable.var_type} "
+                f"variable with {unique_vals}. {variable.missing} of its "
+                "values are missing."
             ),
             "graphs": PlotVariable(
-                variable=var,
+                variable,
                 graph_color=self.GRAPH_COLOR,
                 hue=self.TARGET_VARIABLE,
             ).graphs,
-            "statistics": variable._get_summary_statistics().to_frame(),
+            "statistics": var._get_summary_statistics().to_frame(),
             "normality_tests": (
-                variable._test_for_normality()
-                if var.var_type == "numeric"
+                var._test_for_normality()
+                if variable.var_type == "numeric"
                 else None
             ),
         }
@@ -128,13 +123,11 @@ class ReportContent:
     def _get_variable_descriptions(self) -> dict:
         """Get brief descriptions of all columns present in the data.
 
-        Returns
-        -------
-        dict[str, str]
-            Summaries of columns present.
+        Returns:
+            dict: Summaries of columns present.
         """
         return {
-            var.variable.name: self._describe_variable(var)
+            var.name: self._describe_variable(var)
             for var in tqdm(
                 self.variables.iter_variables(),
                 bar_format="{desc}: {percentage:3.0f}%|{bar:35}| "
@@ -149,10 +142,8 @@ class ReportContent:
         """Get descriptions of the nature of correlation between numeric
         column pairs.
 
-        Returns
-        -------
-        dict[str, str]
-            Correlation info.
+        Returns:
+            dict: Correlation info.
         """
         if hasattr(self.variables, "var_pairs"):
             return {
@@ -178,26 +169,22 @@ class ReportDocument(ReportContent):
 
     #. An *Overview* of the data and its features.
     #. *Univariate Analysis*: Summary statistics and graphs for each feature.
-    #. *Bivariate Analysis*: Pairwise comparisons of all numerical features.
+    #. *Bivariate Analysis*: Pairwise comparisons of numerical features.
 
     .. _python-docx: https://python-docx.readthedocs.io/en/latest/
 
-    Parameters
-    ----------
-    data : Iterable
-        The data to analyse.
-    target_variable : Optional[Union[str, int]]
-        The column to use to group values and color-code graphs.
-    title : str, optional
-        The title to assign the report, by default "Exploratory Data Analysis
-        Report"
-    graph_color : str, optional
-        The color to apply to the graphs, by default "cyan"
-    output_filename : str, optional
-        The file name or path to save the document to, by default
-        "eda-report.docx"
-    table_style : str, optional
-        The style to apply to the tables created, by default "Table Grid"
+    Args:
+        data (Iterable): The data to analyse.
+        title (str, optional): The title to assign the report. Defaults to
+            "Exploratory Data Analysis Report".
+        graph_color (str, optional): The color to apply to the graphs.
+            Defaults to "cyan".
+        target_variable (Optional[Union[str, int]], optional): The column to
+            use to group values. Defaults to None.
+        output_filename (str, optional): The file name or path to save the
+            document to. Defaults to "eda-report.docx".
+        table_style (str, optional): The style to apply to the tables created.
+            Defaults to "Table Grid".
     """
 
     def __init__(
@@ -221,7 +208,7 @@ class ReportDocument(ReportContent):
         self.document = Document()
         self._get_report()
 
-    def _get_report(self):
+    def _get_report(self) -> None:
         """Calculate summary statistics, plot graphs, and save the results as
         a .docx file.
         """
@@ -231,7 +218,7 @@ class ReportDocument(ReportContent):
         if hasattr(self.variables, "var_pairs"):
             self._get_bivariate_analysis()
 
-        self._save_file()
+        self._to_file()
         logging.info(f"Done. Results saved as {self.OUTPUT_FILENAME!r}")
 
     def _create_title_page(self) -> None:
@@ -244,7 +231,18 @@ class ReportDocument(ReportContent):
         self._get_categorical_overview_table()
         self.document.add_page_break()
 
-    def _format_heading_spacing(self, format, before=21, after=7):
+    def _format_heading_spacing(
+        self, format: ParagraphFormat, before: int = 21, after: int = 7
+    ) -> None:
+        """Set the spacing above or below a heading.
+
+        Args:
+            format (ParagraphFormat): The heading's format.
+            before (int, optional): Size of spacing above the heading in pt.
+                Defaults to 21.
+            after (int, optional): Size of spacing below the heading in pt.
+                Defaults to 7.
+        """
         format.space_before = Pt(before)
         format.space_after = Pt(after)
 
@@ -365,22 +363,19 @@ class ReportDocument(ReportContent):
         style: Optional[str] = None,
         header: bool = False,
     ) -> None:
-        """Generates a table for the supplied `data` with
+        """Generates a table for the supplied ``data``.
 
-        Parameters
-        ----------
-        data : DataFrame
-            The data to tabulate.
-        column_widths : Sequence, optional
-            The desired number and widths of columns, by default ().
-        font_face : str, optional
-            The font typeface for cell text, by default "Courier New".
-        font_size : float, optional
-            The font size for cell text, by default 10.
-        style : Optional[str], optional
-            A Word table style, by default None.
-        header : bool, optional
-            Flags whether the first row is a header, by default False.
+        Args:
+            data (DataFrame): The data to tabulate.
+            column_widths (Sequence, optional): Column specifications.
+                Defaults to ().
+            font_face (str, optional): Font typeface for cell text. Defaults
+                to "Courier New".
+            font_size (float, optional): Font size. Defaults to 10.
+            style (Optional[str], optional): A `Word` table style. Defaults to
+                None.
+            header (bool, optional): Whether or not to include column names.
+                Defaults to False.
         """
         if header:
             # Add a row of column labels
@@ -413,10 +408,11 @@ class ReportDocument(ReportContent):
 
         self.document.add_paragraph()
 
-    def _save_file(self) -> None:
+    def _to_file(self) -> None:
+        """Save the report as a file."""
+        # Set page margins
         for section in self.document.sections:
             section.left_margin = Inches(1.2)
             section.right_margin = Inches(1.2)
 
-        """Save the document as a file."""
         self.document.save(self.OUTPUT_FILENAME)

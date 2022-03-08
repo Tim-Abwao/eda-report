@@ -1,5 +1,119 @@
+VARIABLES
+=========
+
+CategoricalVariable
+-------------------
+>>> some_var = BaseVariable(list("abcdefgabcdeabcdaba"), name="text")
+>>> CategoricalVariable(some_var)
+                Overview
+                ========
+Name: text
+Type: categorical
+Number of Observations: 19
+Unique Values: 7 -> ['a', 'b', 'c', 'd', 'e', 'f', 'g']
+Missing Values: None
+
+          Most Common Items
+          -----------------
+             
+a  5 (26.32%)
+b  4 (21.05%)
+c  3 (15.79%)
+d  3 (15.79%)
+e  2 (10.53%)
+
+DatetimeVariable
+----------------
+>>> import pandas as pd
+>>> dt = Variable(pd.date_range("2022-03-08", periods=20, freq="D"), name="dttm")
+>>> DatetimeVariable(dt)
+                Overview
+                ========
+Name: dttm
+Type: datetime
+Number of Observations: 20
+Missing Values: None
+
+          Summary Statistics
+          ------------------
+                                           
+Number of observations                   20
+Average                 2022-03-17 12:00:00
+Minimum                 2022-03-08 00:00:00
+Lower Quartile          2022-03-12 18:00:00
+Median                  2022-03-17 12:00:00
+Upper Quartile          2022-03-22 06:00:00
+Maximum                 2022-03-27 00:00:00
+
+NumericVariable
+---------------
+>>> some_var = BaseVariable(range(20), name="1 to 20")
+>>> NumericVariable(some_var)
+                Overview
+                ========
+Name: var_1
+Type: numeric
+Unique Values: 50 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, [...]
+Missing Values: None
+
+          Summary Statistics
+          ------------------
+                                
+Number of observations  50.00000
+Average                 24.50000
+Standard Deviation      14.57738
+Minimum                  0.00000
+Lower Quartile          12.25000
+Median                  24.50000
+Upper Quartile          36.75000
+Maximum                 49.00000
+Skewness                 0.00000
+Kurtosis                -1.20000
+
+          Tests for Normality
+          -------------------
+                               p-value Conclusion at α = 0.05
+D'Agostino's K-squared test  0.0015981  Unlikely to be normal
+Kolmogorov-Smirnov test      0.0000000  Unlikely to be normal
+
+MULTIVARIABLES
+==============
+
+MultiVariable
+-------------
+>>> from seaborn import load_dataset
+>>> data = load_dataset("iris")
+>>> MultiVariable(data)
+                        OVERVIEW
+                        ========
+Numeric features: sepal_length, sepal_width, petal_length, petal_width
+Categorical features: species
+
+          Summary Statistics (Numeric features)
+          -------------------------------------
+              count    mean     std  min  25%   50%  75%  max  skewness  kurtosis
+sepal_length  150.0  5.8433  0.8281  4.3  5.1  5.80  6.4  7.9    0.3149   -0.5521
+sepal_width   150.0  3.0573  0.4359  2.0  2.8  3.00  3.3  4.4    0.3190    0.2282
+petal_length  150.0  3.7580  1.7653  1.0  1.6  4.35  5.1  6.9   -0.2749   -1.4021
+petal_width   150.0  1.1993  0.7622  0.1  0.3  1.30  1.8  2.5   -0.1030   -1.3406
+
+          Summary Statistics (Categorical features)
+          -----------------------------------------
+        count unique     top freq relative freq
+species   150      3  setosa   50        33.33%
+
+          Bivariate Analysis (Correlation)
+          --------------------------------
+sepal_length & petal_width --> strong positive correlation (0.82)
+sepal_length & petal_length --> strong positive correlation (0.87)
+petal_length & petal_width --> very strong positive correlation (0.96)
+sepal_length & sepal_width --> very weak negative correlation (-0.12)
+sepal_width & petal_width --> weak negative correlation (-0.37)
+sepal_width & petal_length --> weak negative correlation (-0.43)
+
 CLI
----
+===
+
 $ eda-report -h
 usage: eda-report [-h] [-i INFILE] [-o OUTFILE] [-t TITLE] [-c COLOR]
                   [-T TARGET]
@@ -20,79 +134,64 @@ optional arguments:
   -c COLOR, --color COLOR
                         The color to apply to graphs (default: cyan)
   -T TARGET, --target TARGET
-                        The target variable (dependent feature), used to
-                        color-code plotted values. An integer value is treated
-                        as a column index, whereas a string is treated as a
-                        column label.
+                        The target variable (dependent feature), used to group
+                        plotted values. An integer value is treated as a
+                        column index, whereas a string is treated as a column
+                        label.
+
+TOP LEVEL
+=========
+
+eda_report.get_word_report
+--------------------------
+>>> from seaborn import load_dataset
+>>> iris_data = load_dataset("iris")        
+>>> get_word_report(iris_data)
+Bivariate analysis: 100%|███████████████████████████████████| 6/6 numeric pairs.
+Univariate analysis: 100%|███████████████████████████████████| 5/5 features.
+[INFO 18:38:52.420] Done. Results saved as 'eda-report.docx'
+<eda_report.document.ReportDocument object at 0x7fcc6c51a7f0>
+
 
 eda_report.summarize
 --------------------
->>> import eda_report
->>> from seaborn import load_dataset
->>> iris_data = load_dataset("iris")
->>> eda_report.summarize(iris_data)
-                        OVERVIEW
-                        ========
-Numeric features: sepal_length, sepal_width, petal_length, petal_width
-Categorical features: species
-                          ***
-          Summary Statistics (Numeric features)
-          -------------------------------------
-              count    mean     std  min  25%   50%  75%  max  skewness  kurtosis
-sepal_length  150.0  5.8433  0.8281  4.3  5.1  5.80  6.4  7.9    0.3149   -0.5521
-sepal_width   150.0  3.0573  0.4359  2.0  2.8  3.00  3.3  4.4    0.3190    0.2282
-petal_length  150.0  3.7580  1.7653  1.0  1.6  4.35  5.1  6.9   -0.2749   -1.4021
-petal_width   150.0  1.1993  0.7622  0.1  0.3  1.30  1.8  2.5   -0.1030   -1.3406
-                          ***
-          Summary Statistics (Categorical features)
-          -----------------------------------------
-        count unique     top freq relative freq
-species   150      3  setosa   50        33.33%
-                          ***
-          Bivariate Analysis (Correlation)
-          --------------------------------
-sepal_length & petal_width --> strong positive correlation (0.82)
-sepal_length & petal_length --> strong positive correlation (0.87)
-petal_length & petal_width --> very strong positive correlation (0.96)
-sepal_length & sepal_width --> very weak negative correlation (-0.12)
-sepal_width & petal_width --> weak negative correlation (-0.37)
-sepal_width & petal_length --> weak negative correlation (-0.43)
-
-eda_report.univariate.Variable
-------------------------------
->>> from eda_report.univariate import Variable
->>> Variable(range(20), name="1 to 20")
+>>> summarize(range(50))
+[WARNING 21:12:46.760] Skipped Bivariate Analysis: There are less than 2 numeric
+ variables having > 5% unique values.
                 Overview
                 ========
-Name: 1 to 20
+Name: var_1
 Type: numeric
-Unique Values: 20 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, [...]
+Unique Values: 50 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, [...]
 Missing Values: None
-                  ***
+
           Summary Statistics
-                         1 to 20
-Number of observations  20.00000
-Average                  9.50000
-Standard Deviation       5.91608
+          ------------------
+                                
+Number of observations  50.00000
+Average                 24.50000
+Standard Deviation      14.57738
 Minimum                  0.00000
-Lower Quartile           4.75000
-Median                   9.50000
-Upper Quartile          14.25000
-Maximum                 19.00000
+Lower Quartile          12.25000
+Median                  24.50000
+Upper Quartile          36.75000
+Maximum                 49.00000
 Skewness                 0.00000
 Kurtosis                -1.20000
 
-eda_report.multivariate.MultiVariable
--------------------------------------
->>> from eda_report.multivariate import MultiVariable
+          Tests for Normality
+          -------------------
+                               p-value Conclusion at α = 0.05
+D'Agostino's K-squared test  0.0015981  Unlikely to be normal
+Kolmogorov-Smirnov test      0.0000000  Unlikely to be normal
 >>> from seaborn import load_dataset
->>> data = load_dataset("iris")
->>> MultiVariable(data)
+>>> iris_data = load_dataset("iris")
+>>> summarize(iris_data)
                         OVERVIEW
                         ========
 Numeric features: sepal_length, sepal_width, petal_length, petal_width
 Categorical features: species
-                          ***
+
           Summary Statistics (Numeric features)
           -------------------------------------
               count    mean     std  min  25%   50%  75%  max  skewness  kurtosis
@@ -100,12 +199,12 @@ sepal_length  150.0  5.8433  0.8281  4.3  5.1  5.80  6.4  7.9    0.3149   -0.552
 sepal_width   150.0  3.0573  0.4359  2.0  2.8  3.00  3.3  4.4    0.3190    0.2282
 petal_length  150.0  3.7580  1.7653  1.0  1.6  4.35  5.1  6.9   -0.2749   -1.4021
 petal_width   150.0  1.1993  0.7622  0.1  0.3  1.30  1.8  2.5   -0.1030   -1.3406
-                          ***
+
           Summary Statistics (Categorical features)
           -----------------------------------------
         count unique     top freq relative freq
 species   150      3  setosa   50        33.33%
-                          ***
+
           Bivariate Analysis (Correlation)
           --------------------------------
 sepal_length & petal_width --> strong positive correlation (0.82)
