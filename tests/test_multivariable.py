@@ -86,7 +86,7 @@ class TestMixedVariables:
 
     def test_iteration(self):
         variable_types = set(
-            type(var) for var in self.multivariable.iter_variables()
+            type(var.contents) for var in self.multivariable.iter_variables()
         )
         assert variable_types == {CategoricalVariable, NumericVariable}
 

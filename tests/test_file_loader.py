@@ -13,10 +13,6 @@ class TestFileLoader:
 
     data = DataFrame(range(50), columns=["data"])
 
-    def test_with_no_file_supplied(self):
-        # Check that when no filepath is specified, None is returned.
-        assert df_from_file() is None
-
     def test_csv_file_load(self, temp_data_dir):
         # Check that a valid csv file is read as a DataFrame
         csv_file = temp_data_dir / "data.csv"
