@@ -4,10 +4,10 @@
 Simplify the `exploratory data analysis`_ and reporting process:
 
 #. Automatically analyse a dataset.
-     - summary statistics.
+     - Descriptive statistics.
      - Tests for normality.
 #. Get revealing visualisations.
-     - *Box-plots*, *dist-plots*, *normal-probability-plots* and *scatter-plots* for numeric variables
+     - *Box-plots*, *dist-plots*, *normal-probability-plots* and *scatter-plots* for numeric variables.
      - *Bar-plots* for categorical variables.
 
    Created with `matplotlib`_ and `seaborn`_.
