@@ -1,19 +1,21 @@
 from collections.abc import Iterable
 from textwrap import shorten
 from typing import Optional
-from scipy import stats
+
 from pandas import DataFrame, Series
 from pandas.api.types import (
     is_bool_dtype,
     is_datetime64_any_dtype,
     is_numeric_dtype,
 )
+from scipy import stats
 
 from eda_report.validate import validate_univariate_input
 
 
-class Variable:
-    """Creates objects that describe the general properties of one-dimensional
+class BaseVariable:
+
+    """Defines objects that evaluate the general properties of one-dimensional
     datasets, such as data type and missing values.
 
     Input data is internally held as a :class:`~pandas.Series` in order
@@ -23,37 +25,28 @@ class Variable:
     .. _pandas: https://pandas.pydata.org/
     .. _SciPy ecosystem: https://www.scipy.org/
 
-
-    Parameters
-    ----------
-    data : Iterable
-        The data to analyse.
-    name : Optional[str]
-        The name to assign the ``Variable``, by default None.
-
-    Example
-    --------
-
-    .. literalinclude:: examples.txt
-       :lines: 63-83
+     Args:
+        data (Iterable): The data to analyse.
+        name (str, optional): The name to assign the variable. Defaults to
+            None.
     """
 
     def __init__(self, data: Iterable, *, name: str = None) -> None:
         self.data = validate_univariate_input(data, name=name)
 
-        #: Optional[str]: The ``Variable``'s *name*. If no name is specified
+        #: Optional[str]: The variable's *name*. If no name is specified
         #: during instantiation, the name will be equal to the value of the
         #: ``name`` attribute of the input data (if present), or None.
         self.name = self.data.name
 
-        #: str: The ``Variable``'s *type* — one of *"boolean"*,
-        #: *"categorical"*, *"datetime"* or *"numeric"*.
+        #: str: The variable's *type* — one of *"boolean"*, *"categorical"*,
+        #: *"datetime"*, *"numeric"* or *"numeric (<10 levels)"*.
         self.var_type = self._get_variable_type()
 
-        #: int: The *number of unique values* present in the ``Variable``.
+        #: int: The *number of unique values* present in the variable.
         self.num_unique = self.data.nunique()
 
-        #: list: The *unique values* present in the ``Variable``.
+        #: list: The *unique values* present in the variable.
         self.unique = sorted(self.data.dropna().unique())
 
         #: str: The number of *missing values* in the form
@@ -61,21 +54,19 @@ class Variable:
         self.missing = self._get_missing_values_info()
 
     def rename(self, name: Optional[str] = None) -> None:
-        """Rename the ``Variable`` as specified.
+        """Rename the variable as specified.
 
-        Parameters
-        ----------
-        name
-            The name to assign to the ``Variable``, by default None.
+        Args:
+            name (Optional[str], optional): The name to assign to the variable.
+                Defaults to None.
         """
         self.name = self.data.name = name
 
     def _get_variable_type(self) -> str:
-        """Determine the ``Variable``'s type.
+        """Determine the variable's type.
 
-        Returns
-        -------
-        var_type : {"boolean", "categorical", "datetime", "numeric"}
+        Returns:
+            str: The variable's type.
         """
         if is_numeric_dtype(self.data):
             if is_bool_dtype(self.data) or set(self.data.dropna()) == {0, 1}:
@@ -99,12 +90,10 @@ class Variable:
         return "categorical"
 
     def _get_missing_values_info(self) -> str:
-        """Get the number of missing values in the ``Variable``.
+        """Get the number of missing values in the variable.
 
-        Returns
-        -------
-        str
-            Details about the number of missing values.
+        Returns:
+            str: Details about the number of missing values.
         """
         missing_values = self.data.isna().sum()
         if missing_values == 0:
@@ -116,16 +105,20 @@ class Variable:
 
 
 class CategoricalVariable:
-    def __init__(self, variable: Variable) -> None:
+    """Get descriptive statistics for one-dimensional categorical datasets.
+
+    Args:
+        variable (BaseVariable): The data to analyse.
+    """
+
+    def __init__(self, variable: BaseVariable) -> None:
         self.variable = variable
 
     def __repr__(self) -> str:
-        """Get the string representation of the ``Variable``.
+        """Get the string representation of the ``CategoricalVariable``.
 
-        Returns
-        -------
-        str
-            A summary of the ``Variable``'s properties.
+        Returns:
+            str: A summary of the ``CategoricalVariable``'s properties.
         """
         sample_values = shorten(
             f"{self.variable.num_unique} -> {self.variable.unique}", 60
@@ -145,8 +138,7 @@ class CategoricalVariable:
             ]
         )
 
-    def _get_summary_statistics(self) -> None:
-        """Get summary statistics for the column/feature."""
+    def _get_summary_statistics(self) -> Series:
         return self.variable.data.describe().set_axis(
             [
                 "Number of observations",
@@ -158,23 +150,31 @@ class CategoricalVariable:
         )
 
     def _get_most_common(self) -> Series:
-        # Get most common items and their relative frequency (%)
+        """Get most common items and their relative frequency (%)
+
+        Returns:
+            Series: Top 5 items by frequency.
+        """
         most_common_items = self.variable.data.value_counts().head()
         n = len(self.variable.data)
         return most_common_items.apply(lambda x: f"{x:,} ({x / n:.2%})")
 
 
 class DatetimeVariable:
-    def __init__(self, variable: Variable) -> None:
+    """Get descriptive statistics for one-dimensional datetime datasets.
+
+    Args:
+        variable (BaseVariable): The data to analyse.
+    """
+
+    def __init__(self, variable: BaseVariable) -> None:
         self.variable = variable
 
     def __repr__(self) -> str:
         """Get the string representation of the ``DatetimeVariable``.
 
-        Returns
-        -------
-        str
-            A summary of the ``DatetimeVariable``'s properties.
+        Returns:
+            str: A summary of the ``DatetimeVariable``'s properties.
         """
         return "\n".join(
             [
@@ -190,8 +190,7 @@ class DatetimeVariable:
             ]
         )
 
-    def _get_summary_statistics(self) -> DataFrame:
-        """Get summary statistics for the column/feature."""
+    def _get_summary_statistics(self) -> Series:
         return self.variable.data.describe(datetime_is_numeric=True).set_axis(
             [
                 "Number of observations",
@@ -207,16 +206,20 @@ class DatetimeVariable:
 
 
 class NumericVariable:
+    """Get descriptive statistics for one-dimensional numeric datasets.
+
+    Args:
+        variable (BaseVariable): The data to analyse.
+    """
+
     def __init__(self, variable) -> None:
         self.variable = variable
 
     def __repr__(self) -> str:
-        """Get the string representation of the ``Variable``.
+        """Get the string representation of the ``NumericVariable``.
 
-        Returns
-        -------
-        str
-            A summary of the ``NumericVariable``'s properties.
+        Returns:
+            str: A summary of the ``NumericVariable``'s properties.
         """
         sample_values = shorten(
             f"{self.variable.num_unique} -> {self.variable.unique}", 60
@@ -234,12 +237,11 @@ class NumericVariable:
                 f"{self._get_summary_statistics().to_frame(name='')}\n",
                 "\t  Tests for Normality",
                 "\t  -------------------",
-                f"{self._test_for_normality()}"
+                f"{self._test_for_normality()}",
             ]
         )
 
     def _get_summary_statistics(self) -> DataFrame:
-        """Get summary statistics for the column/feature."""
         summary_stats = self.variable.data.describe().set_axis(
             [
                 "Number of observations",
@@ -257,16 +259,21 @@ class NumericVariable:
 
         return summary_stats
 
-    def _test_for_normality(self, alpha=0.05):
+    def _test_for_normality(self, alpha: float = 0.05) -> DataFrame:
+        """Perform the "D'Agostino's K-squared" and "Kolmogorov-Smirnov" tests
+        for normality.
+
+        Args:
+            alpha (float, optional): The level of significance. Defaults to
+                0.05.
+
+        Returns:
+            DataFrame: Table of results.
+        """
         data = self.variable.data.dropna()
-        tests = [
-            "D'Agostino's K-squared test",
-            # "Cramér–von Mises test",
-            "Kolmogorov-Smirnov test",
-        ]
+        tests = ["D'Agostino's K-squared test", "Kolmogorov-Smirnov test"]
         p_values = [
             stats.normaltest(data).pvalue,
-            # stats.cramervonmises(data, "norm").pvalue,
             stats.kstest(data, "norm", N=200).pvalue,
         ]
         conclusion = f"Conclusion at α = {alpha}"
@@ -287,12 +294,25 @@ class NumericVariable:
         return results
 
 
-def summarize_univariate(data, name=None):
-    variable = Variable(data, name=name)
+class Variable(BaseVariable):
+    """Defines objects that analyse and summarize one-dimensional datasets,
+    based on data type.
 
-    if variable.var_type == "numeric":
-        return NumericVariable(variable)
-    elif variable.var_type == "datetime":
-        return DatetimeVariable(variable)
-    else:
-        return CategoricalVariable(variable)
+    Args:
+        data (Iterable): The data to analyse.
+        name (str, optional): The name to assign the variable. Defaults to
+            None.
+    """
+
+    def __init__(self, data: Iterable, *, name: str = None) -> None:
+        super().__init__(data, name=name)
+        self.contents = self._analyse()
+
+    def _analyse(self):
+
+        if self.var_type == "numeric":
+            return NumericVariable(self)
+        elif self.var_type == "datetime":
+            return DatetimeVariable(self)
+        else:
+            return CategoricalVariable(self)

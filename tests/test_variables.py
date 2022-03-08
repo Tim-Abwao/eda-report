@@ -4,7 +4,6 @@ from eda_report.univariate import (
     DatetimeVariable,
     NumericVariable,
     Variable,
-    summarize_univariate,
 )
 from pandas import Series, Timestamp, date_range
 from pandas.api.types import (
@@ -17,31 +16,31 @@ from pandas.api.types import (
 
 class TestDtypeDetection:
     def test_bool_detection(self):
-        boolean = summarize_univariate([True, False, True])
-        assert boolean.variable.var_type == "boolean"
-        assert isinstance(boolean, CategoricalVariable)
+        boolean = Variable([True, False, True])
+        assert boolean.var_type == "boolean"
+        assert isinstance(boolean.contents, CategoricalVariable)
 
     def test_categorical_detection(self):
-        categorical = summarize_univariate(list("abcdefg"))
-        assert categorical.variable.var_type == "categorical"
-        assert isinstance(categorical, CategoricalVariable)
+        categorical = Variable(list("abcdefg"))
+        assert categorical.var_type == "categorical"
+        assert isinstance(categorical.contents, CategoricalVariable)
 
         # Numeric variables with less than 10 unique values are stored as
         # categorical.
-        categorical2 = summarize_univariate([1, 2, 3] * 10)
-        assert categorical2.variable.var_type == "numeric (<10 levels)"
-        assert isinstance(categorical2, CategoricalVariable)
+        categorical2 = Variable([1, 2, 3] * 10)
+        assert categorical2.var_type == "numeric (<10 levels)"
+        assert isinstance(categorical2.contents, CategoricalVariable)
 
     def test_datetime_detection(self):
-        datetime = summarize_univariate(
+        datetime = Variable(
             date_range("2022-01-01", periods=5, freq="D")
         )
-        assert datetime.variable.var_type == "datetime"
+        assert datetime.var_type == "datetime"
 
     def test_numeric_detection(self):
-        numeric = summarize_univariate(range(15))
-        assert numeric.variable.var_type == "numeric"
-        assert isinstance(numeric, NumericVariable)
+        numeric = Variable(range(15))
+        assert numeric.var_type == "numeric"
+        assert isinstance(numeric.contents, NumericVariable)
 
 
 class TestGeneralVariable:
