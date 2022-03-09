@@ -9,7 +9,7 @@
 
 A Python program to help automate the exploratory data analysis and reporting process.
 
-Input data is processed and analysed using [pandas][pandas]' built-in methods, and graphs are plotted using [matplotlib][matplotlib] & [seaborn][seaborn]. The results are then nicely packaged as a *Word (.docx)* document using [python-docx][python-docx].
+Input data is analysed using [pandas][pandas] and [SciPy][scipy]. Graphs are plotted using [matplotlib][matplotlib] and [seaborn][seaborn]. The results are then nicely packaged as a *Word (.docx)* document using [python-docx][python-docx].
 
 ## Installation
 
@@ -31,7 +31,7 @@ eda-report
 
 ![screencast of the gui][screencast]
 
-You will be prompted to set a *report title*, *target variable (optional)*, *graph color* and *output filename*, after which the contents of the input file will be analysed, and the results will be saved in a *Word (.docx)* document.
+You will be prompted to set a *report title*, *target variable (optional, for grouping values)*, *graph color* and *output filename*, after which the contents of the input file will be analysed, and the results will be saved in a *Word (.docx)* document.
 
 >**NOTE:** For help with `Tk` - related issues, consider visiting [TkDocs][tkdocs].
 
@@ -77,10 +77,10 @@ optional arguments:
   -c COLOR, --color COLOR
                         The color to apply to graphs (default: cyan)
   -T TARGET, --target TARGET
-                        The target variable (dependent feature), used to
-                        color-code plotted values. An integer value is treated
-                        as a column index, whereas a string is treated as a
-                        column label.
+                        The target variable (dependent feature), used to group
+                        plotted values. An integer value is treated as a
+                        column index, whereas a string is treated as a column
+                        label.
 ```
 
 </details>
@@ -134,11 +134,12 @@ Univariate analysis: 100%|██████████████████
 
 Visit the [official documentation][docs] for more details.
 
-[pandas]: https://pandas.pydata.org/
-[matplotlib]: https://matplotlib.org/
-[seaborn]: https://seaborn.pydata.org/
-[python-docx]: https://python-docx.readthedocs.io/en/latest/
-[eda-report-pypi]: https://pypi.org/project/eda-report/
-[screencast]: https://raw.githubusercontent.com/Tim-Abwao/eda-report/dev/docs/source/_static/screencast.gif
 [docs]: https://eda-report.readthedocs.io/
+[eda-report-pypi]: https://pypi.org/project/eda-report/
+[matplotlib]: https://matplotlib.org/
+[pandas]: https://pandas.pydata.org/
+[python-docx]: https://python-docx.readthedocs.io/
+[scipy]: https://scipy.org/
+[screencast]: https://raw.githubusercontent.com/Tim-Abwao/eda-report/dev/docs/source/_static/screencast.gif
+[seaborn]: https://seaborn.pydata.org/
 [tkdocs]: https://tkdocs.com/index.html
