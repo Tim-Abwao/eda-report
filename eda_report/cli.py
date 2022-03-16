@@ -14,7 +14,7 @@ def process_cli_args() -> argparse.Namespace:
 
     Example:
         .. literalinclude:: examples.txt
-           :lines: 117-140
+           :lines: 118-141
     """
     parser = argparse.ArgumentParser(
         prog="eda-report",

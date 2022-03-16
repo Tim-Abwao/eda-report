@@ -47,11 +47,11 @@ Maximum                 2022-03-27 00:00:00
 
 NumericVariable
 ---------------
->>> some_var = BaseVariable(range(20), name="1 to 20")
+>>> some_var = BaseVariable(range(50), name="1 to 50")
 >>> NumericVariable(some_var)
                 Overview
                 ========
-Name: var_1
+Name: 1 to 50
 Type: numeric
 Unique Values: 50 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, [...]
 Missing Values: None
@@ -75,6 +75,7 @@ Kurtosis                -1.20000
                                p-value Conclusion at α = 0.05
 D'Agostino's K-squared test  0.0015981  Unlikely to be normal
 Kolmogorov-Smirnov test      0.0000000  Unlikely to be normal
+Shapiro-Wilk test            0.0580896        Possibly normal
 
 MULTIVARIABLES
 ==============
@@ -184,6 +185,7 @@ Kurtosis                -1.20000
                                p-value Conclusion at α = 0.05
 D'Agostino's K-squared test  0.0015981  Unlikely to be normal
 Kolmogorov-Smirnov test      0.0000000  Unlikely to be normal
+Shapiro-Wilk test            0.0580896        Possibly normal
 >>> from seaborn import load_dataset
 >>> iris_data = load_dataset("iris")
 >>> summarize(iris_data)

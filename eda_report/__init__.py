@@ -36,7 +36,7 @@ def get_word_report(
 
     Example:
         .. literalinclude:: examples.txt
-           :lines: 147-153
+           :lines: 148-154
 
     """
     return ReportDocument(
@@ -60,7 +60,7 @@ def summarize(data: Iterable) -> MultiVariable:
 
     Examples:
         .. literalinclude:: examples.txt
-           :lines: 158-215
+           :lines: 159-217
 
     """
     return MultiVariable(data)

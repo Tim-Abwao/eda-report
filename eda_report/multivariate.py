@@ -29,7 +29,7 @@ class MultiVariable:
 
     Example:
         .. literalinclude:: examples.txt
-           :lines: 84-112
+           :lines: 85-113
     """
 
     def __init__(self, data: Iterable) -> None:

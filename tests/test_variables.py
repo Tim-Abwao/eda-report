@@ -212,11 +212,11 @@ class TestNumericVariables:
     def test_repr(self):
 
         assert str(self.numeric) == (
-            "\t\tOverview\n\t\t========\nName: 1 to 50\nType: numeric\nUnique"
-            " Values: 50 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, "
+            "\t\tOverview\n\t\t========\nName: 1 to 50\nType: numeric\nUnique "
+            "Values: 50 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, "
             "[...]\nMissing Values: None\n\n\t  Summary Statistics\n\t  "
-            "------------------\n                                \nNumber of"
-            " observations  50.00000\nAverage                 24.50000\n"
+            "------------------\n                                \nNumber of "
+            "observations  50.00000\nAverage                 24.50000\n"
             "Standard Deviation      14.57738\nMinimum                  "
             "0.00000\nLower Quartile          12.25000\nMedian               "
             "   24.50000\nUpper Quartile          36.75000\nMaximum          "
@@ -225,5 +225,6 @@ class TestNumericVariables:
             "-------\n                               p-value Conclusion at α "
             "= 0.05\nD'Agostino's K-squared test  0.0015981  Unlikely to be "
             "normal\nKolmogorov-Smirnov test      0.0000000  Unlikely to be "
+            "normal\nShapiro-Wilk test            0.0580896        Possibly "
             "normal"
         )

@@ -233,7 +233,7 @@ class NumericVariable:
 
     Example:
         .. literalinclude:: examples.txt
-           :lines: 50-77
+           :lines: 50-78
     """
 
     def __init__(self, variable) -> None:
@@ -295,10 +295,19 @@ class NumericVariable:
             DataFrame: Table of results.
         """
         data = self.variable.data.dropna()
-        tests = ["D'Agostino's K-squared test", "Kolmogorov-Smirnov test"]
+        # The scikit-learn implementation of the Shapiro-Wilk test reports:
+        # "For N > 5000 the W test statistic is accurate but the p-value may
+        # not be."
+        shapiro_sample = data.sample(5000) if len(data) > 5000 else data
+        tests = [
+            "D'Agostino's K-squared test",
+            "Kolmogorov-Smirnov test",
+            "Shapiro-Wilk test",
+        ]
         p_values = [
             stats.normaltest(data).pvalue,
             stats.kstest(data, "norm", N=200).pvalue,
+            stats.shapiro(shapiro_sample).pvalue
         ]
         conclusion = f"Conclusion at α = {alpha}"
         results = DataFrame(

@@ -262,7 +262,7 @@ class TestCategoricalVariables:
 
 class TestInsufficientNumericPairs:
     def test_1d_numeric(self, caplog):
-        numeric_1D = MultiVariable(range(25))
+        numeric_1D = MultiVariable(range(50))
         assert (
             "Skipped Bivariate Analysis: There are less than 2 numeric "
             "variables having > 5% unique values."
@@ -270,19 +270,20 @@ class TestInsufficientNumericPairs:
 
         assert str(numeric_1D) == (
             "\t\tOverview\n\t\t========\nName: var_1\nType: numeric\nUnique "
-            "Values: 25 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, "
+            "Values: 50 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, "
             "[...]\nMissing Values: None\n\n\t  Summary Statistics\n\t  "
-            "------------------\n                                 \nNumber of"
-            " observations  25.000000\nAverage                 12.000000\n"
-            "Standard Deviation       7.359801\nMinimum                  "
-            "0.000000\nLower Quartile           6.000000\nMedian             "
-            "     12.000000\nUpper Quartile          18.000000\nMaximum      "
-            "           24.000000\nSkewness                 0.000000\nKurtosis"
-            "                -1.200000\n\n\t  Tests for Normality\n\t  ------"
-            "-------------\n                               p-value Conclusion"
-            " at α = 0.05\nD'Agostino's K-squared test  0.0749432        "
-            "Possibly normal\nKolmogorov-Smirnov test      0.0000000  Unlikely"
-            " to be normal"
+            "------------------\n                                \nNumber of"
+            " observations  50.00000\nAverage                 24.50000\n"
+            "Standard Deviation      14.57738\nMinimum                  "
+            "0.00000\nLower Quartile          12.25000\nMedian               "
+            "   24.50000\nUpper Quartile          36.75000\nMaximum          "
+            "       49.00000\nSkewness                 0.00000\nKurtosis     "
+            "           -1.20000\n\n\t  Tests for Normality\n\t  ------------"
+            "-------\n                               p-value Conclusion at α "
+            "= 0.05\nD'Agostino's K-squared test  0.0015981  Unlikely to be "
+            "normal\nKolmogorov-Smirnov test      0.0000000  Unlikely to be "
+            "normal\nShapiro-Wilk test            0.0580896        Possibly "
+            "normal"
         )
 
     def test_omitted_numeric(self):
