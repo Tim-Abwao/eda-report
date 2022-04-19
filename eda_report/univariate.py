@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 from textwrap import shorten
-from typing import Optional
+from typing import Optional, Union
 
 from pandas import DataFrame, Series
 from pandas.api.types import (
@@ -13,7 +13,7 @@ from scipy import stats
 from eda_report.validate import validate_univariate_input
 
 
-class BaseVariable:
+class Variable:
 
     """Defines objects that evaluate the general properties of one-dimensional
     datasets, such as data type and missing values.
@@ -26,7 +26,7 @@ class BaseVariable:
     .. _SciPy ecosystem: https://www.scipy.org/
 
     Args:
-        data (Iterable): The data to analyse.
+        data (Iterable): The data to analyze.
         name (str, optional): The name to assign the variable. Defaults to
             None.
     """
@@ -104,7 +104,7 @@ class BaseVariable:
             )
 
 
-class CategoricalVariable:
+class AnalyzeCategorical:
     """Get descriptive statistics for one-dimensional categorical datasets.
 
     .. note::
@@ -112,14 +112,14 @@ class CategoricalVariable:
        function instead.
 
     Args:
-        variable (BaseVariable): The data to analyse.
+        variable (Variable): The data to analyze.
 
     Example:
         .. literalinclude:: examples.txt
            :lines: 6-23
     """
 
-    def __init__(self, variable: BaseVariable) -> None:
+    def __init__(self, variable: Variable) -> None:
         self.variable = variable
 
     def __repr__(self) -> str:
@@ -168,7 +168,7 @@ class CategoricalVariable:
         return most_common_items.apply(lambda x: f"{x:,} ({x / n:.2%})")
 
 
-class DatetimeVariable:
+class AnalyzeDatetime:
     """Get descriptive statistics for one-dimensional datetime datasets.
 
     .. note::
@@ -176,14 +176,14 @@ class DatetimeVariable:
        function instead.
 
     Args:
-        variable (BaseVariable): The data to analyse.
+        variable (Variable): The data to analyze.
 
     Example:
         .. literalinclude:: examples.txt
            :lines: 27-46
     """
 
-    def __init__(self, variable: BaseVariable) -> None:
+    def __init__(self, variable: Variable) -> None:
         self.variable = variable
 
     def __repr__(self) -> str:
@@ -221,7 +221,7 @@ class DatetimeVariable:
         )
 
 
-class NumericVariable:
+class AnalyzeNumeric:
     """Get descriptive statistics for one-dimensional numeric datasets.
 
     .. note::
@@ -229,7 +229,7 @@ class NumericVariable:
        function instead.
 
     Args:
-        variable (BaseVariable): The data to analyse.
+        variable (Variable): The data to analyze.
 
     Example:
         .. literalinclude:: examples.txt
@@ -307,7 +307,7 @@ class NumericVariable:
         p_values = [
             stats.normaltest(data).pvalue,
             stats.kstest(data, "norm", N=200).pvalue,
-            stats.shapiro(shapiro_sample).pvalue
+            stats.shapiro(shapiro_sample).pvalue,
         ]
         conclusion = f"Conclusion at α = {alpha}"
         results = DataFrame(
@@ -327,25 +327,24 @@ class NumericVariable:
         return results
 
 
-class Variable(BaseVariable):
-    """Defines objects that analyse and summarize one-dimensional datasets,
-    based on data type.
+def analyze_univariate(
+    data: Iterable, *, name: str = None
+) -> Union[AnalyzeCategorical, AnalyzeDatetime, AnalyzeNumeric]:
+    """Get summary statistics.
 
     Args:
-        data (Iterable): The data to analyse.
+        data (Iterable): The data to analyze.
         name (str, optional): The name to assign the variable. Defaults to
             None.
+
+    Returns:
+        Union[AnalyzeCategorical, AnalyzeDatetime, AnalyzeNumeric]:
+            Summary statistics
     """
-
-    def __init__(self, data: Iterable, *, name: str = None) -> None:
-        super().__init__(data, name=name)
-        self.contents = self._analyse()
-
-    def _analyse(self):
-
-        if self.var_type == "numeric":
-            return NumericVariable(self)
-        elif self.var_type == "datetime":
-            return DatetimeVariable(self)
-        else:
-            return CategoricalVariable(self)
+    var = Variable(data)
+    if var.var_type == "numeric":
+        return AnalyzeNumeric(variable=var)
+    elif var.var_type == "datetime":
+        return AnalyzeDatetime(variable=var)
+    else:
+        return AnalyzeCategorical(variable=var)
