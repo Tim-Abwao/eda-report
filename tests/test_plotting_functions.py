@@ -48,7 +48,9 @@ class TestBivariatePlots:
 class TestUnivariatePlots:
 
     numeric_variable = Variable(range(15), name="numeric")
-    categorical_variable = Variable(list("abcde") * 5, name="categorical")
+    categorical_variable = Variable(
+        list("abcdefghijklmno"), name="categorical"
+    )
 
     graphs = UnivariatePlots(
         [categorical_variable, numeric_variable],
