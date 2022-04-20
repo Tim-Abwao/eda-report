@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 from textwrap import shorten
-from typing import Optional, Union
+from typing import Union
 
 from pandas import DataFrame, Series
 from pandas.api.types import (
@@ -53,11 +53,11 @@ class Variable:
         #: ``number (percentage%)`` e.g "4 (16.67%)".
         self.missing = self._get_missing_values_info()
 
-    def rename(self, name: Optional[str] = None) -> None:
+    def rename(self, name: str = None) -> None:
         """Rename the variable as specified.
 
         Args:
-            name (Optional[str], optional): The name to assign to the variable.
+            name (str, optional): The name to assign to the variable.
                 Defaults to None.
         """
         self.name = self.data.name = name
@@ -104,7 +104,7 @@ class Variable:
             )
 
 
-class AnalyzeCategorical:
+class CategoricalStats:
     """Get descriptive statistics for one-dimensional categorical datasets.
 
     .. note::
@@ -123,10 +123,10 @@ class AnalyzeCategorical:
         self.variable = variable
 
     def __repr__(self) -> str:
-        """Get the string representation of the ``CategoricalVariable``.
+        """Get the string representation of the analysis results.
 
         Returns:
-            str: A summary of the ``CategoricalVariable``'s properties.
+            str: Summary statistics.
         """
         sample_values = shorten(
             f"{self.variable.num_unique} -> {self.variable.unique}", 60
@@ -168,7 +168,7 @@ class AnalyzeCategorical:
         return most_common_items.apply(lambda x: f"{x:,} ({x / n:.2%})")
 
 
-class AnalyzeDatetime:
+class DatetimeStats:
     """Get descriptive statistics for one-dimensional datetime datasets.
 
     .. note::
@@ -187,10 +187,10 @@ class AnalyzeDatetime:
         self.variable = variable
 
     def __repr__(self) -> str:
-        """Get the string representation of the ``DatetimeVariable``.
+        """Get the string representation of the analysis results.
 
         Returns:
-            str: A summary of the ``DatetimeVariable``'s properties.
+            str: Summary statistics.
         """
         return "\n".join(
             [
@@ -221,7 +221,7 @@ class AnalyzeDatetime:
         )
 
 
-class AnalyzeNumeric:
+class NumericStats:
     """Get descriptive statistics for one-dimensional numeric datasets.
 
     .. note::
@@ -240,10 +240,10 @@ class AnalyzeNumeric:
         self.variable = variable
 
     def __repr__(self) -> str:
-        """Get the string representation of the ``NumericVariable``.
+        """Get the string representation of the analysis results.
 
         Returns:
-            str: A summary of the ``NumericVariable``'s properties.
+            str: Summary statistics.
         """
         sample_values = shorten(
             f"{self.variable.num_unique} -> {self.variable.unique}", 60
@@ -329,8 +329,9 @@ class AnalyzeNumeric:
 
 def analyze_univariate(
     data: Iterable, *, name: str = None
-) -> Union[AnalyzeCategorical, AnalyzeDatetime, AnalyzeNumeric]:
-    """Get summary statistics.
+) -> Union[CategoricalStats, DatetimeStats, NumericStats]:
+    """Convert one-dimensional datasets into
+    :class:`~eda_report.univariate.Variable`s, and get summary statistics.
 
     Args:
         data (Iterable): The data to analyze.
@@ -338,13 +339,13 @@ def analyze_univariate(
             None.
 
     Returns:
-        Union[AnalyzeCategorical, AnalyzeDatetime, AnalyzeNumeric]:
+        Union[CategoricalStats, DatetimeStats, NumericStats]:
             Summary statistics
     """
-    var = Variable(data)
+    var = Variable(data, name=name)
     if var.var_type == "numeric":
-        return AnalyzeNumeric(variable=var)
+        return NumericStats(variable=var)
     elif var.var_type == "datetime":
-        return AnalyzeDatetime(variable=var)
+        return DatetimeStats(variable=var)
     else:
-        return AnalyzeCategorical(variable=var)
+        return CategoricalStats(variable=var)
