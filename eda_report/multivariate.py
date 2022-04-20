@@ -1,17 +1,16 @@
 import logging
 from collections.abc import Iterable
 from itertools import combinations
-from types import GeneratorType
 from typing import Sequence, Union
 
 from pandas.core.frame import DataFrame
 
-from eda_report.univariate import Variable
+from eda_report.univariate import analyze_univariate
 from eda_report.validate import validate_multivariate_input
 
 
 class MultiVariable:
-    """Defines objects that analyse two-dimensional datasets.
+    """Defines objects that analyze two-dimensional datasets.
 
     Input data is held as a :class:`pandas.DataFrame` in order to leverage
     pandas_ built-in statistical methods, as well as functions
@@ -25,7 +24,7 @@ class MultiVariable:
        function instead.
 
     Args:
-        data (Iterable): The data to analyse.
+        data (Iterable): The data to analyze.
 
     Example:
         .. literalinclude:: examples.txt
@@ -65,7 +64,7 @@ class MultiVariable:
             str: The string representation of the ``MultiVariable`` instance.
         """
         if self.data.shape[1] == 1:
-            return str(Variable(self.data.squeeze()).contents)
+            return str(analyze_univariate(self.data.squeeze()))
 
         if self.numeric_cols is None:
             numeric_info = numeric_stats = ""
@@ -108,15 +107,6 @@ class MultiVariable:
                 f"{correlation_description}",
             ]
         )
-
-    def iter_variables(self) -> GeneratorType:
-        """Iterate through all the variables present in alphabetic order.
-
-        Yields:
-            GeneratorType: Variables
-        """
-        for name, data in self.data.sort_index(axis=1).items():
-            yield Variable(data=data, name=name)
 
     def _select_cols(self, *dtypes: Sequence[str]) -> Union[DataFrame, None]:
         """Get a DataFrame including only the specified ``dtypes``.

@@ -3,7 +3,6 @@ from itertools import combinations
 import pytest
 from eda_report import summarize
 from eda_report.multivariate import MultiVariable
-from eda_report.univariate import CategoricalVariable, NumericVariable
 from pandas import DataFrame
 
 
@@ -83,12 +82,6 @@ class TestMixedVariables:
             "\n\n\t  Bivariate Analysis (Correlation)\n\t  ------------------"
             "--------------\nA & D --> very weak positive correlation (0.21)"
         )
-
-    def test_iteration(self):
-        variable_types = set(
-            type(var.contents) for var in self.multivariable.iter_variables()
-        )
-        assert variable_types == {CategoricalVariable, NumericVariable}
 
 
 class TestNumericVariables:
