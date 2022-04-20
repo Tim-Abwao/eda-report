@@ -40,7 +40,7 @@ class TestCLIArgumentParsing:
         report = run_from_cli()
 
         # Check whether the supplied arguments were set
-        assert isinstance(report.variables.data, DataFrame)
+        assert isinstance(report.multivariable.data, DataFrame)
         assert report.OUTPUT_FILENAME == f"{temp_data_dir}/cli-test-1.docx"
         assert report.TITLE == "CLI Test"
         assert report.GRAPH_COLOR == "teal"
@@ -58,7 +58,7 @@ class TestCLIArgumentParsing:
         report = run_from_cli()
 
         # Check if the default arguments were set
-        assert isinstance(report.variables.data, DataFrame)
+        assert isinstance(report.multivariable.data, DataFrame)
         assert report.OUTPUT_FILENAME == "eda-report.docx"
         assert report.TITLE == "Exploratory Data Analysis Report"
         assert report.GRAPH_COLOR == "cyan"

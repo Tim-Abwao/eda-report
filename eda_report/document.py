@@ -5,12 +5,8 @@ from docx import Document
 from docx.shared import Inches, Pt
 from docx.text.parfmt import ParagraphFormat
 from pandas.core.frame import DataFrame
-from tqdm import tqdm
 
-from eda_report.multivariate import MultiVariable
-from eda_report.plotting import PlotMultiVariable, PlotVariable
-from eda_report.univariate import Variable
-from eda_report.validate import validate_target_variable
+from eda_report.content import ReportContent
 
 logging.basicConfig(
     format="[%(levelname)s %(asctime)s.%(msecs)03d] %(message)s",
@@ -19,148 +15,10 @@ logging.basicConfig(
 )
 
 
-class ReportContent:
-    """Analyses data, then prepares textual summaries and graphs.
-
-    Args:
-        data (Iterable): The data to analyse.
-        title (str, optional): The title to assign the report. Defaults to
-            "Exploratory Data Analysis Report".
-        graph_color (str, optional): The color to apply to the graphs.
-            Defaults to "cyan".
-        target_variable (Optional[Union[str, int]], optional): The column to
-            use to group values. Defaults to None.
-    """
-
-    def __init__(
-        self,
-        data: Iterable,
-        *,
-        title: str = "Exploratory Data Analysis Report",
-        graph_color: str = "cyan",
-        target_variable: Optional[Union[str, int]] = None,
-    ) -> None:
-        self.variables = MultiVariable(data)
-        self.GRAPH_COLOR = graph_color
-        self.TARGET_VARIABLE = validate_target_variable(
-            data=self.variables.data, target_variable=target_variable
-        )
-        self.TITLE = title
-        self.intro_text = self._get_introductory_summary()
-        self.multivariate_graphs = PlotMultiVariable(
-            self.variables,
-            graph_color=self.GRAPH_COLOR,
-            hue=self.TARGET_VARIABLE,
-        ).graphs
-        self.variable_descriptions = self._get_variable_descriptions()
-        self.bivariate_summaries = self._get_bivariate_summaries()
-
-    def _get_introductory_summary(self) -> str:
-        """Get an overview of the number of rows and the nature of columns.
-
-        Returns:
-            str: Introduction
-        """
-        num_rows, num_cols = self.variables.data.shape
-
-        if num_rows == 1:
-            rows = "1 row (observation)"
-        else:
-            rows = f"{num_rows:,} rows (observations)"
-
-        if num_cols == 1:
-            cols = "1 column (feature)"
-        else:
-            cols = f"{num_cols:,} columns (features)"
-
-        # Get numeric column info
-        if self.variables.numeric_cols is None:
-            numeric = ""
-        elif self.variables.numeric_cols.shape[1] == 1:
-            numeric = ", 1 of which is numeric"
-        else:
-            numeric = (
-                f", {self.variables.numeric_cols.shape[1]} of which are"
-                " numeric"
-            )
-
-        return f"The dataset consists of {rows} and {cols}{numeric}."
-
-    def _describe_variable(self, variable: Variable) -> dict:
-        """Get summary statistics for a variable.
-
-        Args:
-            variable (Variable): The data to analyse.
-
-        Returns:
-            dict: Summary statistics
-        """
-        var = variable.contents
-        if variable.num_unique == 1:
-            unique_vals = "1 unique value"
-        else:
-            unique_vals = f"{variable.num_unique:,} unique values"
-
-        return {
-            "description": (
-                f"{variable.name.capitalize()} is a {variable.var_type} "
-                f"variable with {unique_vals}. {variable.missing} of its "
-                "values are missing."
-            ),
-            "graphs": PlotVariable(
-                variable,
-                graph_color=self.GRAPH_COLOR,
-                hue=self.TARGET_VARIABLE,
-            ).graphs,
-            "statistics": var._get_summary_statistics().to_frame(),
-            "normality_tests": (
-                var._test_for_normality()
-                if variable.var_type == "numeric"
-                else None
-            ),
-        }
-
-    def _get_variable_descriptions(self) -> dict:
-        """Get brief descriptions of all columns present in the data.
-
-        Returns:
-            dict: Summaries of columns present.
-        """
-        return {
-            var.name: self._describe_variable(var)
-            for var in tqdm(
-                self.variables.iter_variables(),
-                bar_format="{desc}: {percentage:3.0f}%|{bar:35}| "
-                + "{n_fmt}/{total_fmt} features.",
-                desc="Univariate analysis",
-                dynamic_ncols=True,
-                total=self.variables.data.shape[1],
-            )
-        }
-
-    def _get_bivariate_summaries(self) -> dict:
-        """Get descriptions of the nature of correlation between numeric
-        column pairs.
-
-        Returns:
-            dict: Correlation info.
-        """
-        if hasattr(self.variables, "var_pairs"):
-            return {
-                var_pair: (
-                    f"{var_pair[0].title()} and {var_pair[1].title()} have"
-                    f" {self.variables.correlation_descriptions[var_pair]}."
-                )
-                for var_pair in self.variables.var_pairs
-            }
-        else:
-            return None
-
-
 class ReportDocument(ReportContent):
     """Creates a :class:`~docx.document.Document`  with analysis results.
 
-    The :class:`ReportContent` class is used to analyse the data and
+    The :class:`ReportContent` class is used to analyze the data and
     generate text and graph content. Then the :class:`~docx.document.Document`
     class from the `python-docx`_ package is used to publish the results as a
     *Word* document.
@@ -174,7 +32,7 @@ class ReportDocument(ReportContent):
     .. _python-docx: https://python-docx.readthedocs.io/en/latest/
 
     Args:
-        data (Iterable): The data to analyse.
+        data (Iterable): The data to analyze.
         title (str, optional): The title to assign the report. Defaults to
             "Exploratory Data Analysis Report".
         graph_color (str, optional): The color to apply to the graphs.
@@ -215,7 +73,7 @@ class ReportDocument(ReportContent):
         self._create_title_page()
         self._get_univariate_analysis()
 
-        if hasattr(self.variables, "var_pairs"):
+        if hasattr(self.multivariable, "var_pairs"):
             self._get_bivariate_analysis()
 
         self._to_file()
@@ -248,14 +106,14 @@ class ReportDocument(ReportContent):
 
     def _get_numeric_overview_table(self) -> None:
         """Create a table with an overview of the numeric features present."""
-        if self.variables.numeric_cols is not None:
+        if self.multivariable.numeric_cols is not None:
             heading = self.document.add_heading(
                 "Overview of Numeric Features", level=1
             )
             self._format_heading_spacing(heading.paragraph_format)
             # count | mean | std | min | 25% | 50% | 75% | max
             self._create_table(
-                data=self.variables.numeric_stats,
+                data=self.multivariable.numeric_stats,
                 header=True,
                 column_widths=(1.2,) + (0.7,) * 8,
                 font_size=8.5,
@@ -266,14 +124,14 @@ class ReportDocument(ReportContent):
         """Create a table with an overview of the categorical features
         present.
         """
-        if self.variables.categorical_cols is not None:
+        if self.multivariable.categorical_cols is not None:
             heading = self.document.add_heading(
                 "Overview of Categorical Features", level=1
             )
             self._format_heading_spacing(heading.paragraph_format)
             # column-name | count | unique | top | freq | relative freq
             self._create_table(
-                data=self.variables.categorical_stats,
+                data=self.multivariable.categorical_stats,
                 header=True,
                 column_widths=(1.2,) + (0.9,) * 5,
                 font_size=8.5,
@@ -290,8 +148,8 @@ class ReportDocument(ReportContent):
         self._format_heading_spacing(
             univariate_heading.paragraph_format, before=0, after=0
         )
-        for idx, var_name in enumerate(self.variable_descriptions, start=1):
-            var_info = self.variable_descriptions[var_name]
+        for idx, var_name in enumerate(self.variable_info, start=1):
+            var_info = self.variable_info[var_name]
 
             heading = self.document.add_heading(
                 f"1.{idx}. {var_name}".title(), level=2
@@ -333,7 +191,8 @@ class ReportDocument(ReportContent):
         )
 
         self.document.add_picture(
-            self.multivariate_graphs["correlation_heatmap"], width=Inches(6.7)
+            self.bivariate_graphs["correlation_heatmap"],
+            width=Inches(6.7),
         )
         self.document.add_page_break()
 
@@ -346,7 +205,7 @@ class ReportDocument(ReportContent):
             )
             self.document.add_paragraph(self.bivariate_summaries[var_pair])
             self.document.add_picture(
-                self.multivariate_graphs["scatterplots"][var_pair],
+                self.bivariate_graphs["scatterplots"][var_pair],
                 width=Inches(6),
             )
 
