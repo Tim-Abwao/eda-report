@@ -1,7 +1,7 @@
 from io import BytesIO
 
 from eda_report.multivariate import MultiVariable
-from eda_report.plotting import BasePlot, PlotMultiVariable, PlotVariable
+from eda_report.plotting import BasePlot, BivariatePlots, UnivariatePlots
 from eda_report.univariate import Variable
 
 
@@ -23,18 +23,16 @@ class TestBasePlot:
         assert self.with_high_cardinality.COLOR_GROUPS is False
 
 
-class TestPlotMultiVariable:
+class TestBivariatePlots:
 
     data = MultiVariable([["a", 1, 2], ["b", 2, 3]])
-    plots = PlotMultiVariable(data, graph_color="blue", hue=data.data["var_1"])
+    plots = BivariatePlots(data, graph_color="blue", hue=data.data["var_1"])
 
     def test_graph_color(self):
         assert self.plots.GRAPH_COLOR == "blue"
 
     def test_color_coding(self):
         assert self.plots.COLOR_GROUPS
-        # No grouping in heatmap and pairwise plots
-        assert self.plots._COLOR_GROUPED_GRAPHS == set()
 
     def test_graphs(self):
         assert "correlation_heatmap" in self.plots.graphs
@@ -47,37 +45,31 @@ class TestPlotMultiVariable:
             assert isinstance(scatter_plot, BytesIO)
 
 
-class TestPlotVariable:
+class TestUnivariatePlots:
 
-    numeric_variable = Variable(range(15))
-    categorical_variable = Variable(list("abcde"))
+    numeric_variable = Variable(range(15), name="numeric")
+    categorical_variable = Variable(list("abcde") * 5, name="categorical")
 
-    plots_numeric = PlotVariable(numeric_variable, hue=list("abcacba"))
-    plots_categorical = PlotVariable(
-        categorical_variable, graph_color="olive", hue=range(5)
+    graphs = UnivariatePlots(
+        [categorical_variable, numeric_variable],
+        graph_color="olive",
+        hue=[1, 2, 3] * 5,
     )
 
     def test_graph_color(self):
-        assert self.plots_numeric.GRAPH_COLOR == "cyan"
-        assert self.plots_categorical.GRAPH_COLOR == "olive"
-
-    def test_color_grouping(self):
-        assert self.plots_numeric._COLOR_GROUPED_GRAPHS == {
-            "box_plot",
-            "kde_plot",
-        }
+        assert self.graphs.GRAPH_COLOR == "olive"
 
     def test_graphs(self):
-        assert set(self.plots_numeric.graphs.keys()) == {
+        assert set(self.graphs.graphs["numeric"].keys()) == {
             "box_plot",
             "kde_plot",
             "prob_plot",
         }
-        assert "bar_plot" in self.plots_categorical.graphs
+        assert "bar_plot" in self.graphs.graphs["categorical"]
 
     def test_graph_types(self):
-        for plot in self.plots_numeric.graphs.values():
+        for plot in self.graphs.graphs["numeric"].values():
             assert isinstance(plot, BytesIO)
 
-        for plot in self.plots_categorical.graphs.values():
+        for plot in self.graphs.graphs["categorical"].values():
             assert isinstance(plot, BytesIO)

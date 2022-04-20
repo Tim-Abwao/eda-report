@@ -1,5 +1,6 @@
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from io import BytesIO
+from multiprocessing import Pool
 from typing import Optional
 
 import matplotlib
@@ -67,10 +68,9 @@ class BasePlot:
         self.COLOR_GROUPS = (  # True if below condition holds
             self.HUE is not None and self.HUE.nunique() in range(2, 11)
         )
-        self._COLOR_GROUPED_GRAPHS = set()
 
 
-class PlotVariable(BasePlot):
+class UnivariatePlots(BasePlot):
     """Plots instances of :class:`~eda_report.univariate.Variable`:
 
     - *Box-plots*, *dist-plots* and *normal-probability-plots* for
@@ -78,7 +78,7 @@ class PlotVariable(BasePlot):
     - *Bar-plots* for categorical variables.
 
     Args:
-        variable (Variable): The data to plot.
+        variables (Sequence[Variable]): The data to plot.
         graph_color (str, optional): The color to apply to the generated
             graphs. Defaults to "cyan".
         hue (Optional[Series], optional): Data to use to group values.
@@ -91,34 +91,16 @@ class PlotVariable(BasePlot):
 
     def __init__(
         self,
-        variable: Variable,
+        variables: Sequence[Variable],
         *,
         graph_color: str = "cyan",
         hue: Optional[Series] = None,
     ) -> None:
         super().__init__(graph_color=graph_color, hue=hue)
-        self.variable = variable
-        self._plot_graphs()
+        self.variables = variables
+        self.graphs = self._get_univariate_graphs()
 
-    def _plot_graphs(self) -> None:
-        """Plot graphs based on the ``Variable`` type.
-
-        For **numeric** variables, a *box-plot*, *dist-plot* and *probability
-        plot* are produced.
-
-        For **categorical**, **boolean** or **datetime** objects, only a *bar
-        plot* is produced.
-        """
-        if self.variable.var_type == "numeric":
-            self.graphs = {
-                "box_plot": self._plot_box(),
-                "kde_plot": self._plot_dist(),
-                "prob_plot": self._plot_prob(),
-            }
-        else:  # {"boolean", "categorical", "datetime"}:
-            self.graphs = {"bar_plot": self._plot_bar()}
-
-    def _plot_box(self) -> BytesIO:
+    def _plot_box(self, variable) -> BytesIO:
         """Get a boxplot for a numeric variable.
 
         Returns:
@@ -127,7 +109,7 @@ class PlotVariable(BasePlot):
         fig = Figure()
         ax = fig.subplots()
         sns.boxplot(
-            x=self.variable.data,
+            x=variable.data,
             y=self.HUE,
             ax=ax,
             fliersize=4,
@@ -136,14 +118,11 @@ class PlotVariable(BasePlot):
             saturation=0.85,
             width=0.2,
         )
-        ax.set_title(f"Box-plot of {self.variable.name}")
-
-        if self.HUE is not None:
-            self._COLOR_GROUPED_GRAPHS.add("box_plot")
+        ax.set_title(f"Box-plot of {variable.name}")
 
         return savefig(fig)
 
-    def _plot_dist(self) -> BytesIO:
+    def _plot_dist(self, variable) -> BytesIO:
         """Get a dist-plot for a numeric variable.
 
         Returns:
@@ -151,15 +130,12 @@ class PlotVariable(BasePlot):
         """
         fig = Figure()
         ax = fig.subplots()
-        sns.kdeplot(x=self.variable.data, ax=ax, fill=True, hue=self.HUE)
-        ax.set_title(f"Distribution plot of {self.variable.name}")
-
-        if self.HUE is not None:
-            self._COLOR_GROUPED_GRAPHS.add("kde_plot")
+        sns.kdeplot(x=variable.data, ax=ax, fill=True, hue=self.HUE)
+        ax.set_title(f"Distribution plot of {variable.name}")
 
         return savefig(fig)
 
-    def _plot_prob(self) -> BytesIO:
+    def _plot_prob(self, variable) -> BytesIO:
         """Get a probability plot for a numeric variable.
 
         Returns:
@@ -169,17 +145,17 @@ class PlotVariable(BasePlot):
         ax = fig.subplots()
 
         theoretical_quantiles, ordered_values = probplot(
-            self.variable.data,
+            variable.data,
             fit=False,  # The line of best fit will be plotted in regplot
         )
         sns.regplot(x=theoretical_quantiles, y=ordered_values, ax=ax)
 
-        ax.set_title(f"Probability Plot of {self.variable.name}")
+        ax.set_title(f"Probability Plot of {variable.name}")
         ax.set_xlabel("Theoretical Quantiles (~ Standard Normal)")
         ax.set_ylabel("Ordered Values")
         return savefig(fig)
 
-    def _plot_bar(self) -> BytesIO:
+    def _plot_bar(self, variable) -> BytesIO:
         """Get a barplot for a categorical, boolean or datetime variable.
 
         Returns:
@@ -189,7 +165,7 @@ class PlotVariable(BasePlot):
         ax = fig.subplots()
 
         # Include no more than 10 of the most common values
-        top_10 = self.variable.data.value_counts().nlargest(10)
+        top_10 = variable.data.value_counts().nlargest(10)
         sns.barplot(
             x=list(top_10.index),
             y=top_10,
@@ -198,12 +174,12 @@ class PlotVariable(BasePlot):
         )
         ax.tick_params(axis="x", rotation=90)
 
-        if (num_unique := self.variable.num_unique) > 10:
+        if (num_unique := variable.num_unique) > 10:
             ax.set_title(
-                f"Bar-plot of {self.variable.name} (Top 10 of {num_unique})"
+                f"Bar-plot of {variable.name} (Top 10 of {num_unique})"
             )
         else:
-            ax.set_title(f"Bar-plot of {self.variable.name}")
+            ax.set_title(f"Bar-plot of {variable.name}")
 
         # Annotate bars
         for p in ax.patches:
@@ -216,8 +192,39 @@ class PlotVariable(BasePlot):
 
         return savefig(fig)
 
+    def _plot_variable(self, variable) -> None:
+        """Plot graphs based on the ``Variable`` type.
 
-class PlotMultiVariable(BasePlot):
+        For **numeric** variables, a *box-plot*, *dist-plot* and *probability
+        plot* are produced.
+
+        For **categorical**, **boolean** or **datetime** objects, only a *bar
+        plot* is produced.
+        """
+        if variable.var_type == "numeric":
+            graphs = {
+                "box_plot": self._plot_box(variable),
+                "kde_plot": self._plot_dist(variable),
+                "prob_plot": self._plot_prob(variable),
+            }
+        else:  # {"boolean", "categorical", "datetime"}:
+            graphs = {"bar_plot": self._plot_bar(variable)}
+
+        return variable.name, graphs
+
+    def _get_univariate_graphs(self):
+
+        with Pool() as p:
+            univariate_graphs = dict(
+                tqdm(
+                    p.imap(self._plot_variable, self.variables),
+                    total=len(self.variables),
+                )
+            )
+        return univariate_graphs
+
+
+class BivariatePlots(BasePlot):
     """Plots instances of :class:`~eda_report.multivariate.MultiVariable`.
 
     Produces a *correlation heatmap*, *scatter-plots* and *ecdf-plots*, if
@@ -250,29 +257,33 @@ class PlotMultiVariable(BasePlot):
     ) -> None:
         super().__init__(graph_color=graph_color, hue=hue)
         self.variables = variables
-        self._plot_graphs()
+        self.graphs = self._plot_graphs()
 
     def _plot_graphs(self) -> None:
         """Get a heatmap of the correlation in all numeric columns, and
         scatter-plots & ecdf-plots of numeric column pairs.
         """
         if hasattr(self.variables, "var_pairs"):
-            self.bivariate_scatterplots = {
-                (var_pair): self._regression_plot(*var_pair)
-                for var_pair in tqdm(
-                    self.variables.var_pairs,
-                    bar_format="{desc}: {percentage:3.0f}%|{bar:35}| "
-                    + "{n_fmt}/{total_fmt} numeric pairs.",
-                    desc="Bivariate analysis",
-                    dynamic_ncols=True,
+            with Pool() as p:
+                bivariate_scatterplots = dict(
+                    tqdm(
+                        p.imap(
+                            self._regression_plot, self.variables.var_pairs
+                        ),
+                        total=len(self.variables.var_pairs),
+                        bar_format="{desc}: {percentage:3.0f}%|{bar:35}| "
+                        + "{n_fmt}/{total_fmt} numeric pairs.",
+                        desc="Bivariate analysis",
+                        dynamic_ncols=True,
+                    )
                 )
-            }
-            self.graphs = {
+
+            return {
                 "correlation_heatmap": self._plot_correlation_heatmap(),
-                "scatterplots": self.bivariate_scatterplots,
+                "scatterplots": bivariate_scatterplots,
             }
         else:
-            self.graphs = None
+            return None
 
     def _plot_correlation_heatmap(self) -> BytesIO:
         """Get a heatmap of the correlation among all numeric columns.
@@ -299,7 +310,7 @@ class PlotMultiVariable(BasePlot):
 
         return savefig(fig)
 
-    def _regression_plot(self, var1: str, var2: str) -> BytesIO:
+    def _regression_plot(self, var_pair) -> BytesIO:
         """Get a scatter-plot and ecdf-plot for the provided numeric columns.
 
         Args:
@@ -310,7 +321,7 @@ class PlotMultiVariable(BasePlot):
         """
         fig = Figure(figsize=(8.2, 4))
         ax1, ax2 = fig.subplots(nrows=1, ncols=2)
-
+        var1, var2 = var_pair
         sns.regplot(x=var1, y=var2, data=self.variables.data, ax=ax1)
 
         pair_data = self.variables.data.loc[:, [var1, var2]]
@@ -321,4 +332,4 @@ class PlotMultiVariable(BasePlot):
         ax1.set_title(f"Scatter-plot - {var1} vs {var2}".title(), size=9)
         ax2.set_title("Empirical Cummulative Distribution Plot", size=9)
 
-        return savefig(fig)
+        return var_pair, savefig(fig)
