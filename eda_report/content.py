@@ -20,13 +20,31 @@ class AnalysisResult:
 
     Args:
         data (Iterable): The data to analyse.
+        graph_color (str, optional): The color to apply to the graphs.
+            Defaults to "cyan".
+        target_variable (Union[str, int], optional): The column to
+            use to group values. Defaults to None.
+
     """
 
-    def __init__(self, data: Iterable) -> None:
+    def __init__(
+        self,
+        data: Iterable,
+        graph_color: str = "cyan",
+        target_variable: Union[str, int] = None,
+    ) -> None:
+        self.GRAPH_COLOR = graph_color
         self.multivariable = MultiVariable(data)
+        self.TARGET_VARIABLE = validate_target_variable(
+            data=self.multivariable.data, target_variable=target_variable
+        )
         self.univariate_stats = self._get_univariate_statistics()
         self.univariate_graphs = self._get_univariate_graphs()
-        self.bivariate_graphs = BivariatePlots(self.multivariable).graphs
+        self.bivariate_graphs = BivariatePlots(
+            self.multivariable,
+            graph_color=self.GRAPH_COLOR,
+            hue=self.TARGET_VARIABLE,
+        ).graphs
 
     def _analyze_variable(
         self, items: Tuple[str, Series]
@@ -76,7 +94,9 @@ class AnalysisResult:
             Dict[str, Dict]: Univariate graphs.
         """
         variables = [stat.variable for stat in self.univariate_stats.values()]
-        return UnivariatePlots(variables).graphs
+        return UnivariatePlots(
+            variables, graph_color=self.GRAPH_COLOR, hue=self.TARGET_VARIABLE
+        ).graphs
 
 
 class ReportContent(AnalysisResult):
@@ -100,10 +120,8 @@ class ReportContent(AnalysisResult):
         graph_color: str = "cyan",
         target_variable: Union[str, int] = None,
     ) -> None:
-        super().__init__(data)
-        self.GRAPH_COLOR = graph_color
-        self.TARGET_VARIABLE = validate_target_variable(
-            data=self.multivariable.data, target_variable=target_variable
+        super().__init__(
+            data, graph_color=graph_color, target_variable=target_variable
         )
         self.TITLE = title
         self.intro_text = self._get_introductory_summary()

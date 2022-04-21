@@ -16,12 +16,6 @@ class TestBasePlot:
         assert self.with_valid_hue.GRAPH_COLOR == "purple"
         assert self.with_high_cardinality.GRAPH_COLOR == "yellow"
 
-    def test_color_groups(self):
-        # Should be False with constant and high cardinality hues
-        assert self.with_constant_hue.COLOR_GROUPS is False
-        assert self.with_valid_hue.COLOR_GROUPS
-        assert self.with_high_cardinality.COLOR_GROUPS is False
-
 
 class TestBivariatePlots:
 
@@ -30,9 +24,6 @@ class TestBivariatePlots:
 
     def test_graph_color(self):
         assert self.plots.GRAPH_COLOR == "blue"
-
-    def test_color_coding(self):
-        assert self.plots.COLOR_GROUPS
 
     def test_graphs(self):
         assert "correlation_heatmap" in self.plots.graphs

@@ -63,12 +63,6 @@ class BasePlot:
             n_colors=2 if self.HUE is None else self.HUE.nunique(),
         )
 
-        #: bool: A flag that determines whether or not to use the supplied
-        #: ``hue`` to group values. True if ``hue`` has manageable cardinality.
-        self.COLOR_GROUPS = (  # True if below condition holds
-            self.HUE is not None and self.HUE.nunique() in range(2, 11)
-        )
-
 
 class UnivariatePlots(BasePlot):
     """Plots instances of :class:`~eda_report.univariate.Variable`:
