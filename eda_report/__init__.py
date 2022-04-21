@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from typing import Optional, Union
+from typing import Union
 
 from eda_report.document import ReportDocument
 from eda_report.multivariate import MultiVariable
@@ -12,19 +12,19 @@ def get_word_report(
     *,
     title: str = "Exploratory Data Analysis Report",
     graph_color: str = "cyan",
-    target_variable: Optional[Union[str, int]] = None,
+    target_variable: Union[str, int] = None,
     output_filename: str = "eda-report.docx",
     table_style: str = "Table Grid",
 ) -> ReportDocument:
-    """Analyses data, and generates a report in *Word* (*.docx*) format.
+    """Analyzes data, and generates a report in *Word* (*.docx*) format.
 
     Args:
-        data (Iterable): The data to analyse.
+        data (Iterable): The data to analyze.
         title (str, optional): The title to assign the report. Defaults to
             "Exploratory Data Analysis Report".
         graph_color (str, optional): The color to apply to the graphs.
             Defaults to "cyan".
-        target_variable (Optional[Union[str, int]], optional): The column to
+        target_variable (Union[str, int], optional): The column to
             use to group values. Defaults to None.
         output_filename (str, optional): The file name or path to save the
             document to. Defaults to "eda-report.docx".
@@ -53,7 +53,7 @@ def summarize(data: Iterable) -> MultiVariable:
     """Get summary statistics for the supplied data.
 
     Args:
-        data (Iterable): The data to analyse.
+        data (Iterable): The data to analyze.
 
     Returns:
         MultiVariable: Analysis results.

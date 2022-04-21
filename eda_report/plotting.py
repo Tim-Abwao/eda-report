@@ -1,7 +1,7 @@
 from collections.abc import Iterable, Sequence
 from io import BytesIO
 from multiprocessing import Pool
-from typing import Optional
+from typing import Dict, Tuple
 
 import matplotlib
 import numpy as np
@@ -49,12 +49,12 @@ class BasePlot:
     Args:
         graph_color (str, optional): The color to apply to the generated
             graphs. Defaults to "cyan".
-        hue (Optional[Iterable], optional): Data to use to group values.
+        hue (Iterable, optional): Data to use to group values.
             Defaults to None.
     """
 
     def __init__(
-        self, *, graph_color: str = "cyan", hue: Optional[Iterable] = None
+        self, *, graph_color: str = "cyan", hue: Iterable = None
     ) -> None:
         self.GRAPH_COLOR = graph_color
         self.HUE = validate_univariate_input(hue)
@@ -81,7 +81,7 @@ class UnivariatePlots(BasePlot):
         variables (Sequence[Variable]): The data to plot.
         graph_color (str, optional): The color to apply to the generated
             graphs. Defaults to "cyan".
-        hue (Optional[Series], optional): Data to use to group values.
+        hue (Series, optional): Data to use to group values.
             Defaults to None.
 
     Attributes
@@ -94,13 +94,13 @@ class UnivariatePlots(BasePlot):
         variables: Sequence[Variable],
         *,
         graph_color: str = "cyan",
-        hue: Optional[Series] = None,
+        hue: Series = None,
     ) -> None:
         super().__init__(graph_color=graph_color, hue=hue)
         self.variables = variables
         self.graphs = self._get_univariate_graphs()
 
-    def _plot_box(self, variable) -> BytesIO:
+    def _plot_box(self, variable: Variable) -> BytesIO:
         """Get a boxplot for a numeric variable.
 
         Returns:
@@ -122,7 +122,7 @@ class UnivariatePlots(BasePlot):
 
         return savefig(fig)
 
-    def _plot_dist(self, variable) -> BytesIO:
+    def _plot_dist(self, variable: Variable) -> BytesIO:
         """Get a dist-plot for a numeric variable.
 
         Returns:
@@ -135,7 +135,7 @@ class UnivariatePlots(BasePlot):
 
         return savefig(fig)
 
-    def _plot_prob(self, variable) -> BytesIO:
+    def _plot_prob(self, variable: Variable) -> BytesIO:
         """Get a probability plot for a numeric variable.
 
         Returns:
@@ -155,7 +155,7 @@ class UnivariatePlots(BasePlot):
         ax.set_ylabel("Ordered Values")
         return savefig(fig)
 
-    def _plot_bar(self, variable) -> BytesIO:
+    def _plot_bar(self, variable: Variable) -> BytesIO:
         """Get a barplot for a categorical, boolean or datetime variable.
 
         Returns:
@@ -192,7 +192,7 @@ class UnivariatePlots(BasePlot):
 
         return savefig(fig)
 
-    def _plot_variable(self, variable) -> None:
+    def _plot_variable(self, variable: Variable) -> None:
         """Plot graphs based on the ``Variable`` type.
 
         For **numeric** variables, a *box-plot*, *dist-plot* and *probability
@@ -212,7 +212,7 @@ class UnivariatePlots(BasePlot):
 
         return variable.name, graphs
 
-    def _get_univariate_graphs(self):
+    def _get_univariate_graphs(self) -> Dict[str, Dict]:
 
         with Pool() as p:
             univariate_graphs = dict(
@@ -235,7 +235,7 @@ class BivariatePlots(BasePlot):
         variables (MultiVariable): The data to plot.
         graph_color (str, optional): The color to apply to the generated
             graphs. Defaults to "cyan".
-        hue (Optional[Series], optional): Data to use to group values.
+        hue (Series, optional): Data to use to group values.
             Defaults to None.
 
     Attributes
@@ -253,7 +253,7 @@ class BivariatePlots(BasePlot):
         variables: MultiVariable,
         *,
         graph_color: str = "cyan",
-        hue: Optional[Series] = None,
+        hue: Series = None,
     ) -> None:
         super().__init__(graph_color=graph_color, hue=hue)
         self.variables = variables
@@ -310,11 +310,11 @@ class BivariatePlots(BasePlot):
 
         return savefig(fig)
 
-    def _regression_plot(self, var_pair) -> BytesIO:
+    def _regression_plot(self, var_pair: Tuple[str, str]) -> BytesIO:
         """Get a scatter-plot and ecdf-plot for the provided numeric columns.
 
         Args:
-            var1, var2 (str): A numeric column label.
+            var_pair: A numeric column label.
 
         Returns:
             BytesIO: The scatter-plot and ecdf-plot (subplots) in PNG format.

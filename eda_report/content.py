@@ -1,5 +1,5 @@
 from multiprocessing import Pool
-from typing import Any, Iterable, Optional, Union
+from typing import Any, Dict, Iterable, Optional, Tuple, Union
 
 import seaborn as sns
 from pandas import Series
@@ -7,8 +7,12 @@ from tqdm import tqdm
 
 from eda_report.multivariate import MultiVariable
 from eda_report.plotting import BivariatePlots, UnivariatePlots
-from eda_report.types import UnivariateStat
-from eda_report.univariate import analyze_univariate
+from eda_report.univariate import (
+    CategoricalStats,
+    DatetimeStats,
+    NumericStats,
+    analyze_univariate,
+)
 from eda_report.validate import validate_target_variable
 
 data = sns.load_dataset("iris")
@@ -21,11 +25,13 @@ class AnalysisResult:
         self.univariate_graphs = self._get_univariate_graphs()
         self.bivariate_graphs = BivariatePlots(self.multivariable).graphs
 
-    def _analyze_variable(self, items: tuple[str, Series]) -> Any:
+    def _analyze_variable(
+        self, items: Tuple[str, Series]
+    ) -> Tuple[str, Union[CategoricalStats, DatetimeStats, NumericStats]]:
         """Get summary statistics for a single variable.
 
         Args:
-            items (tuple[str, Series]): Pair returned by
+            items (Tuple[str, Series]): Pair returned by
                 :func:`~pandas.DataFrame.iteritems`.
 
         Returns:
@@ -34,7 +40,9 @@ class AnalysisResult:
         name, data = items
         return name, analyze_univariate(data, name=name)
 
-    def _get_univariate_statistics(self):
+    def _get_univariate_statistics(
+        self,
+    ) -> Dict[str, Union[CategoricalStats, DatetimeStats, NumericStats]]:
         data = self.multivariable.data
         with Pool() as p:
             univariate_stats = dict(
@@ -45,7 +53,7 @@ class AnalysisResult:
             )
         return univariate_stats
 
-    def _get_univariate_graphs(self):
+    def _get_univariate_graphs(self) -> Dict[str, Dict]:
         variables = [stat.variable for stat in self.univariate_stats.values()]
         return UnivariatePlots(variables).graphs
 
@@ -59,7 +67,7 @@ class ReportContent(AnalysisResult):
             "Exploratory Data Analysis Report".
         graph_color (str, optional): The color to apply to the graphs.
             Defaults to "cyan".
-        target_variable (Optional[Union[str, int]], optional): The column to
+        target_variable (Union[str, int], optional): The column to
             use to group values. Defaults to None.
     """
 
@@ -69,7 +77,7 @@ class ReportContent(AnalysisResult):
         *,
         title: str = "Exploratory Data Analysis Report",
         graph_color: str = "cyan",
-        target_variable: Optional[Union[str, int]] = None,
+        target_variable: Union[str, int] = None,
     ) -> None:
         super().__init__(data)
         self.GRAPH_COLOR = graph_color
@@ -112,7 +120,10 @@ class ReportContent(AnalysisResult):
 
         return f"The dataset consists of {rows} and {cols}{numeric}."
 
-    def _describe_variable(self, univariate_stat: UnivariateStat) -> dict:
+    def _describe_variable(
+        self,
+        univariate_stat: Union[CategoricalStats, DatetimeStats, NumericStats],
+    ) -> Dict[str, Any]:
         """Get summary statistics for a variable.
 
         Args:
@@ -142,7 +153,7 @@ class ReportContent(AnalysisResult):
             ),
         }
 
-    def _get_variable_info(self) -> dict:
+    def _get_variable_info(self) -> Dict[str, Dict]:
         """Get brief descriptions of all columns present in the data.
 
         Returns:
@@ -153,7 +164,7 @@ class ReportContent(AnalysisResult):
             for name, stat in sorted(self.univariate_stats.items())
         }
 
-    def _get_bivariate_summaries(self) -> dict:
+    def _get_bivariate_summaries(self) -> Optional[Dict[str, str]]:
         """Get descriptions of the nature of correlation between numeric
         column pairs.
 

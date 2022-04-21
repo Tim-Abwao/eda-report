@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 from textwrap import shorten
-from typing import Union
+from typing import Optional, Union
 
 from pandas import DataFrame, Series
 from pandas.api.types import (
@@ -89,11 +89,11 @@ class Variable:
             self.data = self.data.astype("object")
         return "categorical"
 
-    def _get_missing_values_info(self) -> str:
+    def _get_missing_values_info(self) -> Optional[str]:
         """Get the number of missing values in the variable.
 
         Returns:
-            str: Details about the number of missing values.
+            Optional[str]: Details about the number of missing values.
         """
         missing_values = self.data.isna().sum()
         if missing_values == 0:
@@ -158,7 +158,7 @@ class CategoricalStats:
         )
 
     def _get_most_common(self) -> Series:
-        """Get most common items and their relative frequency (%)
+        """Get most common items and their relative frequency (%).
 
         Returns:
             Series: Top 5 items by frequency.
@@ -265,7 +265,7 @@ class NumericStats:
             ]
         )
 
-    def _get_summary_statistics(self) -> DataFrame:
+    def _get_summary_statistics(self) -> Series:
         summary_stats = self.variable.data.describe().set_axis(
             [
                 "Number of observations",
@@ -276,7 +276,8 @@ class NumericStats:
                 "Median",
                 "Upper Quartile",
                 "Maximum",
-            ]
+            ],
+            axis=0,
         )
         summary_stats["Skewness"] = self.variable.data.skew()
         summary_stats["Kurtosis"] = self.variable.data.kurt()

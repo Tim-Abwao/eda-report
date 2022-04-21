@@ -37,7 +37,7 @@ class ReportDocument(ReportContent):
             "Exploratory Data Analysis Report".
         graph_color (str, optional): The color to apply to the graphs.
             Defaults to "cyan".
-        target_variable (Optional[Union[str, int]], optional): The column to
+        target_variable (Union[str, int], optional): The column to
             use to group values. Defaults to None.
         output_filename (str, optional): The file name or path to save the
             document to. Defaults to "eda-report.docx".
@@ -51,7 +51,7 @@ class ReportDocument(ReportContent):
         *,
         title: str = "Exploratory Data Analysis Report",
         graph_color: str = "cyan",
-        target_variable: Optional[Union[str, int]] = None,
+        target_variable: Union[str, int] = None,
         output_filename: str = "eda-report.docx",
         table_style: str = "Table Grid",
     ) -> None:

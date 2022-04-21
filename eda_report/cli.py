@@ -1,4 +1,5 @@
 import argparse
+from typing import Optional
 
 from eda_report.document import ReportDocument
 from eda_report.gui import EDAGUI
@@ -19,7 +20,7 @@ def process_cli_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="eda-report",
         description=(
-            "Automatically analyse data and generate reports. A graphical user"
+            "Automatically analyze data and generate reports. A graphical user"
             " interface will be launched if none of the optional arguments is "
             "specified."
         ),
@@ -29,7 +30,7 @@ def process_cli_args() -> argparse.Namespace:
         "-i",
         "--infile",
         type=df_from_file,
-        help="A .csv or .xlsx file to analyse.",
+        help="A .csv or .xlsx file to analyze.",
     )
 
     parser.add_argument(
@@ -67,7 +68,7 @@ def process_cli_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def run_from_cli() -> None:
+def run_from_cli() -> Optional[ReportDocument]:
     """Creates an exploratory data analysis report in *Word* format using input
     from the command line interface.
 
@@ -82,7 +83,7 @@ def run_from_cli() -> None:
     args = process_cli_args()
 
     if args.infile is None:
-        # Launch graphical user interface to select and analyse a file
+        # Launch graphical user interface to select and analyze a file
         app = EDAGUI()
         app.mainloop()
 
