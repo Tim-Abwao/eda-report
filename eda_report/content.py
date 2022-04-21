@@ -1,7 +1,6 @@
 from multiprocessing import Pool
 from typing import Any, Dict, Iterable, Optional, Tuple, Union
 
-import seaborn as sns
 from pandas import Series
 from tqdm import tqdm
 
@@ -15,10 +14,14 @@ from eda_report.univariate import (
 )
 from eda_report.validate import validate_target_variable
 
-data = sns.load_dataset("iris")
-
 
 class AnalysisResult:
+    """Analyzes data, and stores the resultant summary statistics and graphs.
+
+    Args:
+        data (Iterable): The data to analyse.
+    """
+
     def __init__(self, data: Iterable) -> None:
         self.multivariable = MultiVariable(data)
         self.univariate_stats = self._get_univariate_statistics()
@@ -32,10 +35,11 @@ class AnalysisResult:
 
         Args:
             items (Tuple[str, Series]): Pair returned by
-                :func:`~pandas.DataFrame.iteritems`.
+                :func:`pandas.DataFrame.iteritems`.
 
         Returns:
-            Any:
+            Tuple[str, Union[CategoricalStats, DatetimeStats, NumericStats]]:
+            Variable name, and summary statistics.
         """
         name, data = items
         return name, analyze_univariate(data, name=name)
@@ -43,6 +47,12 @@ class AnalysisResult:
     def _get_univariate_statistics(
         self,
     ) -> Dict[str, Union[CategoricalStats, DatetimeStats, NumericStats]]:
+        """Compute summary statistics for all variables present.
+
+        Returns:
+            Dict[str, Union[CategoricalStats, DatetimeStats, NumericStats]]:
+            Summary statistics.
+        """
         data = self.multivariable.data
         with Pool() as p:
             univariate_stats = dict(
@@ -60,12 +70,17 @@ class AnalysisResult:
         return univariate_stats
 
     def _get_univariate_graphs(self) -> Dict[str, Dict]:
+        """Plot graphs for all variables present.
+
+        Returns:
+            Dict[str, Dict]: Univariate graphs.
+        """
         variables = [stat.variable for stat in self.univariate_stats.values()]
         return UnivariatePlots(variables).graphs
 
 
 class ReportContent(AnalysisResult):
-    """Analyzes data, then prepares textual summaries and graphs.
+    """Prepares textual summaries of analysis results.
 
     Args:
         data (Iterable): The data to analyze.
@@ -99,7 +114,7 @@ class ReportContent(AnalysisResult):
         """Get an overview of the number of rows and the nature of columns.
 
         Returns:
-            str: Introduction
+            str: Introduction.
         """
         num_rows, num_cols = self.multivariable.data.shape
 
@@ -136,7 +151,7 @@ class ReportContent(AnalysisResult):
             univariate_stats (Variable): The data to analyze.
 
         Returns:
-            dict: Summary statistics
+            Dict[str, Any]: Summary statistics.
         """
         variable = univariate_stat.variable
         if variable.num_unique == 1:
@@ -163,7 +178,7 @@ class ReportContent(AnalysisResult):
         """Get brief descriptions of all columns present in the data.
 
         Returns:
-            dict: Summaries of columns present.
+            Dict[str, Dict]: Summaries of columns present.
         """
         return {
             name: self._describe_variable(stat)
@@ -175,7 +190,7 @@ class ReportContent(AnalysisResult):
         column pairs.
 
         Returns:
-            dict: Correlation info.
+            Optional[Dict[str, str]]: Correlation info.
         """
         if hasattr(self.multivariable, "var_pairs"):
             return {
