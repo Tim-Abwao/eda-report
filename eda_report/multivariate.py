@@ -52,13 +52,13 @@ class MultiVariable:
         #: *numeric columns*.
         self.correlation_df = self._get_correlation()
 
-        #: dict[tuple, str]: Brief descriptions of the nature of correlation
+        #: Dict[tuple, str]: Brief descriptions of the nature of correlation
         #: between numeric column pairs.
         self.correlation_descriptions = {}
         self._get_bivariate_analysis()
 
     def __repr__(self) -> str:
-        """Get the string representation of :class:`Multivariable`.
+        """Get the string representation for a ``Multivariable``.
 
         Returns:
             str: The string representation of the ``MultiVariable`` instance.
@@ -157,7 +157,7 @@ class MultiVariable:
         """Get the Pearson correlation coefficients for numeric columns.
 
         Returns:
-            Optional[DataFrame]: Correlation coefficients
+            Optional[DataFrame]: Correlation coefficients.
         """
         if self.numeric_cols is None:
             return None
@@ -176,7 +176,7 @@ class MultiVariable:
         pairs.
 
         Args:
-            var1, var (str): Numeric column labels.
+            var1, var2 (str): Numeric column labels.
         """
         correlation = self.correlation_df.loc[var1, var2]
         nature = " positive" if correlation > 0 else " negative"

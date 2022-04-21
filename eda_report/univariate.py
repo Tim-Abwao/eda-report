@@ -63,10 +63,10 @@ class Variable:
         self.name = self.data.name = name
 
     def _get_variable_type(self) -> str:
-        """Determine the variable's type.
+        """Determine the variable type.
 
         Returns:
-            str: The variable's type.
+            str: The variable type.
         """
         if is_numeric_dtype(self.data):
             if is_bool_dtype(self.data) or set(self.data.dropna()) == {0, 1}:
@@ -90,7 +90,7 @@ class Variable:
         return "categorical"
 
     def _get_missing_values_info(self) -> Optional[str]:
-        """Get the number of missing values in the variable.
+        """Get the number of values missing from the variable.
 
         Returns:
             Optional[str]: Details about the number of missing values.
@@ -105,7 +105,7 @@ class Variable:
 
 
 class CategoricalStats:
-    """Get descriptive statistics for one-dimensional categorical datasets.
+    """Get descriptive statistics for a categorical ``Variable``.
 
     .. note::
        Not meant to be used directly: use the :func:`eda_report.summarize`
@@ -147,6 +147,11 @@ class CategoricalStats:
         )
 
     def _get_summary_statistics(self) -> Series:
+        """Calculate summary statistics.
+
+        Returns:
+            :class:`~pandas.Series`: Summary statistics.
+        """
         return self.variable.data.describe().set_axis(
             [
                 "Number of observations",
@@ -161,7 +166,7 @@ class CategoricalStats:
         """Get most common items and their relative frequency (%).
 
         Returns:
-            Series: Top 5 items by frequency.
+            :class:`~pandas.Series`: Top 5 items by frequency.
         """
         most_common_items = self.variable.data.value_counts().head()
         n = len(self.variable.data)
@@ -169,7 +174,7 @@ class CategoricalStats:
 
 
 class DatetimeStats:
-    """Get descriptive statistics for one-dimensional datetime datasets.
+    """Get descriptive statistics for a datetime ``Variable``.
 
     .. note::
        Not meant to be used directly: use the :func:`eda_report.summarize`
@@ -207,6 +212,11 @@ class DatetimeStats:
         )
 
     def _get_summary_statistics(self) -> Series:
+        """Calculate summary statistics.
+
+        Returns:
+            :class:`~pandas.Series`: Summary statistics.
+        """
         return self.variable.data.describe(datetime_is_numeric=True).set_axis(
             [
                 "Number of observations",
@@ -222,7 +232,7 @@ class DatetimeStats:
 
 
 class NumericStats:
-    """Get descriptive statistics for one-dimensional numeric datasets.
+    """Get descriptive statistics for a numeric ``Variable``.
 
     .. note::
        Not meant to be used directly: use the :func:`eda_report.summarize`
@@ -266,6 +276,11 @@ class NumericStats:
         )
 
     def _get_summary_statistics(self) -> Series:
+        """Calculate summary statistics.
+
+        Returns:
+            :class:`~pandas.Series`: Summary statistics.
+        """
         summary_stats = self.variable.data.describe().set_axis(
             [
                 "Number of observations",
@@ -285,15 +300,15 @@ class NumericStats:
         return summary_stats
 
     def _test_for_normality(self, alpha: float = 0.05) -> DataFrame:
-        """Perform the "D'Agostino's K-squared" and "Kolmogorov-Smirnov" tests
-        for normality.
+        """Perform the "D'Agostino's K-squared", "Kolmogorov-Smirnov" and
+        "Shapiro-Wilk" tests for normality.
 
         Args:
             alpha (float, optional): The level of significance. Defaults to
                 0.05.
 
         Returns:
-            DataFrame: Table of results.
+            :class:`~pandas.DataFrame`: Table of results.
         """
         data = self.variable.data.dropna()
         # The scikit-learn implementation of the Shapiro-Wilk test reports:
@@ -331,8 +346,8 @@ class NumericStats:
 def analyze_univariate(
     data: Iterable, *, name: str = None
 ) -> Union[CategoricalStats, DatetimeStats, NumericStats]:
-    """Convert one-dimensional datasets into
-    :class:`~eda_report.univariate.Variable`s, and get summary statistics.
+    """Convert a one-dimensional dataset into a
+    :class:`~eda_report.univariate.Variable`, and get summary statistics.
 
     Args:
         data (Iterable): The data to analyze.
@@ -340,8 +355,8 @@ def analyze_univariate(
             None.
 
     Returns:
-        Union[CategoricalStats, DatetimeStats, NumericStats]:
-            Summary statistics
+        Union[CategoricalStats, DatetimeStats, NumericStats]: Summary
+        statistics
     """
     var = Variable(data, name=name)
     if var.var_type == "numeric":

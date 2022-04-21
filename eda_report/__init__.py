@@ -24,19 +24,19 @@ def get_word_report(
             "Exploratory Data Analysis Report".
         graph_color (str, optional): The color to apply to the graphs.
             Defaults to "cyan".
-        target_variable (Union[str, int], optional): The column to
-            use to group values. Defaults to None.
-        output_filename (str, optional): The file name or path to save the
-            document to. Defaults to "eda-report.docx".
+        target_variable (Union[str, int], optional): The label/index for the
+            column to use to group values. Defaults to None.
+        output_filename (str, optional): The name and location to save the
+         report document. Defaults to "eda-report.docx".
         table_style (str, optional): The style to apply to the tables created.
             Defaults to "Table Grid".
 
     Returns:
-        ReportDocument: Document with analysis results.
+        ReportDocument: Document object with analysis results.
 
     Example:
         .. literalinclude:: examples.txt
-           :lines: 148-154
+           :lines: 148-155
 
     """
     return ReportDocument(

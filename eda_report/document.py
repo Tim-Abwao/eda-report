@@ -1,5 +1,5 @@
 import logging
-from typing import Iterable, Optional, Sequence, Union
+from typing import Iterable, Sequence, Union
 
 from docx import Document
 from docx.shared import Inches, Pt
@@ -18,10 +18,10 @@ logging.basicConfig(
 class ReportDocument(ReportContent):
     """Creates a :class:`~docx.document.Document`  with analysis results.
 
-    The :class:`ReportContent` class is used to analyze the data and
-    generate text and graph content. Then the :class:`~docx.document.Document`
-    class from the `python-docx`_ package is used to publish the results as a
-    *Word* document.
+    The :class:`~eda_report.content.ReportContent` class is used to analyze
+    the data and generate text and graph content. Then the
+    :class:`~docx.document.Document` class from the `python-docx`_ package is
+    used to publish the results as a *Word* document.
 
     The report consists of 3 main sections:
 
@@ -219,7 +219,7 @@ class ReportDocument(ReportContent):
         column_widths: Sequence = (),
         font_face: str = "Courier New",
         font_size: float = 10,
-        style: Optional[str] = None,
+        style: str = None,
         header: bool = False,
     ) -> None:
         """Generates a table for the supplied ``data``.
@@ -231,7 +231,7 @@ class ReportDocument(ReportContent):
             font_face (str, optional): Font typeface for cell text. Defaults
                 to "Courier New".
             font_size (float, optional): Font size. Defaults to 10.
-            style (Optional[str], optional): A `Word` table style. Defaults to
+            style (str, optional): A `Word` table style. Defaults to
                 None.
             header (bool, optional): Whether or not to include column names.
                 Defaults to False.
