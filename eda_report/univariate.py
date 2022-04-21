@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 from textwrap import shorten
-from typing import Optional
+from typing import Optional, Union
 
 from pandas import DataFrame, Series
 from pandas.api.types import (
@@ -13,7 +13,7 @@ from scipy import stats
 from eda_report.validate import validate_univariate_input
 
 
-class BaseVariable:
+class Variable:
 
     """Defines objects that evaluate the general properties of one-dimensional
     datasets, such as data type and missing values.
@@ -26,7 +26,7 @@ class BaseVariable:
     .. _SciPy ecosystem: https://www.scipy.org/
 
     Args:
-        data (Iterable): The data to analyse.
+        data (Iterable): The data to analyze.
         name (str, optional): The name to assign the variable. Defaults to
             None.
     """
@@ -53,20 +53,20 @@ class BaseVariable:
         #: ``number (percentage%)`` e.g "4 (16.67%)".
         self.missing = self._get_missing_values_info()
 
-    def rename(self, name: Optional[str] = None) -> None:
+    def rename(self, name: str = None) -> None:
         """Rename the variable as specified.
 
         Args:
-            name (Optional[str], optional): The name to assign to the variable.
+            name (str, optional): The name to assign to the variable.
                 Defaults to None.
         """
         self.name = self.data.name = name
 
     def _get_variable_type(self) -> str:
-        """Determine the variable's type.
+        """Determine the variable type.
 
         Returns:
-            str: The variable's type.
+            str: The variable type.
         """
         if is_numeric_dtype(self.data):
             if is_bool_dtype(self.data) or set(self.data.dropna()) == {0, 1}:
@@ -89,11 +89,11 @@ class BaseVariable:
             self.data = self.data.astype("object")
         return "categorical"
 
-    def _get_missing_values_info(self) -> str:
-        """Get the number of missing values in the variable.
+    def _get_missing_values_info(self) -> Optional[str]:
+        """Get the number of values missing from the variable.
 
         Returns:
-            str: Details about the number of missing values.
+            Optional[str]: Details about the number of missing values.
         """
         missing_values = self.data.isna().sum()
         if missing_values == 0:
@@ -104,29 +104,29 @@ class BaseVariable:
             )
 
 
-class CategoricalVariable:
-    """Get descriptive statistics for one-dimensional categorical datasets.
+class CategoricalStats:
+    """Get descriptive statistics for a categorical ``Variable``.
 
     .. note::
        Not meant to be used directly: use the :func:`eda_report.summarize`
        function instead.
 
     Args:
-        variable (BaseVariable): The data to analyse.
+        variable (Variable): The data to analyze.
 
     Example:
         .. literalinclude:: examples.txt
            :lines: 6-23
     """
 
-    def __init__(self, variable: BaseVariable) -> None:
+    def __init__(self, variable: Variable) -> None:
         self.variable = variable
 
     def __repr__(self) -> str:
-        """Get the string representation of the ``CategoricalVariable``.
+        """Get the string representation of the analysis results.
 
         Returns:
-            str: A summary of the ``CategoricalVariable``'s properties.
+            str: Summary statistics.
         """
         sample_values = shorten(
             f"{self.variable.num_unique} -> {self.variable.unique}", 60
@@ -147,6 +147,11 @@ class CategoricalVariable:
         )
 
     def _get_summary_statistics(self) -> Series:
+        """Calculate summary statistics.
+
+        Returns:
+            :class:`~pandas.Series`: Summary statistics.
+        """
         return self.variable.data.describe().set_axis(
             [
                 "Number of observations",
@@ -158,39 +163,39 @@ class CategoricalVariable:
         )
 
     def _get_most_common(self) -> Series:
-        """Get most common items and their relative frequency (%)
+        """Get most common items and their relative frequency (%).
 
         Returns:
-            Series: Top 5 items by frequency.
+            :class:`~pandas.Series`: Top 5 items by frequency.
         """
         most_common_items = self.variable.data.value_counts().head()
         n = len(self.variable.data)
         return most_common_items.apply(lambda x: f"{x:,} ({x / n:.2%})")
 
 
-class DatetimeVariable:
-    """Get descriptive statistics for one-dimensional datetime datasets.
+class DatetimeStats:
+    """Get descriptive statistics for a datetime ``Variable``.
 
     .. note::
        Not meant to be used directly: use the :func:`eda_report.summarize`
        function instead.
 
     Args:
-        variable (BaseVariable): The data to analyse.
+        variable (Variable): The data to analyze.
 
     Example:
         .. literalinclude:: examples.txt
            :lines: 27-46
     """
 
-    def __init__(self, variable: BaseVariable) -> None:
+    def __init__(self, variable: Variable) -> None:
         self.variable = variable
 
     def __repr__(self) -> str:
-        """Get the string representation of the ``DatetimeVariable``.
+        """Get the string representation of the analysis results.
 
         Returns:
-            str: A summary of the ``DatetimeVariable``'s properties.
+            str: Summary statistics.
         """
         return "\n".join(
             [
@@ -207,6 +212,11 @@ class DatetimeVariable:
         )
 
     def _get_summary_statistics(self) -> Series:
+        """Calculate summary statistics.
+
+        Returns:
+            :class:`~pandas.Series`: Summary statistics.
+        """
         return self.variable.data.describe(datetime_is_numeric=True).set_axis(
             [
                 "Number of observations",
@@ -221,15 +231,15 @@ class DatetimeVariable:
         )
 
 
-class NumericVariable:
-    """Get descriptive statistics for one-dimensional numeric datasets.
+class NumericStats:
+    """Get descriptive statistics for a numeric ``Variable``.
 
     .. note::
        Not meant to be used directly: use the :func:`eda_report.summarize`
        function instead.
 
     Args:
-        variable (BaseVariable): The data to analyse.
+        variable (Variable): The data to analyze.
 
     Example:
         .. literalinclude:: examples.txt
@@ -240,10 +250,10 @@ class NumericVariable:
         self.variable = variable
 
     def __repr__(self) -> str:
-        """Get the string representation of the ``NumericVariable``.
+        """Get the string representation of the analysis results.
 
         Returns:
-            str: A summary of the ``NumericVariable``'s properties.
+            str: Summary statistics.
         """
         sample_values = shorten(
             f"{self.variable.num_unique} -> {self.variable.unique}", 60
@@ -265,7 +275,12 @@ class NumericVariable:
             ]
         )
 
-    def _get_summary_statistics(self) -> DataFrame:
+    def _get_summary_statistics(self) -> Series:
+        """Calculate summary statistics.
+
+        Returns:
+            :class:`~pandas.Series`: Summary statistics.
+        """
         summary_stats = self.variable.data.describe().set_axis(
             [
                 "Number of observations",
@@ -276,7 +291,8 @@ class NumericVariable:
                 "Median",
                 "Upper Quartile",
                 "Maximum",
-            ]
+            ],
+            axis=0,
         )
         summary_stats["Skewness"] = self.variable.data.skew()
         summary_stats["Kurtosis"] = self.variable.data.kurt()
@@ -284,15 +300,15 @@ class NumericVariable:
         return summary_stats
 
     def _test_for_normality(self, alpha: float = 0.05) -> DataFrame:
-        """Perform the "D'Agostino's K-squared" and "Kolmogorov-Smirnov" tests
-        for normality.
+        """Perform the "D'Agostino's K-squared", "Kolmogorov-Smirnov" and
+        "Shapiro-Wilk" tests for normality.
 
         Args:
             alpha (float, optional): The level of significance. Defaults to
                 0.05.
 
         Returns:
-            DataFrame: Table of results.
+            :class:`~pandas.DataFrame`: Table of results.
         """
         data = self.variable.data.dropna()
         # The scikit-learn implementation of the Shapiro-Wilk test reports:
@@ -307,7 +323,7 @@ class NumericVariable:
         p_values = [
             stats.normaltest(data).pvalue,
             stats.kstest(data, "norm", N=200).pvalue,
-            stats.shapiro(shapiro_sample).pvalue
+            stats.shapiro(shapiro_sample).pvalue,
         ]
         conclusion = f"Conclusion at α = {alpha}"
         results = DataFrame(
@@ -327,25 +343,25 @@ class NumericVariable:
         return results
 
 
-class Variable(BaseVariable):
-    """Defines objects that analyse and summarize one-dimensional datasets,
-    based on data type.
+def analyze_univariate(
+    data: Iterable, *, name: str = None
+) -> Union[CategoricalStats, DatetimeStats, NumericStats]:
+    """Convert a one-dimensional dataset into a
+    :class:`~eda_report.univariate.Variable`, and get summary statistics.
 
     Args:
-        data (Iterable): The data to analyse.
+        data (Iterable): The data to analyze.
         name (str, optional): The name to assign the variable. Defaults to
             None.
+
+    Returns:
+        Union[CategoricalStats, DatetimeStats, NumericStats]: Summary
+        statistics
     """
-
-    def __init__(self, data: Iterable, *, name: str = None) -> None:
-        super().__init__(data, name=name)
-        self.contents = self._analyse()
-
-    def _analyse(self):
-
-        if self.var_type == "numeric":
-            return NumericVariable(self)
-        elif self.var_type == "datetime":
-            return DatetimeVariable(self)
-        else:
-            return CategoricalVariable(self)
+    var = Variable(data, name=name)
+    if var.var_type == "numeric":
+        return NumericStats(variable=var)
+    elif var.var_type == "datetime":
+        return DatetimeStats(variable=var)
+    else:
+        return CategoricalStats(variable=var)

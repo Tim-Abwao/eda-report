@@ -1,10 +1,10 @@
-VARIABLES
-=========
+UNIVARIATE
+==========
 
-CategoricalVariable
+CategoricalStats
 -------------------
->>> some_var = BaseVariable(list("abcdefgabcdeabcdaba"), name="text")
->>> CategoricalVariable(some_var)
+>>> cat = Variable(list("abcdefgabcdeabcdaba"), name="text")
+>>> CategoricalStats(cat)
                 Overview
                 ========
 Name: text
@@ -22,11 +22,11 @@ c  3 (15.79%)
 d  3 (15.79%)
 e  2 (10.53%)
 
-DatetimeVariable
+DatetimeStats
 ----------------
 >>> import pandas as pd
 >>> dt = Variable(pd.date_range("2022-03-08", periods=20, freq="D"), name="dttm")
->>> DatetimeVariable(dt)
+>>> DatetimeStats(dt)
                 Overview
                 ========
 Name: dttm
@@ -45,10 +45,10 @@ Median                  2022-03-17 12:00:00
 Upper Quartile          2022-03-22 06:00:00
 Maximum                 2022-03-27 00:00:00
 
-NumericVariable
+NumericStats
 ---------------
->>> some_var = BaseVariable(range(50), name="1 to 50")
->>> NumericVariable(some_var)
+>>> num = Variable(range(50), name="1 to 50")
+>>> NumericStats(num)
                 Overview
                 ========
 Name: 1 to 50
@@ -77,7 +77,7 @@ D'Agostino's K-squared test  0.0015981  Unlikely to be normal
 Kolmogorov-Smirnov test      0.0000000  Unlikely to be normal
 Shapiro-Wilk test            0.0580896        Possibly normal
 
-MULTIVARIABLES
+MULTIVARIATE
 ==============
 
 MultiVariable
@@ -119,13 +119,13 @@ $ eda-report -h
 usage: eda-report [-h] [-i INFILE] [-o OUTFILE] [-t TITLE] [-c COLOR]
                   [-T TARGET]
 
-Automatically analyse data and generate reports. A graphical user interface
+Automatically analyze data and generate reports. A graphical user interface
 will be launched if none of the optional arguments is specified.
 
 optional arguments:
   -h, --help            show this help message and exit
   -i INFILE, --infile INFILE
-                        A .csv or .xlsx file to analyse.
+                        A .csv or .xlsx file to analyze.
   -o OUTFILE, --outfile OUTFILE
                         The output name for analysis results (default: eda-
                         report.docx)
@@ -148,16 +148,16 @@ eda_report.get_word_report
 >>> from seaborn import load_dataset
 >>> iris_data = load_dataset("iris")        
 >>> get_word_report(iris_data)
-Bivariate analysis: 100%|███████████████████████████████████| 6/6 numeric pairs.
-Univariate analysis: 100%|███████████████████████████████████| 5/5 features.
-[INFO 18:38:52.420] Done. Results saved as 'eda-report.docx'
-<eda_report.document.ReportDocument object at 0x7fcc6c51a7f0>
-
+Analyze variables:  100%|███████████████████████████████████| 5/5
+Plot variables:     100%|███████████████████████████████████| 5/5
+Bivariate analysis: 100%|███████████████████████████████████| 6/6 pairs.
+[INFO 16:14:53.648] Done. Results saved as 'eda-report.docx'
+<eda_report.document.ReportDocument object at 0x7f196753bd60>
 
 eda_report.summarize
 --------------------
 >>> summarize(range(50))
-[WARNING 21:12:46.760] Skipped Bivariate Analysis: There are less than 2 numeric
+[WARNING 16:18:48.064] Skipped Bivariate Analysis: There are less than 2 numeric
  variables having > 5% unique values.
                 Overview
                 ========

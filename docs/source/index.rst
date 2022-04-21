@@ -3,7 +3,7 @@
 
 Simplify the `exploratory data analysis`_ and reporting process:
 
-#. Automatically analyse a dataset.
+#. Automatically analyze a dataset.
      - Descriptive statistics.
      - Tests for normality.
 #. Get revealing visualisations.

@@ -1,8 +1,10 @@
 [run]
 branch = true
+concurrency = multiprocessing
 omit = 
     eda_report/__main__.py
     eda_report/gui.py
+parallel = true
 source = eda_report
 
 [report]

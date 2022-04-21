@@ -27,7 +27,7 @@ icon = pkgutil.get_data(__name__, "images/icon.png")
 
 description = (
     "A simple application to help speed up exploratory data analysis and "
-    "reporting. Select a file to analyse, and it will be automatically "
+    "reporting. Select a file to analyze, and it will be automatically "
     "summarised. The result is a report in Word format, complete with summary"
     " statistics and graphs."
 )
@@ -38,7 +38,7 @@ class EDAGUI(Frame):  # pragma: no cover
     interface* to the application.
 
     The "Select a file" button launches a *file-dialog* to navigate to and
-    select a file to analyse.
+    select a file to analyze.
 
     .. figure:: _static/screencast.*
        :alt: an image of the graphical user interface
@@ -68,7 +68,7 @@ class EDAGUI(Frame):  # pragma: no cover
     def _create_widgets(self) -> None:
         """Creates the widgets for the graphical user interface: A Tk *Frame*
         with the *canvas(background image)*, *introductory text*, and a
-        *button* to select files to analyse.
+        *button* to select files to analyze.
         """
         self.canvas = Canvas(self, width=600, height=360)
 
@@ -161,12 +161,12 @@ class EDAGUI(Frame):  # pragma: no cover
             # Clear stale data to free up memory
             del self.data
 
-    def _get_data_from_file(self, retries=1) -> None:
+    def _get_data_from_file(self, retries: int = 1) -> None:
         """Creates a file dialog to help navigate to and select a file to
-        analyse.
+        analyze.
         """
         file_name = askopenfilename(
-            title="Select a file to analyse",
+            title="Select a file to analyze",
             filetypes=(
                 ("All supported formats", ("*.csv", "*.xlsx")),
                 ("csv", "*.csv"),

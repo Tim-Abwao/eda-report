@@ -4,7 +4,7 @@ Quickstart
 Using the Graphical User Interface
 ----------------------------------
 
-The command ``eda-report`` launches a graphical window to help select a *csv* or *excel* file to analyse::
+The command ``eda-report`` launches a graphical window to help select a *csv* or *excel* file to analyze::
 
     $ eda-report
 
@@ -33,7 +33,7 @@ You can specify the input file and an output file-name with::
 From an Interactive Session
 ---------------------------
 
-You can use the :func:`~eda_report.summarize` function to analyse datasets:
+You can use the :func:`~eda_report.summarize` function to analyze datasets:
 
 .. literalinclude:: examples.txt
        :lines: 159-188
@@ -41,4 +41,4 @@ You can use the :func:`~eda_report.summarize` function to analyse datasets:
 You can use the :func:`~eda_report.get_word_report` function to generate reports:
 
 .. literalinclude:: examples.txt
-   :lines: 148-154
+   :lines: 148-155

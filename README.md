@@ -9,7 +9,7 @@
 
 A Python program to help automate the exploratory data analysis and reporting process.
 
-Input data is analysed using [pandas][pandas] and [SciPy][scipy]. Graphs are plotted using [matplotlib][matplotlib] and [seaborn][seaborn]. The results are then nicely packaged as a *Word (.docx)* document using [python-docx][python-docx].
+Input data is analyzed using [pandas][pandas] and [SciPy][scipy]. Graphs are plotted using [matplotlib][matplotlib] and [seaborn][seaborn]. The results are then nicely packaged as a *Word (.docx)* document using [python-docx][python-docx].
 
 ## Installation
 
@@ -23,7 +23,7 @@ pip install eda-report
 
 ### 1. Graphical User Interface
 
-The `eda-report` command launches a graphical window to help select and analyse a `csv`/`excel` file:
+The `eda-report` command launches a graphical window to help select and analyze a `csv`/`excel` file:
 
 ```bash
 eda-report
@@ -31,13 +31,13 @@ eda-report
 
 ![screencast of the gui][screencast]
 
-You will be prompted to set a *report title*, *target variable (optional, for grouping values)*, *graph color* and *output filename*, after which the contents of the input file will be analysed, and the results will be saved in a *Word (.docx)* document.
+You will be prompted to set a *report title*, *target variable (optional, for grouping values)*, *graph color* and *output filename*, after which the contents of the input file will be analyzed, and the results will be saved in a *Word (.docx)* document.
 
 >**NOTE:** For help with `Tk` - related issues, consider visiting [TkDocs][tkdocs].
 
 ### 2. Command Line Interface
 
-To analyse a file named `input.csv`, just supply its path to the `eda-report` command:
+To analyze a file named `input.csv`, just supply its path to the `eda-report` command:
 
 ```bash
 eda-report -i input.csv
@@ -61,13 +61,13 @@ eda-report -h
 usage: eda-report [-h] [-i INFILE] [-o OUTFILE] [-t TITLE] [-c COLOR]
                   [-T TARGET]
 
-Automatically analyse data and generate reports. A graphical user interface
+Automatically analyze data and generate reports. A graphical user interface
 will be launched if none of the optional arguments is specified.
 
 optional arguments:
   -h, --help            show this help message and exit
   -i INFILE, --infile INFILE
-                        A .csv or .xlsx file to analyse.
+                        A .csv or .xlsx file to analyze.
   -o OUTFILE, --outfile OUTFILE
                         The output name for analysis results (default: eda-
                         report.docx)
@@ -87,7 +87,7 @@ optional arguments:
 
 ### 3. Interactive Mode
 
-#### 3.1 Analyse data
+#### 3.1 Analyze data
 
 ```python
 >>> import eda_report
@@ -126,10 +126,11 @@ sepal_width & petal_length --> weak negative correlation (-0.43)
 
 ```python
 >>> eda_report.get_word_report(iris_data)
-Bivariate analysis: 100%|███████████████████████████████████| 6/6 numeric pairs.
-Univariate analysis: 100%|███████████████████████████████████| 5/5 features.
-[INFO 17:31:37.880] Done. Results saved as 'eda-report.docx'
-<eda_report.document.ReportDocument object at 0x7f3040c9bcd0>
+Analyze variables:  100%|███████████████████████████████████| 5/5
+Plot variables:     100%|███████████████████████████████████| 5/5
+Bivariate analysis: 100%|███████████████████████████████████| 6/6 pairs.
+[INFO 16:14:53.648] Done. Results saved as 'eda-report.docx'
+<eda_report.document.ReportDocument object at 0x7f196753bd60>
 ```
 
 Visit the [official documentation][docs] for more details.

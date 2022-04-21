@@ -26,11 +26,11 @@ def clean_column_labels(data: DataFrame) -> DataFrame:
     allow sorting and the use of string methods.
 
     Args:
-        data (DataFrame, optional): Data to inspect and perhaps edit. Defaults
-            to 77.
+        data (DataFrame): Data to inspect and perhaps edit.
 
     Returns:
-        DataFrame: The ``data``, with reader-friendly column names.
+        :class:`~pandas.DataFrame`: The ``data``, with reader-friendly column
+        names.
     """
     if isinstance(data.columns, RangeIndex):
         data.columns = [f"var_{i+1}" for i in data.columns]
@@ -72,7 +72,7 @@ def validate_multivariate_input(data: Iterable) -> DataFrame:
     If it isn't, this attempts to explicitly cast it as a ``DataFrame``.
 
     Args:
-        data (Iterable): The data to analyse.
+        data (Iterable): The data to analyze.
 
     Raises:
         InputError: If the ``data`` cannot be cast as a
@@ -80,7 +80,7 @@ def validate_multivariate_input(data: Iterable) -> DataFrame:
         EmptyDataError: If the ``data`` has no items.
 
     Returns:
-        DataFrame: The input data as a ``DataFrame``
+        :class:`~pandas.DataFrame`: The input data as a DataFrame.
     """
     try:
         data_frame = DataFrame(data)
@@ -98,15 +98,15 @@ def validate_multivariate_input(data: Iterable) -> DataFrame:
 
 
 def validate_univariate_input(
-    data: Iterable, *, name: Optional[str] = None
-) -> Union[Series, None]:
+    data: Iterable, *, name: str = None
+) -> Optional[Series]:
     """Ensures that *univariate input data* is of type :class:`pandas.Series`.
 
     If it isn't, this attempts to explicitly cast it as a ``Series``.
 
     Args:
-        data (Iterable): The data to analyse.
-        name (Optional[str], optional): The name to assign the data. Defaults
+        data (Iterable): The data to analyze.
+        name (str, optional): The name to assign the data. Defaults
             to None.
 
     Raises:
@@ -115,7 +115,7 @@ def validate_univariate_input(
         EmptyDataError: If the ``data`` has no items.
 
     Returns:
-        Union[Series, None]: The input data as a ``Series``.
+        Optional[:class:`~pandas.Series`]: The input data as a ``Series``.
     """
     if data is None:
         return None
@@ -134,12 +134,12 @@ def validate_univariate_input(
 
 def validate_target_variable(
     *, data: DataFrame, target_variable: Union[int, str]
-) -> Union[Series, None]:
+) -> Optional[Series]:
     """Ensures that the specified *target variable* (column label or index) is
     present in the data.
 
     Args:
-        data (DataFrame): The data being analysed.
+        data (DataFrame): The data being analyzed.
         target_variable (Union[int, str]): A column label or index.
 
     Raises:
@@ -147,8 +147,8 @@ def validate_target_variable(
             the supplied column index is out of bounds.
 
     Returns:
-        Union[Series, None]: The target variable's data if ``target_variable``
-        is valid, or None.
+        Optional[:class:`~pandas.Series`]: The target variable's data if
+        ``target_variable`` is valid.
     """
     if target_variable is None:
         return None

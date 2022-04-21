@@ -1,17 +1,16 @@
 import logging
 from collections.abc import Iterable
 from itertools import combinations
-from types import GeneratorType
-from typing import Sequence, Union
+from typing import Optional, Sequence
 
 from pandas.core.frame import DataFrame
 
-from eda_report.univariate import Variable
+from eda_report.univariate import analyze_univariate
 from eda_report.validate import validate_multivariate_input
 
 
 class MultiVariable:
-    """Defines objects that analyse two-dimensional datasets.
+    """Defines objects that analyze two-dimensional datasets.
 
     Input data is held as a :class:`pandas.DataFrame` in order to leverage
     pandas_ built-in statistical methods, as well as functions
@@ -25,7 +24,7 @@ class MultiVariable:
        function instead.
 
     Args:
-        data (Iterable): The data to analyse.
+        data (Iterable): The data to analyze.
 
     Example:
         .. literalinclude:: examples.txt
@@ -53,19 +52,19 @@ class MultiVariable:
         #: *numeric columns*.
         self.correlation_df = self._get_correlation()
 
-        #: dict[tuple, str]: Brief descriptions of the nature of correlation
+        #: Dict[tuple, str]: Brief descriptions of the nature of correlation
         #: between numeric column pairs.
         self.correlation_descriptions = {}
         self._get_bivariate_analysis()
 
     def __repr__(self) -> str:
-        """Get the string representation of :class:`Multivariable`.
+        """Get the string representation for a ``Multivariable``.
 
         Returns:
             str: The string representation of the ``MultiVariable`` instance.
         """
         if self.data.shape[1] == 1:
-            return str(Variable(self.data.squeeze()).contents)
+            return str(analyze_univariate(self.data.squeeze()))
 
         if self.numeric_cols is None:
             numeric_info = numeric_stats = ""
@@ -109,29 +108,20 @@ class MultiVariable:
             ]
         )
 
-    def iter_variables(self) -> GeneratorType:
-        """Iterate through all the variables present in alphabetic order.
-
-        Yields:
-            GeneratorType: Variables
-        """
-        for name, data in self.data.sort_index(axis=1).items():
-            yield Variable(data=data, name=name)
-
-    def _select_cols(self, *dtypes: Sequence[str]) -> Union[DataFrame, None]:
+    def _select_cols(self, *dtypes: Sequence[str]) -> Optional[DataFrame]:
         """Get a DataFrame including only the specified ``dtypes``.
 
         Returns:
-            Union[DataFrame, None]: A dataframe with the desired data types.
+            Optional[DataFrame]: A dataframe with the desired data types.
         """
         selected_cols = self.data.select_dtypes(include=dtypes)
         return selected_cols if selected_cols.shape[1] > 0 else None
 
-    def _get_numeric_summary_statistics(self) -> Union[DataFrame, None]:
+    def _get_numeric_summary_statistics(self) -> Optional[DataFrame]:
         """Compute descriptive statistics for numeric columns.
 
         Returns:
-            Union[DataFrame, None]: Numeric summary statistics.
+            Optional[DataFrame]: Numeric summary statistics.
         """
         if self.numeric_cols is not None:
             numeric_stats = self.numeric_cols.describe().T
@@ -148,11 +138,11 @@ class MultiVariable:
 
     def _get_categorical_summary_statistics(
         self,
-    ) -> Union[DataFrame, None]:
+    ) -> Optional[DataFrame]:
         """Compute descriptive statistics for categorical columns.
 
         Returns:
-            Union[DataFrame, None]: Categorical summary statistics.
+            Optional[DataFrame]: Categorical summary statistics.
         """
         if self.categorical_cols is not None:
             categorical_stats = self.categorical_cols.describe().T
@@ -163,11 +153,11 @@ class MultiVariable:
         else:
             return None
 
-    def _get_correlation(self) -> Union[DataFrame, None]:
+    def _get_correlation(self) -> Optional[DataFrame]:
         """Get the Pearson correlation coefficients for numeric columns.
 
         Returns:
-            Union[DataFrame, None]: Correlation coefficients
+            Optional[DataFrame]: Correlation coefficients.
         """
         if self.numeric_cols is None:
             return None
@@ -186,7 +176,7 @@ class MultiVariable:
         pairs.
 
         Args:
-            var1, var (str): Numeric column labels.
+            var1, var2 (str): Numeric column labels.
         """
         correlation = self.correlation_df.loc[var1, var2]
         nature = " positive" if correlation > 0 else " negative"
@@ -233,4 +223,3 @@ class MultiVariable:
                 "Skipped Bivariate Analysis: There are less than 2 numeric "
                 "variables having > 5% unique values."
             )
-            return None

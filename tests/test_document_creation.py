@@ -58,8 +58,8 @@ class TestReportWithIdealInput:
         }
 
     def test_bivariate_graphs(self):
-        assert "correlation_heatmap" in self.report.multivariate_graphs
-        assert "scatterplots" in self.report.multivariate_graphs
+        assert "correlation_heatmap" in self.report.bivariate_graphs
+        assert "scatterplots" in self.report.bivariate_graphs
 
     def test_table_style(self):
         assert self.report.TABLE_STYLE == "Table Grid"
@@ -67,8 +67,8 @@ class TestReportWithIdealInput:
     def test_target_variable(self):
         assert self.report.TARGET_VARIABLE.equals(self.data["species"])
 
-    def test_variable_descriptions(self):
-        assert list(self.report.variable_descriptions.keys()) == [
+    def test_variable_info(self):
+        assert list(self.report.variable_info.keys()) == [
             "petal_length",
             "petal_width",
             "sepal_length",
@@ -93,14 +93,14 @@ class TestReportWithLimitedInput:
         assert self.report.TITLE == "One Numeric One Categorical"
         assert isinstance(self.report, ReportDocument)
         assert self.report.GRAPH_COLOR == "lime"
-        assert list(self.report.variable_descriptions.keys()) == [
+        assert list(self.report.variable_info.keys()) == [
             "categorical",
             "numeric",
         ]
 
     def test_bivariate_analysis(self):
         assert self.report.bivariate_summaries is None
-        assert self.report.multivariate_graphs is None
+        assert self.report.bivariate_graphs is None
 
 
 class TestReportWithUnivariateInput:
@@ -120,8 +120,8 @@ class TestReportWithUnivariateInput:
         assert self.univariate_numeric_report.bivariate_summaries is None
         assert self.univariate_categorical_report.bivariate_summaries is None
 
-        assert self.univariate_numeric_report.multivariate_graphs is None
-        assert self.univariate_categorical_report.multivariate_graphs is None
+        assert self.univariate_numeric_report.bivariate_graphs is None
+        assert self.univariate_categorical_report.bivariate_graphs is None
 
 
 def test_output_file(tmp_path):

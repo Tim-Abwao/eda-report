@@ -6,6 +6,7 @@ API Reference
 
    eda_report
    eda_report.cli
+   eda_report.content
    eda_report.document
    eda_report.exceptions
    eda_report.gui
