@@ -219,6 +219,12 @@ class UnivariatePlots(BasePlot):
                 tqdm(
                     p.imap(self._plot_variable, self.variables),
                     total=len(self.variables),
+                    bar_format=(
+                        "{desc} {percentage:3.0f}%|{bar:35}| "
+                        "{n_fmt}/{total_fmt}"
+                    ),
+                    desc="Plot variables:    ",
+                    dynamic_ncols=True,
                 )
             )
         return univariate_graphs
@@ -271,9 +277,11 @@ class BivariatePlots(BasePlot):
                             self._regression_plot, self.variables.var_pairs
                         ),
                         total=len(self.variables.var_pairs),
-                        bar_format="{desc}: {percentage:3.0f}%|{bar:35}| "
-                        + "{n_fmt}/{total_fmt} numeric pairs.",
-                        desc="Bivariate analysis",
+                        bar_format=(
+                            "{desc} {percentage:3.0f}%|{bar:35}| "
+                            "{n_fmt}/{total_fmt} pairs."
+                        ),
+                        desc="Bivariate analysis:",
                         dynamic_ncols=True,
                     )
                 )

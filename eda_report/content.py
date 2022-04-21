@@ -49,6 +49,12 @@ class AnalysisResult:
                 tqdm(
                     p.imap(self._analyze_variable, data.iteritems()),
                     total=data.shape[1],
+                    bar_format=(
+                        "{desc} {percentage:3.0f}%|{bar:35}| "
+                        "{n_fmt}/{total_fmt}"
+                    ),
+                    desc="Analyze variables: ",
+                    dynamic_ncols=True,
                 )
             )
         return univariate_stats
