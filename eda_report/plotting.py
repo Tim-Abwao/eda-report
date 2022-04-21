@@ -1,7 +1,7 @@
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable
 from io import BytesIO
 from multiprocessing import Pool
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Sequence
 
 import matplotlib
 import numpy as np
