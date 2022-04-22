@@ -58,10 +58,6 @@ class BasePlot:
     ) -> None:
         self.GRAPH_COLOR = graph_color
         self.HUE = validate_univariate_input(hue)
-        sns.set_palette(
-            f"dark:{self.GRAPH_COLOR}_r",
-            n_colors=2 if self.HUE is None else self.HUE.nunique(),
-        )
 
 
 class UnivariatePlots(BasePlot):
@@ -109,6 +105,7 @@ class UnivariatePlots(BasePlot):
             fliersize=4,
             notch=True,
             orient="h",
+            palette=f"dark:{self.GRAPH_COLOR}_r",
             saturation=0.85,
             width=0.2,
         )
@@ -124,7 +121,14 @@ class UnivariatePlots(BasePlot):
         """
         fig = Figure()
         ax = fig.subplots()
-        sns.kdeplot(x=variable.data, ax=ax, fill=True, hue=self.HUE)
+        sns.kdeplot(
+            x=variable.data,
+            ax=ax,
+            color=self.GRAPH_COLOR,
+            fill=True,
+            hue=self.HUE,
+            palette=f"dark:{self.GRAPH_COLOR}_r",
+        )
         ax.set_title(f"Distribution plot of {variable.name}")
 
         return savefig(fig)
@@ -142,7 +146,12 @@ class UnivariatePlots(BasePlot):
             variable.data,
             fit=False,  # The line of best fit will be plotted in regplot
         )
-        sns.regplot(x=theoretical_quantiles, y=ordered_values, ax=ax)
+        sns.regplot(
+            x=theoretical_quantiles,
+            y=ordered_values,
+            ax=ax,
+            color=self.GRAPH_COLOR,
+        )
 
         ax.set_title(f"Probability Plot of {variable.name}")
         ax.set_xlabel("Theoretical Quantiles (~ Standard Normal)")
@@ -324,7 +333,13 @@ class BivariatePlots(BasePlot):
         fig = Figure(figsize=(8.2, 4))
         ax1, ax2 = fig.subplots(nrows=1, ncols=2)
         var1, var2 = var_pair
-        sns.regplot(x=var1, y=var2, data=self.variables.data, ax=ax1)
+        sns.regplot(
+            x=var1,
+            y=var2,
+            data=self.variables.data,
+            ax=ax1,
+            color=self.GRAPH_COLOR,
+        )
 
         pair_data = self.variables.data.loc[:, [var1, var2]]
         normalized_data = (pair_data - pair_data.mean()) / pair_data.std()
