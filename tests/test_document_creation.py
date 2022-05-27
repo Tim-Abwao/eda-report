@@ -59,7 +59,7 @@ class TestReportWithIdealInput:
 
     def test_bivariate_graphs(self):
         assert "correlation_heatmap" in self.report.bivariate_graphs
-        assert "scatterplots" in self.report.bivariate_graphs
+        assert "regression_plots" in self.report.bivariate_graphs
 
     def test_table_style(self):
         assert self.report.TABLE_STYLE == "Table Grid"

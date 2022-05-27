@@ -27,12 +27,12 @@ class TestBivariatePlots:
 
     def test_graphs(self):
         assert "correlation_heatmap" in self.plots.graphs
-        assert "scatterplots" in self.plots.graphs
+        assert "regression_plots" in self.plots.graphs
 
     def test_graph_types(self):
         assert isinstance(self.plots.graphs["correlation_heatmap"], BytesIO)
 
-        for scatter_plot in self.plots.graphs["scatterplots"].values():
+        for scatter_plot in self.plots.graphs["regression_plots"].values():
             assert isinstance(scatter_plot, BytesIO)
 
 

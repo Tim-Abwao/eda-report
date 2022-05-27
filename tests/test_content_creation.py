@@ -50,7 +50,7 @@ class TestAnalysisResult:
     def test_bivariate_graphs(self):
         assert set(self.results.bivariate_graphs.keys()) == {
             "correlation_heatmap",
-            "scatterplots",
+            "regression_plots",
         }
         assert isinstance(
             self.results.bivariate_graphs["correlation_heatmap"], BytesIO

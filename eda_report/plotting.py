@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from io import BytesIO
 from multiprocessing import Pool
-from typing import Dict, Tuple, Sequence
+from typing import Dict, Optional, Sequence, Tuple
 
 import matplotlib
 import numpy as np
@@ -32,10 +32,10 @@ def savefig(figure: Figure) -> BytesIO:
     directly as *attributes*, thus allowing rapid in-memory access.
 
     Args:
-        figure (Figure): A matplotlib figure with graph content.
+        figure (matplotlib.figure.Figure): Graph content.
 
     Returns:
-        BytesIO: A graph in PNG format as bytes.
+        io.BytesIO: A graph in PNG format as bytes.
     """
     graph = BytesIO()
     figure.savefig(graph, format="png")
@@ -49,8 +49,8 @@ class BasePlot:
     Args:
         graph_color (str, optional): The color to apply to the generated
             graphs. Defaults to "cyan".
-        hue (Iterable, optional): Data to use to group values.
-            Defaults to None.
+        hue (Iterable, optional): Data to use to group values. Defaults to
+            None.
     """
 
     def __init__(
@@ -68,13 +68,13 @@ class UnivariatePlots(BasePlot):
     - *Bar-plots* for categorical variables.
 
     Args:
-        variables (Sequence[Variable]): The data to plot.
+        variables (Sequence[Variable]): List of variables to plot.
         graph_color (str, optional): The color to apply to the generated
             graphs. Defaults to "cyan".
         hue (Series, optional): Data to use to group values.
             Defaults to None.
 
-    Attributes
+    Attributes:
         graphs (Dict[str, BytesIO]): A dictionary of graphs, with graph names
            as keys and file-objects containing plotted graphs as values.
     """
@@ -93,8 +93,11 @@ class UnivariatePlots(BasePlot):
     def _plot_box(self, variable: Variable) -> BytesIO:
         """Get a boxplot for a numeric variable.
 
+        Args:
+            variable (eda_report.univariate.Variable): The data to plot.
+
         Returns:
-            BytesIO: The boxplot in PNG format.
+            io.BytesIO: The boxplot in PNG format.
         """
         fig = Figure()
         ax = fig.subplots()
@@ -116,8 +119,11 @@ class UnivariatePlots(BasePlot):
     def _plot_dist(self, variable: Variable) -> BytesIO:
         """Get a dist-plot for a numeric variable.
 
+        Args:
+            variable (eda_report.univariate.Variable): The data to plot.
+
         Returns:
-            BytesIO: The dist-plot in PNG format.
+            io.BytesIO: The dist-plot in PNG format.
         """
         fig = Figure()
         ax = fig.subplots()
@@ -136,8 +142,11 @@ class UnivariatePlots(BasePlot):
     def _plot_prob(self, variable: Variable) -> BytesIO:
         """Get a probability plot for a numeric variable.
 
+        Args:
+            variable (eda_report.univariate.Variable): The data to plot.
+
         Returns:
-            BytesIO: The probability plot in PNG.
+            io.BytesIO: The probability plot in PNG.
         """
         fig = Figure()
         ax = fig.subplots()
@@ -161,8 +170,11 @@ class UnivariatePlots(BasePlot):
     def _plot_bar(self, variable: Variable) -> BytesIO:
         """Get a barplot for a categorical, boolean or datetime variable.
 
+        Args:
+            variable (eda_report.univariate.Variable): The data to plot.
+
         Returns:
-            BytesIO: The barplot in PNG format.
+            io.BytesIO: The barplot in PNG format.
         """
         fig = Figure()
         ax = fig.subplots()
@@ -195,7 +207,7 @@ class UnivariatePlots(BasePlot):
 
         return savefig(fig)
 
-    def _plot_variable(self, variable: Variable) -> None:
+    def _plot_variable(self, variable: Variable) -> Tuple[str, dict]:
         """Plot graphs based on the ``Variable`` type.
 
         For **numeric** variables, a *box-plot*, *dist-plot* and *probability
@@ -203,6 +215,13 @@ class UnivariatePlots(BasePlot):
 
         For **categorical**, **boolean** or **datetime** objects, only a *bar
         plot* is produced.
+
+        Args:
+            variable (eda_report.univariate.Variable): The data to plot.
+
+        Returns:
+            Tuple[str, Dict]: The variable's name, and a dictionary of its
+            graphs.
         """
         if variable.var_type == "numeric":
             graphs = {
@@ -216,11 +235,18 @@ class UnivariatePlots(BasePlot):
         return variable.name, graphs
 
     def _get_univariate_graphs(self) -> Dict[str, Dict]:
+        """Concurrently plot graphs for the variables present.
 
+        Returns:
+            Dict[str, Dict]: Variable names as keys, and their graphs as
+            nested dictionaries.
+        """
         with Pool() as p:
             univariate_graphs = dict(
                 tqdm(
+                    # Plot variables in parallel processes
                     p.imap(self._plot_variable, self.variables),
+                    # Progress-bar options
                     total=len(self.variables),
                     bar_format=(
                         "{desc} {percentage:3.0f}%|{bar:35}| "
@@ -236,7 +262,7 @@ class UnivariatePlots(BasePlot):
 class BivariatePlots(BasePlot):
     """Plots instances of :class:`~eda_report.multivariate.MultiVariable`.
 
-    Produces a *correlation heatmap*, *scatter-plots* and *ecdf-plots*, if
+    Produces a *correlation heatmap*, *regression-plots* and *ecdf-plots*, if
     2 or more numeric columns are present, with more than 5% of their values
     unique.
 
@@ -247,13 +273,12 @@ class BivariatePlots(BasePlot):
         hue (Series, optional): Data to use to group values.
             Defaults to None.
 
-    Attributes
-    ----------
-        graphs (Dict[str, Union[BytesIO, dict[tuple(str, str), BytesIO]]]):
+    Attributes:
+        graphs (Dict[str, io.BytesIO]):
             A dictionary of graphs, with graph names as keys, and file-objects
             containing the plotted graphs as values.
 
-            Bi-variate scatterplots are further nested in a dict of
+            Bi-variate regression-plots are further nested in a dict of
             :class:`~io.BytesIO` objects, with tuples (col_i, col_j) as keys.
     """
 
@@ -268,13 +293,17 @@ class BivariatePlots(BasePlot):
         self.variables = variables
         self.graphs = self._plot_graphs()
 
-    def _plot_graphs(self) -> None:
+    def _plot_graphs(self) -> Optional[Dict]:
         """Get a heatmap of the correlation in all numeric columns, and
-        scatter-plots & ecdf-plots of numeric column pairs.
+        regression-plots & ecdf-plots of numeric column pairs.
+
+        Returns:
+            Optional[Dict]: A dictionary with the correlation heatmap and
+            regression + ECDF subplots.
         """
         if hasattr(self.variables, "var_pairs"):
             with Pool() as p:
-                bivariate_scatterplots = dict(
+                bivariate_regression_plots = dict(
                     tqdm(
                         p.imap(
                             self._regression_plot, self.variables.var_pairs
@@ -291,7 +320,7 @@ class BivariatePlots(BasePlot):
 
             return {
                 "correlation_heatmap": self._plot_correlation_heatmap(),
-                "scatterplots": bivariate_scatterplots,
+                "regression_plots": bivariate_regression_plots,
             }
         else:
             return None
@@ -300,7 +329,7 @@ class BivariatePlots(BasePlot):
         """Get a heatmap of the correlation among all numeric columns.
 
         Returns:
-            BytesIO: The heatmap in PNG format as bytes in a file-like object.
+            io.BytesIO: The heatmap in PNG format as bytes.
         """
         fig = Figure(figsize=(7, 7))
         ax = fig.subplots()
@@ -322,13 +351,14 @@ class BivariatePlots(BasePlot):
         return savefig(fig)
 
     def _regression_plot(self, var_pair: Tuple[str, str]) -> BytesIO:
-        """Get a scatter-plot and ecdf-plot for the provided numeric columns.
+        """Get a regression-plot and ecdf-plot for the provided column pair.
 
         Args:
-            var_pair: A numeric column label.
+            var_pair (Tuple[str, str]): Numeric column pair.
 
         Returns:
-            BytesIO: The scatter-plot and ecdf-plot (subplots) in PNG format.
+            io.BytesIO: The regression-plot and ecdf-plot as subplots, in PNG
+            format.
         """
         fig = Figure(figsize=(8.2, 4))
         ax1, ax2 = fig.subplots(nrows=1, ncols=2)
@@ -346,7 +376,7 @@ class BivariatePlots(BasePlot):
         sns.ecdfplot(
             data=normalized_data, ax=ax2, palette=f"dark:{self.GRAPH_COLOR}_r"
         )
-        ax1.set_title(f"Scatter-plot - {var1} vs {var2}".title(), size=9)
+        ax1.set_title(f"Regression-plot - {var1} vs {var2}".title(), size=9)
         ax2.set_title("Empirical Cummulative Distribution Plot", size=9)
 
         return var_pair, savefig(fig)
