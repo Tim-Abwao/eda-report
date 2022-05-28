@@ -5,6 +5,7 @@ omit =
     eda_report/__main__.py
     eda_report/gui.py
 parallel = true
+sigterm = true
 source = eda_report
 
 [report]
