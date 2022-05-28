@@ -49,7 +49,7 @@ intersphinx_mapping = {
     "docx": ("https://python-docx.readthedocs.io/en/latest/", None),
     "pandas": ("https://pandas.pydata.org/docs/", None),
     "python": ("https://docs.python.org/3", None),
-    "matplotlib": ("https://matplotlib.org/", None),
+    "matplotlib": ("https://matplotlib.org/stable/", None),
 }
 
 
