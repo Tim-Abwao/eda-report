@@ -30,4 +30,4 @@ class TestFileLoader:
         with pytest.raises(InputError) as error:
             df_from_file("data.some_extension")
         # Check that the error message is as expected
-        assert "Invalid input file: data.some_extension" in str(error.value)
+        assert "Invalid input file: 'data.some_extension'" in str(error.value)

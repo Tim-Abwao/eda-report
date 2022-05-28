@@ -35,4 +35,6 @@ def df_from_file(filepath: Union[str, Path]) -> pd.DataFrame:
     elif file.suffix == ".xlsx":
         return pd.read_excel(file, engine="openpyxl")
     else:
-        raise InputError(f"Invalid input file: {filepath}")
+        raise InputError(
+            f"Invalid input file: '{filepath}'. Expected a CSV or Excel file."
+        )
