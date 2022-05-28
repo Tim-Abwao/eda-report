@@ -11,7 +11,7 @@ try:
         showwarning,
     )
     from tkinter.simpledialog import askstring
-except ImportError as error:
+except (ImportError, ModuleNotFoundError) as error:
     print(
         f"{error}. Please visit https://tkdocs.com/tutorial/install.html",
         "for help installing it.",
