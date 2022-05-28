@@ -26,10 +26,9 @@ background_image = pkgutil.get_data(__name__, "images/background.png")
 icon = pkgutil.get_data(__name__, "images/icon.png")
 
 description = (
-    "A simple application to help speed up exploratory data analysis and "
-    "reporting. Select a file to analyze, and it will be automatically "
-    "summarised. The result is a report in Word format, complete with summary"
-    " statistics and graphs."
+    "Speed up exploratory data analysis and reporting.\n\n"
+    "Automatically analyze files, and get a Word report complete with "
+    "summary statistics and graphs."
 )
 
 
@@ -59,9 +58,9 @@ class EDAGUI(Frame):  # pragma: no cover
     def __init__(self, master=None, **kwargs) -> None:
         super().__init__(master)
         self.master.title("eda-report")
-        self.master.geometry("600x360")
+        self.master.geometry("600x320")
         self.master.resizable(False, False)  # Fix window size
-        self.master.wm_iconphoto(True, PhotoImage(data=icon))  # Add icon
+        self.master.wm_iconphoto(True, PhotoImage(data=icon))
         self._create_widgets()
         self.pack()
 
@@ -70,7 +69,7 @@ class EDAGUI(Frame):  # pragma: no cover
         with the *canvas(background image)*, *introductory text*, and a
         *button* to select files to analyze.
         """
-        self.canvas = Canvas(self, width=600, height=360)
+        self.canvas = Canvas(self, width=600, height=320)
 
         # Set background image
         self.bg_image = PhotoImage(data=background_image)
@@ -78,24 +77,24 @@ class EDAGUI(Frame):  # pragma: no cover
 
         # Add title
         self.canvas.create_text(
-            (90, 45),
+            (80, 30),
             anchor="nw",
             fill="black",
-            font=("Courier", 35, "bold"),
+            font=("Courier", 28, "bold"),
             text="eda-report",
         )
 
         # Add introductory text
         self.canvas.create_text(
-            (40, 105),
+            (45, 100),
             anchor="nw",
             fill="black",
             font=("Courier", 12),
             text=description,
-            width=500,
+            width=510,
         )
 
-        # Add a button to select input files
+        # Add a button to select input file
         self.button = Button(
             self,
             bg="#204060",
@@ -107,19 +106,19 @@ class EDAGUI(Frame):  # pragma: no cover
             text="Select a file",
         )
         self.canvas.create_window(
-            (175, 250), anchor="nw", height=40, width=250, window=self.button
+            (175, 225), anchor="nw", height=40, width=250, window=self.button
         )
 
         # Show current action
         self.current_action = StringVar()
         self.display_current_action = Label(
             self,
-            bg="#dfddde",
+            bg="#c0d6e3",
             font=("Courier", 10, "italic"),
             textvariable=self.current_action,
         )
         self.canvas.create_window(
-            (140, 315),
+            (140, 280),
             anchor="nw",
             window=self.display_current_action,
         )
@@ -147,7 +146,7 @@ class EDAGUI(Frame):  # pragma: no cover
             self.current_action.set("Analysing data & compiling the report...")
             self._get_save_as_name()
 
-            # Generate the report using the collected arguments
+            # Generate and save the report using the collected arguments
             ReportDocument(
                 self.data,
                 title=self.report_title,
@@ -164,6 +163,9 @@ class EDAGUI(Frame):  # pragma: no cover
     def _get_data_from_file(self, retries: int = 1) -> None:
         """Creates a file dialog to help navigate to and select a file to
         analyze.
+
+        Args:
+            retries (int): Number of additional prompts, if input is invalid.
         """
         file_name = askopenfilename(
             title="Select a file to analyze",
@@ -222,17 +224,17 @@ class EDAGUI(Frame):  # pragma: no cover
         """Creates a graphical color picking tool to help set the desired
         color for the generated graphs.
         """
-        # Returns a tuple e.g ((255.99609375, 69.26953125, 0.0), '#ff4500').
         color = askcolor(
             color="cyan", title="Please select a color for the graphs"
-        )[-1]
-        self.graph_color = color or "cyan"
+        )
+        # Pick the hexadecimal color format. `askcolor` returns a tuple e.g
+        # ((255.99609375, 69.26953125, 0.0), '#ff4500').
+        self.graph_color = color[-1] or "cyan"
 
     def _get_save_as_name(self) -> None:
         """Create a file dialog to help select a destination folder and file
         name for the generated report.
         """
-        # Propmt user for desired output file-name
         save_name = asksaveasfilename(
             initialdir=".",
             initialfile="eda-report.docx",
