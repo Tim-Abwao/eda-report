@@ -184,7 +184,9 @@ class ReportContent(AnalysisResult):
                 "values are missing."
             ),
             "graphs": self.univariate_graphs[variable.name],
-            "statistics": univariate_stat._get_summary_statistics().to_frame(),
+            "statistics": (
+                univariate_stat._get_summary_statistics().to_frame().round(4)
+            ),
             "normality_tests": (
                 univariate_stat._test_for_normality()
                 if variable.var_type == "numeric"

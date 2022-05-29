@@ -257,7 +257,7 @@ class ReportDocument(ReportContent):
         # Populate the rows
         for idx, row_data in enumerate(data.itertuples()):
             for cell, value in zip(table.rows[idx].cells, row_data):
-                cell.text = f"{value}"
+                cell.text = f"{value}".rstrip('0').rstrip('.')
 
                 # Font size and type-face have to be set at `run` level
                 run = cell.paragraphs[0].runs[0]
