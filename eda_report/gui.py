@@ -26,7 +26,7 @@ background_image = pkgutil.get_data(__name__, "images/background.png")
 icon = pkgutil.get_data(__name__, "images/icon.png")
 
 description = (
-    "Speed up exploratory data analysis and reporting.\n\n"
+    "Speed up exploratory data analysis & reporting.\n\n"
     "Automatically analyze files, and get a Word report complete with "
     "summary statistics and graphs."
 )
@@ -58,7 +58,7 @@ class EDAGUI(Frame):  # pragma: no cover
     def __init__(self, master=None, **kwargs) -> None:
         super().__init__(master)
         self.master.title("eda-report")
-        self.master.geometry("600x320")
+        self.master.geometry("560x320")
         self.master.resizable(False, False)  # Fix window size
         self.master.wm_iconphoto(True, PhotoImage(data=icon))
         self._create_widgets()
@@ -69,7 +69,7 @@ class EDAGUI(Frame):  # pragma: no cover
         with the *canvas(background image)*, *introductory text*, and a
         *button* to select files to analyze.
         """
-        self.canvas = Canvas(self, width=600, height=320)
+        self.canvas = Canvas(self, width=560, height=320)
 
         # Set background image
         self.bg_image = PhotoImage(data=background_image)
@@ -77,7 +77,7 @@ class EDAGUI(Frame):  # pragma: no cover
 
         # Add title
         self.canvas.create_text(
-            (80, 30),
+            (70, 30),
             anchor="nw",
             fill="black",
             font=("Courier", 28, "bold"),
@@ -86,12 +86,12 @@ class EDAGUI(Frame):  # pragma: no cover
 
         # Add introductory text
         self.canvas.create_text(
-            (45, 100),
+            (40, 90),
             anchor="nw",
             fill="black",
             font=("Courier", 12),
             text=description,
-            width=510,
+            width=480,
         )
 
         # Add a button to select input file
@@ -106,7 +106,7 @@ class EDAGUI(Frame):  # pragma: no cover
             text="Select a file",
         )
         self.canvas.create_window(
-            (175, 225), anchor="nw", height=40, width=250, window=self.button
+            (180, 220), anchor="nw", height=40, width=200, window=self.button
         )
 
         # Show current action
