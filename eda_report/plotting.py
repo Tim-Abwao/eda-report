@@ -61,7 +61,8 @@ class BasePlot:
 
 
 class UnivariatePlots(BasePlot):
-    """Plots instances of :class:`~eda_report.univariate.Variable`:
+    """Plots a collection of :class:`~eda_report.univariate.Variable`
+    instances:
 
     - *Box-plots*, *dist-plots* and *normal-probability-plots* for
       numeric variables.
@@ -71,7 +72,7 @@ class UnivariatePlots(BasePlot):
         variables (Sequence[Variable]): List of variables to plot.
         graph_color (str, optional): The color to apply to the generated
             graphs. Defaults to "cyan".
-        hue (Series, optional): Data to use to group values.
+        hue (pandas.Series, optional): Data to use to group values.
             Defaults to None.
 
     Attributes:
@@ -264,13 +265,13 @@ class BivariatePlots(BasePlot):
 
     Produces a *correlation heatmap*, *regression-plots* and *ecdf-plots*, if
     2 or more numeric columns are present, with more than 5% of their values
-    unique.
+    being unique.
 
     Args:
         variables (MultiVariable): The data to plot.
         graph_color (str, optional): The color to apply to the generated
             graphs. Defaults to "cyan".
-        hue (Series, optional): Data to use to group values.
+        hue (pandas.Series, optional): Data to use to group values.
             Defaults to None.
 
     Attributes:

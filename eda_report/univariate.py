@@ -105,7 +105,8 @@ class Variable:
 
 
 class CategoricalStats:
-    """Get descriptive statistics for a categorical ``Variable``.
+    """Get descriptive statistics for a categorical
+    :class:`~eda_report.univariate.Variable`.
 
     .. note::
        Not meant to be used directly: use the :func:`eda_report.summarize`
@@ -150,7 +151,7 @@ class CategoricalStats:
         """Calculate summary statistics.
 
         Returns:
-            :class:`~pandas.Series`: Summary statistics.
+            pandas.Series: Summary statistics.
         """
         return self.variable.data.describe().set_axis(
             [
@@ -166,7 +167,7 @@ class CategoricalStats:
         """Get most common items and their relative frequency (%).
 
         Returns:
-            :class:`~pandas.Series`: Top 5 items by frequency.
+            pandas.Series: Top 5 items by frequency.
         """
         most_common_items = self.variable.data.value_counts().head()
         n = len(self.variable.data)
@@ -174,7 +175,8 @@ class CategoricalStats:
 
 
 class DatetimeStats:
-    """Get descriptive statistics for a datetime ``Variable``.
+    """Get descriptive statistics for a datetime
+    :class:`~eda_report.univariate.Variable`.
 
     .. note::
        Not meant to be used directly: use the :func:`eda_report.summarize`
@@ -215,7 +217,7 @@ class DatetimeStats:
         """Calculate summary statistics.
 
         Returns:
-            :class:`~pandas.Series`: Summary statistics.
+            pandas.Series: Summary statistics.
         """
         return self.variable.data.describe(datetime_is_numeric=True).set_axis(
             [
@@ -232,7 +234,8 @@ class DatetimeStats:
 
 
 class NumericStats:
-    """Get descriptive statistics for a numeric ``Variable``.
+    """Get descriptive statistics for a numeric
+    :class:`~eda_report.univariate.Variable`.
 
     .. note::
        Not meant to be used directly: use the :func:`eda_report.summarize`
@@ -279,7 +282,7 @@ class NumericStats:
         """Calculate summary statistics.
 
         Returns:
-            :class:`~pandas.Series`: Summary statistics.
+            pandas.Series: Summary statistics.
         """
         summary_stats = self.variable.data.describe().set_axis(
             [
@@ -308,7 +311,7 @@ class NumericStats:
                 0.05.
 
         Returns:
-            :class:`~pandas.DataFrame`: Table of results.
+            pandas.DataFrame: Table of results.
         """
         data = self.variable.data.dropna()
         # The scikit-learn implementation of the Shapiro-Wilk test reports:

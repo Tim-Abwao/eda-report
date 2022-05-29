@@ -11,7 +11,7 @@ def process_cli_args() -> argparse.Namespace:
     :mod:`argparse` module from the Python standard library.
 
     Returns:
-        argparse.Namespace: A class with parsed arguments as attributes.
+        argparse.Namespace: Object with the parsed arguments as attributes.
 
     Example:
         .. literalinclude:: examples.txt
@@ -64,7 +64,6 @@ def process_cli_args() -> argparse.Namespace:
         ),
     )
 
-    # Parse arguments
     return parser.parse_args()
 
 

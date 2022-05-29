@@ -26,10 +26,10 @@ def clean_column_labels(data: DataFrame) -> DataFrame:
     allow sorting and the use of string methods.
 
     Args:
-        data (DataFrame): Data to inspect and perhaps edit.
+        data (pandas.DataFrame): Data to inspect and perhaps edit.
 
     Returns:
-        :class:`~pandas.DataFrame`: The ``data``, with reader-friendly column
+        pandas.DataFrame: The ``data``, with reader-friendly column
         names.
     """
     if isinstance(data.columns, RangeIndex):
@@ -47,7 +47,7 @@ def check_cardinality(target_data: Series, *, threshold: int = 10) -> None:
     or has too many unique values (> ``threshold``).
 
     Args:
-        target_data (Series): The data intended to group values.
+        target_data (pandas.Series): The data intended to group values.
         threshold (int, optional): Maximum allowable cardinality. Defaults to
             10.
 
@@ -80,7 +80,7 @@ def validate_multivariate_input(data: Iterable) -> DataFrame:
         EmptyDataError: If the ``data`` has no items.
 
     Returns:
-        :class:`~pandas.DataFrame`: The input data as a DataFrame.
+        pandas.DataFrame: The input data as a DataFrame.
     """
     try:
         data_frame = DataFrame(data)
@@ -115,7 +115,7 @@ def validate_univariate_input(
         EmptyDataError: If the ``data`` has no items.
 
     Returns:
-        Optional[:class:`~pandas.Series`]: The input data as a ``Series``.
+        Optional[pandas.Series]: The input data as a ``Series``.
     """
     if data is None:
         return None
@@ -147,8 +147,7 @@ def validate_target_variable(
             the supplied column index is out of bounds.
 
     Returns:
-        Optional[:class:`~pandas.Series`]: The target variable's data if
-        ``target_variable`` is valid.
+        Optional[pandas.Series]: The target variable's data.
     """
     if target_variable is None:
         return None
