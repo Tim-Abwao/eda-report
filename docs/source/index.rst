@@ -17,6 +17,11 @@ Automatically analyze a dataset, and get:
 
 #. A report in *Word* (.docx) format.
 
+.. figure:: _static/report.*
+   :alt: iris dataset report animation
+
+   A report generated from the *iris dataset*.
+
 .. image:: https://mybinder.org/badge_logo.svg
    :target: https://mybinder.org/v2/gh/Tim-Abwao/eda-report/HEAD?filepath=eda-report-basics.ipynb
 
