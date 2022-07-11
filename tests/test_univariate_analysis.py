@@ -11,7 +11,7 @@ from pandas.api.types import (
     is_categorical_dtype,
     is_datetime64_any_dtype,
     is_numeric_dtype,
-    is_object_dtype,
+    is_string_dtype,
 )
 
 
@@ -49,7 +49,7 @@ class TestVariableProperties:
         assert isinstance(self.unnamed_variable.data, Series)
 
         assert is_numeric_dtype(self.variable.data)
-        assert is_object_dtype(self.unnamed_variable.data)
+        assert is_string_dtype(self.unnamed_variable.data)
 
         assert self.variable.var_type == "numeric"
         assert self.unnamed_variable.var_type == "categorical"
@@ -88,7 +88,7 @@ class TestCategoricalStats:
         assert isinstance(self.majority_unique, CategoricalStats)
         assert isinstance(self.majority_repeating, CategoricalStats)
 
-        assert is_object_dtype(self.majority_unique.variable.data)
+        assert is_string_dtype(self.majority_unique.variable.data)
         assert self.majority_unique.variable.var_type == "categorical"
 
         assert is_categorical_dtype(self.majority_repeating.variable.data)

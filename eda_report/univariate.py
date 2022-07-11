@@ -82,11 +82,13 @@ class Variable:
 
         elif is_datetime64_any_dtype(self.data):
             return "datetime"
-        elif (self.data.nunique() / self.data.shape[0]) <= (1 / 3):
-            # If 1/3 or less of the values are unique, use categorical
-            self.data = self.data.astype("category")
+
         else:
-            self.data = self.data.astype("object")
+            self.data = self.data.astype("string")
+            if (self.data.nunique() / self.data.shape[0]) <= (1 / 3):
+                # If 1/3 or less of the values are unique, use categorical
+                self.data = self.data.astype("category")
+
         return "categorical"
 
     def _get_missing_values_info(self) -> Optional[str]:
