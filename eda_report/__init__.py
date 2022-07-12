@@ -4,7 +4,7 @@ from typing import Union
 from eda_report.document import ReportDocument
 from eda_report.multivariate import MultiVariable
 
-__version__ = "2.5.1"
+__version__ = "2.6.0"
 
 
 def get_word_report(
