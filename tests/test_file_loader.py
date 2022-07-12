@@ -23,7 +23,7 @@ class TestFileLoader:
         # Check that a valid excel file is read as a DataFrame
         excel_file = temp_data_dir / "data.xlsx"
         self.data.to_excel(excel_file, index=False)
-        assert df_from_file(excel_file).equals(self.data) is True
+        assert df_from_file(excel_file).equals(self.data)
 
     def test_invalid_file(self):
         # Check that an invalid file format/extension raises an InputError

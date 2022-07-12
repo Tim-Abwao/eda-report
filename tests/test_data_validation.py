@@ -34,7 +34,7 @@ class TestMultivariateInputValidation:
         assert isinstance(validate_multivariate_input(self.data), DataFrame)
         # Check if a generator returns a dataframe
         assert isinstance(
-            validate_multivariate_input((x ** 2 for x in self.data)), DataFrame
+            validate_multivariate_input((x**2 for x in self.data)), DataFrame
         )
 
     def test_invalid_input(self):
@@ -52,6 +52,11 @@ class TestMultivariateInputValidation:
             validate_multivariate_input(DataFrame())
         assert "No data to process." in str(error.value)
 
+    def test_empty_column_is_dropped(self):
+        data_with_empty_col = [[x, None] for x in range(10)]
+        result = validate_multivariate_input(data_with_empty_col)
+        assert result.shape == (10, 1)
+
 
 class TestUnivariateInputValidation:
 
@@ -66,7 +71,7 @@ class TestUnivariateInputValidation:
         assert isinstance(validate_univariate_input(self.data), Series)
         # Check if a generator returns a series
         assert isinstance(
-            validate_univariate_input((x ** 2 for x in self.data)), Series
+            validate_univariate_input((x**2 for x in self.data)), Series
         )
 
     def test_empty_input(self):

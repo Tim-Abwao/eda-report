@@ -71,6 +71,8 @@ def validate_multivariate_input(data: Iterable) -> DataFrame:
 
     If it isn't, this attempts to explicitly cast it as a ``DataFrame``.
 
+    Columns in the data that are completely empty will be dropped.
+
     Args:
         data (Iterable): The data to analyze.
 
@@ -92,8 +94,12 @@ def validate_multivariate_input(data: Iterable) -> DataFrame:
     if len(data_frame) == 0:
         raise EmptyDataError("No data to process.")
 
-    # Attempt to infer better dtypes for columns.
-    data_frame = data_frame.infer_objects()
+    data_frame = (
+        # Attempt to infer better dtypes for columns.
+        data_frame.infer_objects()
+        # Drop completely empty columns.
+        .dropna(axis=1, how="all")
+    )
     return clean_column_labels(data_frame)
 
 
