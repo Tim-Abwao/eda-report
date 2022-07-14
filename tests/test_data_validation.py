@@ -14,27 +14,24 @@ from pandas import DataFrame, Series
 
 
 class TestMultivariateInputValidation:
-
-    data = range(10)
-
     def test_dataframe_input(self):
         # Check if a dataframe is returned as a dataframe
         assert isinstance(
-            validate_multivariate_input(DataFrame(self.data)), DataFrame
+            validate_multivariate_input(DataFrame(range(10))), DataFrame
         )
 
     def test_series_input(self):
         # Check if a series returns a dataframe
         assert isinstance(
-            validate_multivariate_input(Series(self.data)), DataFrame
+            validate_multivariate_input(Series(range(10))), DataFrame
         )
 
     def test_iterable_input(self):
         # Check if a sequence returns a dataframe
-        assert isinstance(validate_multivariate_input(self.data), DataFrame)
+        assert isinstance(validate_multivariate_input(range(10)), DataFrame)
         # Check if a generator returns a dataframe
         assert isinstance(
-            validate_multivariate_input((x**2 for x in self.data)), DataFrame
+            validate_multivariate_input((x**2 for x in range(10))), DataFrame
         )
 
     def test_invalid_input(self):
@@ -53,25 +50,23 @@ class TestMultivariateInputValidation:
         assert "No data to process." in str(error.value)
 
     def test_empty_column_is_dropped(self):
+        # Check that columns consisting entirely of NaN are dropped
         data_with_empty_col = [[x, None] for x in range(10)]
         result = validate_multivariate_input(data_with_empty_col)
         assert result.shape == (10, 1)
 
 
 class TestUnivariateInputValidation:
-
-    data = range(10)
-
     def test_series_input(self):
         # Check if a series is returned as a series
-        assert isinstance(validate_univariate_input(Series(self.data)), Series)
+        assert isinstance(validate_univariate_input(Series(range(10))), Series)
 
     def test_iterable_input(self):
         # Check if a sequence-like returns a series
-        assert isinstance(validate_univariate_input(self.data), Series)
+        assert isinstance(validate_univariate_input(range(10)), Series)
         # Check if a generator returns a series
         assert isinstance(
-            validate_univariate_input((x**2 for x in self.data)), Series
+            validate_univariate_input((x**2 for x in range(10))), Series
         )
 
     def test_empty_input(self):
@@ -103,8 +98,8 @@ class TestTargetValidation:
         ).equals(self.data.get("D"))
 
     def test_invalid_column_index(self):
-        # Check that an input error is raised for a column index that is out
-        # of bounds.
+        # Check that an error is raised for a column index that is out of
+        # bounds.
         with pytest.raises(TargetVariableError) as error:
             validate_target_variable(data=self.data, target_variable=10)
         assert "Column index 10 is not in the range [0, 5]." in str(
@@ -118,13 +113,13 @@ class TestTargetValidation:
         ).equals(self.data.get("D"))
 
     def test_invalid_column_label(self):
-        # Check that an invalid column label raises an input error.
+        # Check that an invalid column label raises an error.
         with pytest.raises(TargetVariableError) as error:
             validate_target_variable(data=self.data, target_variable="X")
         assert "'X' is not in ['A', 'B', 'C', 'D', 'E']" in str(error.value)
 
     def test_null_input(self):
-        # Check that `target_data=None` returns `None`
+        # Check that `target_variable=None` returns `None`
         assert (
             validate_target_variable(data=self.data, target_variable=None)
             is None
@@ -157,9 +152,21 @@ class TestTargetValidation:
         assert expected_message in caplog.text
 
 
-def test_column_cleaning():
-    df1 = DataFrame([[0, 1], [1, 2]])
-    df2 = DataFrame([[1, 2], [3, 4]], columns=[1, 2])
-    # Check if columns [0, 1, ...] are changed to ["var_1", "var_2", ...]
-    assert clean_column_labels(df1).columns.to_list() == ["var_1", "var_2"]
-    assert clean_column_labels(df2).columns.to_list() == ["var_1", "var_2"]
+class TestColumnLabelCleaning:
+    def test_cleaning_rangeindex(self):
+        with_rangeindex = DataFrame([[0, 1], [1, 2]])
+        # Check if columns [0, 1] are changed to ["var_1", "var_2"]
+        assert list(clean_column_labels(with_rangeindex)) == ["var_1", "var_2"]
+
+    def test_cleaning_numeric_colnames(self):
+        with_numeric_colnames = DataFrame([[1, 2], [3, 4]], columns=[1, 5])
+        # Column names should be prefixed with "var_"
+        assert list(clean_column_labels(with_numeric_colnames)) == [
+            "var_1",
+            "var_5",
+        ]
+
+    def test_cleaning_mixed_colnames(self):
+        with_mixed_colnames = DataFrame([[1, 2], [3, 4]], columns=[1, "B"])
+        # Numeric column names should be converted to strings
+        assert list(clean_column_labels(with_mixed_colnames)) == ["1", "B"]

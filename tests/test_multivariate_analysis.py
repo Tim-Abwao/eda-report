@@ -19,12 +19,10 @@ class TestMixedVariables:
         )
     )
 
-    def test_data_types(self):
+    def test_stored_data(self):
         assert isinstance(self.multivariable.data, DataFrame)
-
-        actual = self.multivariable.categorical_cols.columns.to_list()
-        assert actual == ["B", "C"]
-        assert self.multivariable.numeric_cols.columns.to_list() == ["A", "D"]
+        assert list(self.multivariable.categorical_cols) == ["B", "C"]
+        assert list(self.multivariable.numeric_cols) == ["A", "D"]
 
     def test_categorical_summary_statistics(self):
         assert self.multivariable.categorical_stats.to_dict() == {
@@ -100,9 +98,11 @@ class TestNumericVariables:
         )
     )
 
-    def test_multivariable_attributes(self):
+    def test_categorical_columns(self):
         assert self.multivariable.categorical_cols is None
         assert self.multivariable.categorical_stats is None
+
+    def test_numeric_columns(self):
         assert list(self.multivariable.numeric_cols) == list("ABCDEFG")
         assert self.multivariable.numeric_stats.to_dict(
             orient="list"
@@ -137,7 +137,7 @@ class TestNumericVariables:
             }
         )
 
-    def test_correlation(self):
+    def test_bivariate_analysis(self):
         assert self.multivariable.var_pairs == set(
             combinations(["A", "B", "C", "D", "E", "F", "G"], 2)
         )
@@ -236,6 +236,24 @@ class TestNumericVariables:
 
 
 class TestCategoricalVariables:
+    multivariable = MultiVariable(
+        DataFrame([list("abcd")] * 4, columns=list("ABCD"))
+    )
+
+    def test_categorical_columns(self):
+        assert list(self.multivariable.categorical_cols) == list("ABCD")
+        assert self.multivariable.categorical_stats.to_dict(orient="list") == {
+            "count": [4, 4, 4, 4],
+            "unique": [1, 1, 1, 1],
+            "top": ["a", "b", "c", "d"],
+            "freq": [4, 4, 4, 4],
+            "relative freq": ["100.00%", "100.00%", "100.00%", "100.00%"],
+        }
+
+    def test_numeric_columns(self):
+        assert self.multivariable.numeric_cols is None
+        assert self.multivariable.numeric_stats is None
+
     def test_bivariate_analysis(self, caplog):
         multivariable = MultiVariable([list("abcd")] * 4)
         assert (

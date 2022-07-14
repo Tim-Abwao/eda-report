@@ -1,10 +1,10 @@
 import pytest
 from eda_report.univariate import (
-    analyze_univariate,
     CategoricalStats,
     DatetimeStats,
     NumericStats,
     Variable,
+    analyze_univariate,
 )
 from pandas import Series, Timestamp, date_range
 from pandas.api.types import (
@@ -36,7 +36,6 @@ class TestDtypeDetection:
     def test_numeric_detection(self):
         numeric = Variable(range(15))
         assert numeric.var_type == "numeric"
-        # assert isinstance(numeric.contents, NumericStats)
 
 
 class TestVariableProperties:

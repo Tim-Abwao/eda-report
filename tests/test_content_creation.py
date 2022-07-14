@@ -9,43 +9,35 @@ data = load_dataset("iris")
 
 
 class TestAnalysisResult:
-    results = AnalysisResult(data)
+    results = AnalysisResult(data, graph_color="blue")
 
-    def test_overall_statistics(self):
+    def test_general_properties(self):
         assert isinstance(self.results.multivariable, MultiVariable)
-        assert self.results.multivariable.categorical_stats.to_dict() == {
-            "count": {"species": 150},
-            "unique": {"species": 3},
-            "top": {"species": "setosa"},
-            "freq": {"species": 50},
-            "relative freq": {"species": "33.33%"},
-        }
+        assert self.results.GRAPH_COLOR == "blue"
+        assert self.results.TARGET_VARIABLE is None
 
     def test_univariate_stats(self):
-        assert set(self.results.univariate_stats.keys()) == {
-            "petal_length",
-            "sepal_width",
-            "species",
-            "petal_width",
-            "sepal_length",
-        }
         assert isinstance(
             self.results.univariate_stats["species"], CategoricalStats
         )
-        assert isinstance(
-            self.results.univariate_stats["sepal_width"], NumericStats
-        )
+        for key in {
+            "sepal_length",
+            "sepal_width",
+            "petal_length",
+            "petal_width",
+        }:
+            assert isinstance(self.results.univariate_stats[key], NumericStats)
 
     def test_univariate_graphs(self):
-        assert set(self.results.univariate_graphs.keys()) == {
+        for key in {
             "petal_length",
             "sepal_width",
             "species",
             "petal_width",
             "sepal_length",
-        }
-        for graph in self.results.univariate_graphs["petal_length"].values():
-            assert isinstance(graph, BytesIO)
+        }:
+            for graph in self.results.univariate_graphs[key].values():
+                assert isinstance(graph, BytesIO)
 
     def test_bivariate_graphs(self):
         assert set(self.results.bivariate_graphs.keys()) == {
@@ -55,6 +47,10 @@ class TestAnalysisResult:
         assert isinstance(
             self.results.bivariate_graphs["correlation_heatmap"], BytesIO
         )
+        for graph in self.results.bivariate_graphs[
+            "regression_plots"
+        ].values():
+            assert isinstance(graph, BytesIO)
 
 
 class TestReportContent:

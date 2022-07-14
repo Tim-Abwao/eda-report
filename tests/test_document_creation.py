@@ -90,8 +90,8 @@ class TestReportWithLimitedInput:
     )
 
     def test_report_creation(self):
-        assert self.report.TITLE == "One Numeric One Categorical"
         assert isinstance(self.report, ReportDocument)
+        assert self.report.TITLE == "One Numeric One Categorical"
         assert self.report.GRAPH_COLOR == "lime"
         assert list(self.report.variable_info.keys()) == [
             "categorical",
@@ -124,9 +124,6 @@ class TestReportWithUnivariateInput:
         assert self.univariate_categorical_report.bivariate_graphs is None
 
 
-def test_output_file(tmp_path):
-    data_dir = tmp_path / "data"
-    data_dir.mkdir()
-
-    get_word_report(range(50), output_filename=data_dir / "eda.docx")
-    assert (tmp_path / "data" / "eda.docx").is_file()
+def test_output_file(temp_data_dir):
+    get_word_report(range(50), output_filename=temp_data_dir / "eda.docx")
+    assert (temp_data_dir / "eda.docx").is_file()

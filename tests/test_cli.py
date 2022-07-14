@@ -1,23 +1,12 @@
 import sys
 from pathlib import Path
 
-import pytest
 from eda_report.cli import run_from_cli
 from eda_report.gui import EDAGUI
-from pandas import DataFrame
-
-
-@pytest.fixture(scope="session")
-def temp_data_dir(tmp_path_factory):
-    return tmp_path_factory.mktemp("data")
 
 
 class TestCLIArgumentParsing:
     def test_with_all_args(self, temp_data_dir, monkeypatch):
-
-        csv_file = temp_data_dir / "data.csv"
-        csv_file.write_text("a,b,c\n1,2,3\n4,5,6\n")
-
         # Simulate supplying all args
         monkeypatch.setattr(
             sys,
@@ -25,7 +14,7 @@ class TestCLIArgumentParsing:
             [
                 "eda-report",
                 "-i",
-                f"{csv_file}",
+                f"{temp_data_dir / 'data.csv'}",
                 "-o",
                 f"{temp_data_dir}/cli-test-1.docx",
                 "-t",
@@ -33,55 +22,45 @@ class TestCLIArgumentParsing:
                 "-c",
                 "teal",
                 "-T",
-                "a",
+                "A",
             ],
         )
-
         report = run_from_cli()
-
-        # Check whether the supplied arguments were set
-        assert isinstance(report.multivariable.data, DataFrame)
         assert report.OUTPUT_FILENAME == f"{temp_data_dir}/cli-test-1.docx"
         assert report.TITLE == "CLI Test"
         assert report.GRAPH_COLOR == "teal"
-        assert report.TARGET_VARIABLE.name == "a"
+        assert report.TARGET_VARIABLE.name == "A"
 
     def test_with_only_input_file(self, temp_data_dir, monkeypatch):
-
-        excel_file = temp_data_dir / "data.xlsx"
-        DataFrame([1, 2, 3]).to_excel(
-            excel_file, index=False, engine="openpyxl"
-        )
-
         # Supply the input file it has no default.
-        monkeypatch.setattr(sys, "argv", ["eda-report", "-i", f"{excel_file}"])
+        monkeypatch.setattr(
+            sys, "argv", ["eda-report", "-i", f"{temp_data_dir / 'data.xlsx'}"]
+        )
         report = run_from_cli()
 
         # Check if the default arguments were set
-        assert isinstance(report.multivariable.data, DataFrame)
         assert report.OUTPUT_FILENAME == "eda-report.docx"
         assert report.TITLE == "Exploratory Data Analysis Report"
         assert report.GRAPH_COLOR == "cyan"
         assert report.TARGET_VARIABLE is None
 
-        Path("eda-report.docx").unlink()  # Remove resutant report
+        Path("eda-report.docx").unlink()  # Remove resultant report
 
-    def test_without_optional_args(self, temp_data_dir, monkeypatch, capsys):
-
-        csv_file = temp_data_dir / "data.csv"
-        csv_file.write_text("1,2,3\na,b,c\n")
-
+    def test_without_optional_args(self, monkeypatch, capsys):
+        # Simulate launching the GUI
         def mock_gui_init(gui):
+            """Simulate GUI initialization."""
             pass
 
         def mock_gui_mainloop(gui):
+            """Simulate running GUI."""
             print("Graphical user interface running in Tk mainloop.")
 
         monkeypatch.setattr(EDAGUI, "__init__", mock_gui_init)
         monkeypatch.setattr(EDAGUI, "mainloop", mock_gui_mainloop)
 
+        # Simulate running with no args
         monkeypatch.setattr(sys, "argv", ["eda-report"])
-
         run_from_cli()
 
         captured = capsys.readouterr()
