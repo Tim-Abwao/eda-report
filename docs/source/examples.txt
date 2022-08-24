@@ -75,7 +75,7 @@ Kurtosis                -1.20000
                                p-value Conclusion at α = 0.05
 D'Agostino's K-squared test  0.0015981  Unlikely to be normal
 Kolmogorov-Smirnov test      0.0000000  Unlikely to be normal
-Shapiro-Wilk test            0.0580896        Possibly normal
+Shapiro-Wilk test            0.0580895        Possibly normal
 
 MULTIVARIATE
 ==============
@@ -185,7 +185,7 @@ Kurtosis                -1.20000
                                p-value Conclusion at α = 0.05
 D'Agostino's K-squared test  0.0015981  Unlikely to be normal
 Kolmogorov-Smirnov test      0.0000000  Unlikely to be normal
-Shapiro-Wilk test            0.0580896        Possibly normal
+Shapiro-Wilk test            0.0580895        Possibly normal
 >>> from seaborn import load_dataset
 >>> iris_data = load_dataset("iris")
 >>> summarize(iris_data)

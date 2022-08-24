@@ -223,6 +223,6 @@ class TestNumericStats:
             "-------\n                               p-value Conclusion at α "
             "= 0.05\nD'Agostino's K-squared test  0.0015981  Unlikely to be "
             "normal\nKolmogorov-Smirnov test      0.0000000  Unlikely to be "
-            "normal\nShapiro-Wilk test            0.0580896        Possibly "
+            "normal\nShapiro-Wilk test            0.0580895        Possibly "
             "normal"
         )
