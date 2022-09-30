@@ -32,7 +32,7 @@ class TestReportWithIdealInput:
     def test_bivariate_analysis(self):
         assert self.report.bivariate_summaries == {
             ("sepal_length", "petal_length"): (
-                "Sepal_Length and Petal_Length have strong positive "
+                "Sepal_Length and Petal_Length have very strong positive "
                 "correlation (0.87)."
             ),
             ("petal_length", "petal_width"): (
@@ -44,12 +44,12 @@ class TestReportWithIdealInput:
                 "correlation (-0.12)."
             ),
             ("sepal_length", "petal_width"): (
-                "Sepal_Length and Petal_Width have strong positive "
+                "Sepal_Length and Petal_Width have very strong positive "
                 "correlation (0.82)."
             ),
             ("sepal_width", "petal_length"): (
-                "Sepal_Width and Petal_Length have weak negative correlation"
-                " (-0.43)."
+                "Sepal_Width and Petal_Length have moderate negative "
+                "correlation (-0.43)."
             ),
             ("sepal_width", "petal_width"): (
                 "Sepal_Width and Petal_Width have weak negative correlation "

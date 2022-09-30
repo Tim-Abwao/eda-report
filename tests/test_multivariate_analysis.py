@@ -62,7 +62,7 @@ class TestMixedVariables:
         for key, values in actual.items():
             assert values == pytest.approx(expected[key])
         assert self.multivariable.correlation_descriptions == {
-            ("A", "D"): "very weak positive correlation (0.21)"
+            ("A", "D"): "weak positive correlation (0.21)"
         }
 
     def test_repr(self):
@@ -78,7 +78,7 @@ class TestMixedVariables:
             "-----\n  count unique   top freq relative freq\nB    50      6  "
             "   a   10        20.00%\nC    50      2  True   26        52.00%"
             "\n\n\t  Bivariate Analysis (Correlation)\n\t  ------------------"
-            "--------------\nA & D --> very weak positive correlation (0.21)"
+            "--------------\nA & D --> weak positive correlation (0.21)"
         )
 
 
@@ -212,24 +212,24 @@ class TestNumericVariables:
 
         assert self.multivariable.correlation_descriptions == {
             ("F", "G"): "virtually no correlation (0.02)",
-            ("C", "E"): "weak positive correlation (0.49)",
-            ("E", "F"): "weak negative correlation (-0.47)",
+            ("C", "E"): "moderate positive correlation (0.49)",
+            ("E", "F"): "moderate negative correlation (-0.47)",
             ("B", "C"): "strong positive correlation (0.71)",
-            ("A", "E"): "weak positive correlation (0.44)",
+            ("A", "E"): "moderate positive correlation (0.44)",
             ("D", "E"): "moderate positive correlation (0.59)",
-            ("C", "G"): "very weak negative correlation (-0.21)",
+            ("C", "G"): "weak negative correlation (-0.21)",
             ("C", "F"): "weak negative correlation (-0.34)",
             ("C", "D"): "very strong positive correlation (0.92)",
-            ("A", "G"): "virtually no correlation (-0.08)",
-            ("B", "E"): "weak positive correlation (0.48)",
-            ("D", "G"): "virtually no correlation (0.10)",
-            ("A", "F"): "very weak negative correlation (-0.21)",
-            ("D", "F"): "very weak negative correlation (-0.30)",
-            ("A", "D"): "moderate positive correlation (0.63)",
-            ("B", "G"): "virtually no correlation (-0.08)",
+            ("A", "G"): "very weak negative correlation (-0.08)",
+            ("B", "E"): "moderate positive correlation (0.48)",
+            ("D", "G"): "very weak positive correlation (0.10)",
+            ("A", "F"): "weak negative correlation (-0.21)",
+            ("D", "F"): "weak negative correlation (-0.30)",
+            ("A", "D"): "strong positive correlation (0.63)",
+            ("B", "G"): "very weak negative correlation (-0.08)",
             ("A", "B"): "very strong positive correlation (0.98)",
             ("B", "F"): "weak negative correlation (-0.34)",
-            ("B", "D"): "moderate positive correlation (0.64)",
+            ("B", "D"): "strong positive correlation (0.64)",
             ("A", "C"): "strong positive correlation (0.71)",
             ("E", "G"): "very weak negative correlation (-0.10)",
         }

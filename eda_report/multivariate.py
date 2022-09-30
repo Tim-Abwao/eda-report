@@ -182,15 +182,15 @@ class MultiVariable:
         nature = " positive" if correlation > 0 else " negative"
 
         value = abs(correlation)
-        if value >= 0.9:
+        if value >= 0.8:
             strength = "very strong"
-        elif value >= 0.7:
+        elif value >= 0.6:
             strength = "strong"
-        elif value >= 0.5:
+        elif value >= 0.4:
             strength = "moderate"
-        elif value >= 0.3:
+        elif value >= 0.2:
             strength = "weak"
-        elif value >= 0.1:
+        elif value >= 0.05:
             strength = "very weak"
         else:
             strength = "virtually no"

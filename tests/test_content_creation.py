@@ -89,8 +89,8 @@ class TestReportContent:
     def test_bivariate_summaries(self):
         assert self.content.bivariate_summaries == {
             ("sepal_width", "petal_length"): (
-                "Sepal_Width and Petal_Length have weak negative correlation"
-                " (-0.43)."
+                "Sepal_Width and Petal_Length have moderate negative "
+                "correlation (-0.43)."
             ),
             ("sepal_length", "sepal_width"): (
                 "Sepal_Length and Sepal_Width have very weak negative "
@@ -105,11 +105,11 @@ class TestReportContent:
                 "correlation (0.96)."
             ),
             ("sepal_length", "petal_length"): (
-                "Sepal_Length and Petal_Length have strong positive "
+                "Sepal_Length and Petal_Length have very strong positive "
                 "correlation (0.87)."
             ),
             ("sepal_length", "petal_width"): (
-                "Sepal_Length and Petal_Width have strong positive "
+                "Sepal_Length and Petal_Width have very strong positive "
                 "correlation (0.82)."
             ),
         }
