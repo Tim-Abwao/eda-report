@@ -24,6 +24,10 @@ mpl.rc("axes.spines", top=False, right=False)
 mpl.rc("axes", titlesize=12, titleweight=500)
 mpl.use("agg")  # use non-interactive matplotlib back-end
 
+# Customize boxplots
+mpl.rc("boxplot", notch=True, patchartist=True, vertical=False)
+mpl.rc("boxplot.medianprops", color="black")
+
 
 def savefig(figure: Figure) -> BytesIO:
     """Saves the contents of a :class:`~matplotlib.figure.Figure` in PNG
@@ -106,7 +110,7 @@ class UnivariatePlots(BasePlot):
         self.graphs = self._get_univariate_graphs()
 
     def _plot_box(self, variable: Variable) -> BytesIO:
-        """Get a boxplot for a numeric variable.
+        """Create a boxplot from a numeric variable.
 
         Args:
             variable (eda_report.univariate.Variable): The data to plot.
@@ -116,17 +120,20 @@ class UnivariatePlots(BasePlot):
         """
         fig = Figure()
         ax = fig.subplots()
-        sns.boxplot(
-            x=variable.data,
-            y=self.HUE,
-            ax=ax,
-            fliersize=4,
-            notch=True,
-            orient="h",
-            palette=f"dark:{self.GRAPH_COLOR}_r",
-            saturation=0.85,
-            width=0.2,
-        )
+        colors = mpl.rcParams["axes.prop_cycle"].by_key()["color"]
+
+        if self.HUE is None:
+            bplot = ax.boxplot(variable.data, labels=[variable.name], sym=".")
+            ax.set_yticklabels("")
+        else:
+            groups = {
+                key: group for key, group in variable.data.groupby(self.HUE)
+            }
+            bplot = ax.boxplot(groups.values(), labels=groups.keys(), sym=".")
+
+        for patch, color in zip(bplot["boxes"], colors):
+            patch.set_facecolor(color)
+
         ax.set_title(f"Box-plot of {variable.name}")
 
         return savefig(fig)
