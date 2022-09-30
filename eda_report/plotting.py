@@ -6,6 +6,8 @@ from typing import Dict, Optional, Sequence, Tuple
 import matplotlib as mpl
 import numpy as np
 import seaborn as sns
+from cycler import cycler
+from matplotlib.colors import to_rgb
 from matplotlib.figure import Figure
 from pandas import Series
 from scipy.stats import probplot
@@ -41,6 +43,18 @@ def savefig(figure: Figure) -> BytesIO:
     figure.savefig(graph, format="png")
 
     return graph
+
+
+def set_custom_palette(color: str, num: int) -> None:
+    """Create a custom colormap based on the specified `color`.
+
+    Args:
+        color (str): Valid matplotlib color specifier.
+        num (int): Number of colors to generate.
+    """
+    color_rgb = to_rgb(color)
+    color_array = np.linspace(color_rgb, (0.25, 0.25, 0.25), num=num)
+    mpl.rc("axes", prop_cycle=cycler(color=color_array))
 
 
 class BasePlot:
