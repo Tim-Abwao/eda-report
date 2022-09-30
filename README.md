@@ -114,12 +114,12 @@ species   150      3  setosa   50        33.33%
                           ***
           Bivariate Analysis (Correlation)
           --------------------------------
-sepal_length & petal_width --> strong positive correlation (0.82)
-sepal_length & petal_length --> strong positive correlation (0.87)
+sepal_width & petal_length --> moderate negative correlation (-0.43)
+sepal_length & petal_width --> very strong positive correlation (0.82)
+sepal_length & petal_length --> very strong positive correlation (0.87)
 petal_length & petal_width --> very strong positive correlation (0.96)
 sepal_length & sepal_width --> very weak negative correlation (-0.12)
 sepal_width & petal_width --> weak negative correlation (-0.37)
-sepal_width & petal_length --> weak negative correlation (-0.43)
 ```
 
 #### 3.2 Generate a report
