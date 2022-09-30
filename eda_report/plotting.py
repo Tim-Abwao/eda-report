@@ -3,7 +3,7 @@ from io import BytesIO
 from multiprocessing import Pool
 from typing import Dict, Optional, Sequence, Tuple
 
-import matplotlib
+import matplotlib as mpl
 import numpy as np
 import seaborn as sns
 from matplotlib.figure import Figure
@@ -16,11 +16,11 @@ from eda_report.univariate import Variable
 from eda_report.validate import validate_univariate_input
 
 # Matplotlib configuration
-matplotlib.rc("figure", autolayout=True, dpi=250, figsize=(6.5, 4))
-matplotlib.rc("font", family="serif")
-matplotlib.rc("axes.spines", top=False, right=False)
-matplotlib.rc("axes", titlesize=12, titleweight=500)
-matplotlib.use("agg")  # use non-interactive matplotlib back-end
+mpl.rc("figure", autolayout=True, dpi=150, figsize=(6.5, 4))
+mpl.rc("font", family="serif")
+mpl.rc("axes.spines", top=False, right=False)
+mpl.rc("axes", titlesize=12, titleweight=500)
+mpl.use("agg")  # use non-interactive matplotlib back-end
 
 
 def savefig(figure: Figure) -> BytesIO:
