@@ -216,14 +216,7 @@ class UnivariatePlots(BasePlot):
 
         # Include no more than 10 of the most common values
         top_10 = variable.data.value_counts().nlargest(10)
-        sns.barplot(
-            x=list(top_10.index),
-            y=top_10,
-            ax=ax,
-            palette=f"dark:{self.GRAPH_COLOR}_r",
-        )
-        ax.tick_params(axis="x", rotation=90)
-
+        ax.bar(top_10.index, top_10, alpha=0.8)
         if (num_unique := variable.num_unique) > 10:
             ax.set_title(
                 f"Bar-plot of {variable.name} (Top 10 of {num_unique})"
