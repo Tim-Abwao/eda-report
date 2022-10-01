@@ -77,6 +77,11 @@ class BasePlot:
         self.GRAPH_COLOR = graph_color
         self.HUE = validate_univariate_input(hue)
 
+        if self.HUE is None:
+            set_custom_palette(graph_color, num=2)
+        else:
+            set_custom_palette(graph_color, num=self.HUE.nunique())
+
 
 class UnivariatePlots(BasePlot):
     """Plots a collection of :class:`~eda_report.univariate.Variable`
