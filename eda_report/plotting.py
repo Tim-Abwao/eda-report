@@ -120,7 +120,6 @@ class UnivariatePlots(BasePlot):
         """
         fig = Figure()
         ax = fig.subplots()
-        colors = mpl.rcParams["axes.prop_cycle"].by_key()["color"]
 
         if self.HUE is None:
             bplot = ax.boxplot(variable.data, labels=[variable.name], sym=".")
@@ -131,8 +130,9 @@ class UnivariatePlots(BasePlot):
             }
             bplot = ax.boxplot(groups.values(), labels=groups.keys(), sym=".")
 
-        for patch, color in zip(bplot["boxes"], colors):
-            patch.set_facecolor(color)
+        for idx, patch in enumerate(bplot['boxes']):
+            patch.set_facecolor(f"C{idx}")
+            patch.set_alpha(.75)
 
         ax.set_title(f"Box-plot of {variable.name}")
 
