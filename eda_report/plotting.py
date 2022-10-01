@@ -197,23 +197,12 @@ class UnivariatePlots(BasePlot):
         Returns:
             io.BytesIO: The probability plot in PNG.
         """
-        fig = Figure()
+        fig = Figure(figsize=(6.5, 4.5))
         ax = fig.subplots()
-
-        theoretical_quantiles, ordered_values = probplot(
-            variable.data,
-            fit=False,  # The line of best fit will be plotted in regplot
-        )
-        sns.regplot(
-            x=theoretical_quantiles,
-            y=ordered_values,
-            ax=ax,
-            color=self.GRAPH_COLOR,
-        )
-
-        ax.set_title(f"Probability Plot of {variable.name}")
-        ax.set_xlabel("Theoretical Quantiles (~ Standard Normal)")
-        ax.set_ylabel("Ordered Values")
+        probplot(variable.data, fit=True, plot=ax)
+        ax.lines[0].set_color("C0")
+        ax.lines[1].set_color("k")
+        ax.set_title(f"Probability plot of {variable.name}")
         return savefig(fig)
 
     def _plot_bar(self, variable: Variable) -> BytesIO:
