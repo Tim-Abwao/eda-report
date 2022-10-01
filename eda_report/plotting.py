@@ -10,7 +10,7 @@ from cycler import cycler
 from matplotlib.colors import to_rgb
 from matplotlib.figure import Figure
 from pandas import Series
-from scipy.stats import probplot
+from scipy.stats import gaussian_kde, probplot
 from tqdm import tqdm
 
 from eda_report.multivariate import MultiVariable
@@ -138,25 +138,52 @@ class UnivariatePlots(BasePlot):
 
         return savefig(fig)
 
-    def _plot_dist(self, variable: Variable) -> BytesIO:
-        """Get a dist-plot for a numeric variable.
+    def _plot_kde(self, variable: Variable) -> BytesIO:
+        """Get a kde-plot for a numeric variable.
 
         Args:
             variable (eda_report.univariate.Variable): The data to plot.
 
         Returns:
-            io.BytesIO: The dist-plot in PNG format.
+            io.BytesIO: The kde-plot in PNG format.
         """
         fig = Figure()
         ax = fig.subplots()
-        sns.kdeplot(
-            x=variable.data,
-            ax=ax,
-            color=self.GRAPH_COLOR,
-            fill=True,
-            hue=self.HUE,
-            palette=f"dark:{self.GRAPH_COLOR}_r",
+        fig = mpl.figure.Figure(figsize=(6.5, 4))
+        ax = fig.subplots()
+
+        if len(variable.data) < 2 or np.isclose(variable.data.std(), 0):
+            ax.text(
+                x=0.08,
+                y=0.45,
+                s=(
+                    "[Could not plot kernel density estimate.\n "
+                    "Data is singular.]"
+                ),
+                color="#f72",
+                size=14,
+                weight=600,
+            )
+            return savefig(fig)
+
+        eval_points = np.linspace(
+            *(variable.data.agg([min, max])), num=len(variable.data)
         )
+
+        if self.HUE is None:
+            kernel = gaussian_kde(variable.data)
+            density = kernel(eval_points)
+            ax.plot(eval_points, density, label=variable.name)
+            ax.fill_between(eval_points, density, alpha=0.4)
+        else:
+            for key, data in variable.data.groupby(self.HUE):
+                kernel = gaussian_kde(data)
+                density = kernel(eval_points)
+                ax.plot(eval_points, density, label=key, alpha=0.75)
+                ax.fill_between(eval_points, density, alpha=0.25)
+
+        ax.set_ylim(0)
+        ax.legend()
         ax.set_title(f"Distribution plot of {variable.name}")
 
         return savefig(fig)
