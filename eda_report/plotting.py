@@ -149,8 +149,6 @@ class UnivariatePlots(BasePlot):
         """
         fig = Figure()
         ax = fig.subplots()
-        fig = mpl.figure.Figure(figsize=(6.5, 4))
-        ax = fig.subplots()
 
         if len(variable.data) < 2 or np.isclose(variable.data.std(), 0):
             ax.text(
@@ -169,7 +167,6 @@ class UnivariatePlots(BasePlot):
         eval_points = np.linspace(
             *(variable.data.agg([min, max])), num=len(variable.data)
         )
-
         if self.HUE is None:
             kernel = gaussian_kde(variable.data)
             density = kernel(eval_points)
@@ -264,7 +261,7 @@ class UnivariatePlots(BasePlot):
         if variable.var_type == "numeric":
             graphs = {
                 "box_plot": self._plot_box(variable),
-                "kde_plot": self._plot_dist(variable),
+                "kde_plot": self._plot_kde(variable),
                 "prob_plot": self._plot_prob(variable),
             }
         else:  # {"boolean", "categorical", "datetime"}:
