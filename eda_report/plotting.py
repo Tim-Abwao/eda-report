@@ -154,8 +154,8 @@ class UnivariatePlots(BasePlot):
         """
         fig = Figure()
         ax = fig.subplots()
-
-        if len(variable.data) < 2 or np.isclose(variable.data.std(), 0):
+        data = variable.data.dropna()
+        if len(data) < 2 or np.isclose(data.std(), 0):
             ax.text(
                 x=0.08,
                 y=0.45,
@@ -169,17 +169,15 @@ class UnivariatePlots(BasePlot):
             )
             return savefig(fig)
 
-        eval_points = np.linspace(
-            *(variable.data.agg([min, max])), num=len(variable.data)
-        )
+        eval_points = np.linspace(*(data.agg([min, max])), num=len(data))
         if self.HUE is None:
-            kernel = gaussian_kde(variable.data)
+            kernel = gaussian_kde(data)
             density = kernel(eval_points)
             ax.plot(eval_points, density, label=variable.name)
             ax.fill_between(eval_points, density, alpha=0.4)
         else:
-            for key, data in variable.data.groupby(self.HUE):
-                kernel = gaussian_kde(data)
+            for key, _series in data.groupby(self.HUE):
+                kernel = gaussian_kde(_series)
                 density = kernel(eval_points)
                 ax.plot(eval_points, density, label=key, alpha=0.75)
                 ax.fill_between(eval_points, density, alpha=0.25)
