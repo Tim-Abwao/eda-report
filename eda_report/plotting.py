@@ -350,34 +350,63 @@ class BivariatePlots(BasePlot):
                 )
 
             return {
-                "correlation_heatmap": self._plot_correlation_heatmap(),
+                "correlation_heatmap": self._plot_correlation(),
                 "regression_plots": bivariate_regression_plots,
             }
         else:
             return None
 
-    def _plot_correlation_heatmap(self) -> BytesIO:
-        """Get a heatmap of the correlation among all numeric columns.
+    def _plot_correlation(self) -> BytesIO:
+        """Create a bar chart showing the top 20 most correlated variables.
 
         Returns:
-            io.BytesIO: The heatmap in PNG format as bytes.
+            io.BytesIO: A bar-plot in PNG format as bytes.
         """
         fig = Figure(figsize=(7, 7))
         ax = fig.subplots()
-
-        sns.heatmap(
-            self.variables.correlation_df,
-            annot=True,
-            ax=ax,
-            center=0,
-            cmap="coolwarm",
-            linewidths=2,
-            mask=np.triu(self.variables.correlation_df),
-            square=True,
-            yticklabels=True,
+        pairs = list(self.variables.var_pairs)
+        corr_data = (
+            self.variables.correlation_df.unstack()  # get MultiIndex of cols
+            .loc[pairs]  # select unique pairs
+            .sort_values(key=abs)  # sort by magnitude
+            .tail(20)  # select top 20
         )
-        ax.tick_params(rotation=45)
-        fig.suptitle("Correlation in Numeric Columns", size=15)
+        labels = corr_data.index.map(" vs ".join)
+
+        fig = mpl.figure.Figure(figsize=(7, 6.3))
+        ax = fig.subplots()
+        ax.barh(labels, corr_data, label=labels)
+        ax.set_xlim(-1, 1)
+        ax.spines["left"].set_visible(False)
+        ax.yaxis.set_visible(False)
+        ax.axvline(0, 0, 1, color="#777")
+
+        for p in ax.patches:
+            p.set_alpha(abs(p.get_width()))
+            p.set_edgecolor("#777")
+
+            if p.get_width() < 0:
+                p.set_facecolor("steelblue")
+                ax.text(
+                    p.get_x(),
+                    p.get_y() + p.get_height() / 2,
+                    f"{p.get_width():,.2f} ({p.get_label()})  ",
+                    size=8,
+                    ha="right",
+                    va="center",
+                )
+            else:
+                p.set_facecolor("orangered")
+                ax.text(
+                    p.get_x(),
+                    p.get_y() + p.get_height() / 2,
+                    f"  {p.get_width():,.2}  ({p.get_label()})",
+                    size=8,
+                    ha="left",
+                    va="center",
+                )
+
+        ax.set_title(f"Pearson Correlation (Top {len(corr_data)})")
 
         return savefig(fig)
 

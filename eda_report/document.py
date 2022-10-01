@@ -180,7 +180,7 @@ class ReportDocument(ReportContent):
         self.document.add_page_break()
 
     def _get_bivariate_analysis(self) -> None:
-        """Get comparisons, regression-plots and ecdf-plots for pairs of numeric
+        """Get comparisons and regression-plots for pairs of numeric
         variables.
         """
         bivariate_heading = self.document.add_heading(
