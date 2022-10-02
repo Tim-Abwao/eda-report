@@ -5,7 +5,6 @@ from typing import Dict, Optional, Sequence, Tuple
 
 import matplotlib as mpl
 import numpy as np
-import seaborn as sns
 from cycler import cycler
 from matplotlib.colors import to_rgb
 from matplotlib.figure import Figure
@@ -25,7 +24,7 @@ mpl.rc("axes", titlesize=12, titleweight=500)
 mpl.use("agg")  # use non-interactive matplotlib back-end
 
 # Customize boxplots
-mpl.rc("boxplot", notch=True, patchartist=True, vertical=False)
+mpl.rc("boxplot", patchartist=True, vertical=False)
 mpl.rc("boxplot.medianprops", color="black")
 
 
@@ -135,9 +134,9 @@ class UnivariatePlots(BasePlot):
             }
             bplot = ax.boxplot(groups.values(), labels=groups.keys(), sym=".")
 
-        for idx, patch in enumerate(bplot['boxes']):
+        for idx, patch in enumerate(bplot["boxes"]):
             patch.set_facecolor(f"C{idx}")
-            patch.set_alpha(.75)
+            patch.set_alpha(0.75)
 
         ax.set_title(f"Box-plot of {variable.name}")
 
