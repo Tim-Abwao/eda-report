@@ -2,6 +2,7 @@ import logging
 from typing import Iterable, Sequence, Union
 
 from docx import Document
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Inches, Pt
 from docx.text.parfmt import ParagraphFormat
 from pandas.core.frame import DataFrame
@@ -159,15 +160,25 @@ class ReportDocument(ReportContent):
             )
             self.document.add_paragraph(var_info["description"])
 
-            self.document.add_heading("Summary Statistics", level=4)
+            stats_heading = self.document.add_heading(
+                "Summary Statistics", level=4
+            )
+            stats_heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
             self._create_table(var_info["statistics"], column_widths=[2.5, 2])
 
             for graph in var_info["graphs"].values():
                 self.document.add_picture(graph, width=Inches(4.4))
+                picture_paragraph = self.document.paragraphs[-1]
+                picture_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
             if (norm_tests := var_info["normality_tests"]) is not None:
 
-                self.document.add_heading("Tests for Normality", level=4)
+                norm_test_heading = self.document.add_heading(
+                    "Tests for Normality", level=4
+                )
+                norm_test_heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
                 # type | p-value | conclusion
                 self._create_table(
                     data=norm_tests,
@@ -194,6 +205,8 @@ class ReportDocument(ReportContent):
             self.bivariate_graphs["correlation_heatmap"],
             width=Inches(6.7),
         )
+        picture_paragraph = self.document.paragraphs[-1]
+        picture_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
         self.document.add_page_break()
 
         for idx, var_pair in enumerate(self.bivariate_summaries, start=1):
@@ -208,6 +221,8 @@ class ReportDocument(ReportContent):
                 self.bivariate_graphs["regression_plots"][var_pair],
                 width=Inches(3.5),
             )
+            picture_paragraph = self.document.paragraphs[-1]
+            picture_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
             # Add a page break after every 2 pairs
             if idx % 2 == 0:
@@ -249,6 +264,7 @@ class ReportDocument(ReportContent):
             cols=len(column_widths),
         )
         table.style = style or self.document.styles[self.TABLE_STYLE]
+        table.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
         # Set column dimensions
         for idx, width in enumerate(column_widths):
@@ -257,7 +273,7 @@ class ReportDocument(ReportContent):
         # Populate the rows
         for idx, row_data in enumerate(data.itertuples()):
             for cell, value in zip(table.rows[idx].cells, row_data):
-                cell.text = f"{value}".rstrip('0').rstrip('.')
+                cell.text = f"{value}".rstrip("0").rstrip(".")
 
                 # Font size and type-face have to be set at `run` level
                 run = cell.paragraphs[0].runs[0]
