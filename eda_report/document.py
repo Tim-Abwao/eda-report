@@ -206,7 +206,7 @@ class ReportDocument(ReportContent):
             self.document.add_paragraph(self.bivariate_summaries[var_pair])
             self.document.add_picture(
                 self.bivariate_graphs["regression_plots"][var_pair],
-                width=Inches(6),
+                width=Inches(3.5),
             )
 
             # Add a page break after every 2 pairs

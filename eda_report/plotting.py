@@ -420,23 +420,26 @@ class BivariatePlots(BasePlot):
             io.BytesIO: The regression-plot and ecdf-plot as subplots, in PNG
             format.
         """
-        fig = Figure(figsize=(8.2, 4))
-        ax1, ax2 = fig.subplots(nrows=1, ncols=2)
-        var1, var2 = var_pair
-        sns.regplot(
-            x=var1,
-            y=var2,
-            data=self.variables.data,
-            ax=ax1,
-            color=self.GRAPH_COLOR,
-        )
+        fig = Figure(figsize=(5, 4.8))
+        ax = fig.subplots()
 
-        pair_data = self.variables.data.loc[:, [var1, var2]]
-        normalized_data = (pair_data - pair_data.mean()) / pair_data.std()
-        sns.ecdfplot(
-            data=normalized_data, ax=ax2, palette=f"dark:{self.GRAPH_COLOR}_r"
+        data = self.variables.data.dropna()
+        var1, var2 = var_pair
+
+        if len(self.variables.data) > 50000:
+            data = data.sample(50000)
+
+        x = data[var1]
+        y = data[var2]
+        slope, intercept = np.polyfit(x, y, deg=1)
+        line_x = np.linspace(x.min(), x.max(), num=100)
+
+        ax.scatter(x, y, s=40, alpha=0.7, edgecolors="#444")
+        ax.plot(line_x, slope * line_x + intercept, color="#444", lw=2)
+        ax.set_title(
+            f"Slope: {slope:,.4f}\nIntercept: {intercept:,.4f}", size=11
         )
-        ax1.set_title(f"Regression-plot - {var1} vs {var2}".title(), size=9)
-        ax2.set_title("Empirical Cummulative Distribution Plot", size=9)
+        ax.set_xlabel(var1)
+        ax.set_ylabel(var2)
 
         return var_pair, savefig(fig)
