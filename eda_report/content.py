@@ -5,7 +5,11 @@ from pandas import Series
 from tqdm import tqdm
 
 from eda_report.multivariate import MultiVariable
-from eda_report.plotting import BivariatePlots, UnivariatePlots
+from eda_report.plotting import (
+    BivariatePlots,
+    plot_variable,
+    set_custom_palette,
+)
 from eda_report.univariate import (
     CategoricalStats,
     DatetimeStats,
@@ -38,6 +42,12 @@ class AnalysisResult:
         self.TARGET_VARIABLE = validate_target_variable(
             data=self.multivariable.data, target_variable=target_variable
         )
+
+        if self.TARGET_VARIABLE is None:
+            set_custom_palette(graph_color, num=2)
+        else:
+            set_custom_palette(graph_color, num=self.TARGET_VARIABLE.nunique())
+
         self.univariate_stats = self._get_univariate_statistics()
         self.univariate_graphs = self._get_univariate_graphs()
         self.bivariate_graphs = BivariatePlots(
@@ -93,10 +103,25 @@ class AnalysisResult:
         Returns:
             Dict[str, Dict]: Univariate graphs.
         """
-        variables = [stat.variable for stat in self.univariate_stats.values()]
-        return UnivariatePlots(
-            variables, graph_color=self.GRAPH_COLOR, hue=self.TARGET_VARIABLE
-        ).graphs
+        with Pool() as p:
+            variables = [
+                stat.variable for stat in self.univariate_stats.values()
+            ]
+            univariate_graphs = dict(
+                tqdm(
+                    # Plot variables in parallel processes
+                    p.imap(plot_variable, variables),
+                    # Progress-bar options
+                    total=len(variables),
+                    bar_format=(
+                        "{desc} {percentage:3.0f}%|{bar:35}| "
+                        "{n_fmt}/{total_fmt}"
+                    ),
+                    desc="Plot variables:    ",
+                    dynamic_ncols=True,
+                )
+            )
+        return univariate_graphs
 
 
 class ReportContent(AnalysisResult):

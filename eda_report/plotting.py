@@ -60,6 +60,158 @@ def set_custom_palette(color: str, num: int) -> None:
     mpl.rc("axes", prop_cycle=cycler(color=color_array))
 
 
+def box_plot(data: Series, *, label: str, hue: Series = None) -> Figure:
+    """Get a boxplot from numeric values.
+    Args:
+        data (Series): Values to plot.
+        label (str): A name for the `data`.
+        hue (Series, optional): Values for grouping the `data`. Defaults to
+            None.
+
+    Returns:
+        matplotlib.figure.Figure: Matplotlib figure with the box-plot.
+    """
+    data = data.dropna()
+    fig = Figure()
+    ax = fig.subplots()
+
+    if hue is None:
+        bplot = ax.boxplot(data, labels=[label], sym=".")
+        ax.set_yticklabels("")
+    else:
+        groups = {key: group for key, group in data.groupby(hue)}
+        bplot = ax.boxplot(groups.values(), labels=groups.keys(), sym=".")
+
+    for idx, patch in enumerate(bplot["boxes"]):
+        patch.set_facecolor(f"C{idx}")
+        patch.set_alpha(0.75)
+
+    ax.set_title(f"Box-plot of {label}")
+
+    return fig
+
+
+def kde_plot(data: Series, *, label: str, hue: Series = None) -> Figure:
+    """Get a kde-plot from numeric values.
+
+    Args:
+        data (Series): Values to plot.
+        label (str): A name for the `data`.
+        hue (Series, optional): Values for grouping the `data`. Defaults to
+            None.
+
+    Returns:
+        matplotlib.figure.Figure: Matplotlib figure with the kde-plot.
+    """
+    data = data.dropna()
+    fig = Figure()
+    ax = fig.subplots()
+
+    if len(data) < 2 or np.isclose(data.std(), 0):
+        ax.text(
+            x=0.08,
+            y=0.45,
+            s=(
+                "[Could not plot kernel density estimate.\n "
+                "Data is singular.]"
+            ),
+            color="#f72",
+            size=14,
+            weight=600,
+        )
+        return fig
+
+    eval_points = np.linspace(*(data.agg([min, max])), num=len(data))
+    if hue is None:
+        kernel = gaussian_kde(data)
+        density = kernel(eval_points)
+        ax.plot(eval_points, density, label=label)
+        ax.fill_between(eval_points, density, alpha=0.4)
+    else:
+        for key, _series in data.groupby(hue):
+            kernel = gaussian_kde(_series)
+            density = kernel(eval_points)
+            ax.plot(eval_points, density, label=key, alpha=0.75)
+            ax.fill_between(eval_points, density, alpha=0.25)
+
+    ax.set_ylim(0)
+    ax.legend()
+    ax.set_title(f"Distribution plot of {label}")
+
+    return fig
+
+
+def prob_plot(data: Series, *, label: str, hue: Series = None) -> Figure:
+    """Get a probability-plot from numeric values.
+
+    Args:
+        data (Series): Values to plot.
+        label (str): A name for the `data`.
+        hue (Series, optional): Values for grouping the `data`. Defaults to
+            None.
+
+    Returns:
+        matplotlib.figure.Figure: Matplotlib figure with the kde-plot.
+    """
+    data = data.dropna()
+    fig = Figure(figsize=(6.5, 4.5))
+    ax = fig.subplots()
+    probplot(data, fit=True, plot=ax)
+    ax.lines[0].set_color("C0")
+    ax.lines[1].set_color("k")
+    ax.set_title(f"Probability plot of {label}")
+    return fig
+
+
+def bar_plot(data: Series, *, label: str) -> Figure:
+    """Get a bar-plot from categorical values.
+
+    Args:
+        data (Series): Values to plot.
+        label (str): A name for the `data`.
+
+    Returns:
+        matplotlib.figure.Figure: Matplotlib figure with the kde-plot.
+    """
+    data = data.dropna()
+    fig = Figure()
+    ax = fig.subplots()
+
+    # Include no more than 10 of the most common values
+    top_10 = data.value_counts().nlargest(10)
+    ax.bar(top_10.index, top_10, alpha=0.8)
+    if (num_unique := data.nunique()) > 10:
+        ax.set_title(f"Bar-plot of {label} (Top 10 of {num_unique})")
+    else:
+        ax.set_title(f"Bar-plot of {label}")
+
+    # Annotate bars
+    for p in ax.patches:
+        ax.annotate(
+            f"{p.get_height():,.0f}",
+            ha="center",
+            size=8,
+            xy=(p.get_x() + p.get_width() / 2, p.get_height() * 1.02),
+        )
+
+    return fig
+
+
+def plot_variable(variable: Variable, hue=None) -> Sequence:
+    """Get graphs (as PNG images) for a variable based on it's type."""
+    if variable.var_type == "numeric":
+        graphs = [
+            savefig(
+                plot_func(data=variable.data, hue=hue, label=variable.name)
+            )
+            for plot_func in [box_plot, kde_plot, prob_plot]
+        ]
+    else:  # {"boolean", "categorical", "datetime"}:
+        graphs = [savefig(bar_plot(data=variable.data, label=variable.name))]
+
+    return variable.name, graphs
+
+
 class BasePlot:
     """Defines general plot settings, such as the the color palette and hue.
 
@@ -80,213 +232,6 @@ class BasePlot:
             set_custom_palette(graph_color, num=2)
         else:
             set_custom_palette(graph_color, num=self.HUE.nunique())
-
-
-class UnivariatePlots(BasePlot):
-    """Plots a collection of :class:`~eda_report.univariate.Variable`
-    instances:
-
-    - *Box-plots*, *dist-plots* and *normal-probability-plots* for
-      numeric variables.
-    - *Bar-plots* for categorical variables.
-
-    Args:
-        variables (Sequence[Variable]): List of variables to plot.
-        graph_color (str, optional): The color to apply to the generated
-            graphs. Defaults to "cyan".
-        hue (pandas.Series, optional): Data to use to group values.
-            Defaults to None.
-
-    Attributes:
-        graphs (Dict[str, BytesIO]): A dictionary of graphs, with graph names
-           as keys and file-objects containing plotted graphs as values.
-    """
-
-    def __init__(
-        self,
-        variables: Sequence[Variable],
-        *,
-        graph_color: str = "cyan",
-        hue: Series = None,
-    ) -> None:
-        super().__init__(graph_color=graph_color, hue=hue)
-        self.variables = variables
-        self.graphs = self._get_univariate_graphs()
-
-    def _plot_box(self, variable: Variable) -> BytesIO:
-        """Create a boxplot from a numeric variable.
-
-        Args:
-            variable (eda_report.univariate.Variable): The data to plot.
-
-        Returns:
-            io.BytesIO: The boxplot in PNG format.
-        """
-        fig = Figure()
-        ax = fig.subplots()
-
-        if self.HUE is None:
-            bplot = ax.boxplot(variable.data, labels=[variable.name], sym=".")
-            ax.set_yticklabels("")
-        else:
-            groups = {
-                key: group for key, group in variable.data.groupby(self.HUE)
-            }
-            bplot = ax.boxplot(groups.values(), labels=groups.keys(), sym=".")
-
-        for idx, patch in enumerate(bplot["boxes"]):
-            patch.set_facecolor(f"C{idx}")
-            patch.set_alpha(0.75)
-
-        ax.set_title(f"Box-plot of {variable.name}")
-
-        return savefig(fig)
-
-    def _plot_kde(self, variable: Variable) -> BytesIO:
-        """Get a kde-plot for a numeric variable.
-
-        Args:
-            variable (eda_report.univariate.Variable): The data to plot.
-
-        Returns:
-            io.BytesIO: The kde-plot in PNG format.
-        """
-        fig = Figure()
-        ax = fig.subplots()
-        data = variable.data.dropna()
-        if len(data) < 2 or np.isclose(data.std(), 0):
-            ax.text(
-                x=0.08,
-                y=0.45,
-                s=(
-                    "[Could not plot kernel density estimate.\n "
-                    "Data is singular.]"
-                ),
-                color="#f72",
-                size=14,
-                weight=600,
-            )
-            return savefig(fig)
-
-        eval_points = np.linspace(*(data.agg([min, max])), num=len(data))
-        if self.HUE is None:
-            kernel = gaussian_kde(data)
-            density = kernel(eval_points)
-            ax.plot(eval_points, density, label=variable.name)
-            ax.fill_between(eval_points, density, alpha=0.4)
-        else:
-            for key, _series in data.groupby(self.HUE):
-                kernel = gaussian_kde(_series)
-                density = kernel(eval_points)
-                ax.plot(eval_points, density, label=key, alpha=0.75)
-                ax.fill_between(eval_points, density, alpha=0.25)
-
-        ax.set_ylim(0)
-        ax.legend()
-        ax.set_title(f"Distribution plot of {variable.name}")
-
-        return savefig(fig)
-
-    def _plot_prob(self, variable: Variable) -> BytesIO:
-        """Get a probability plot for a numeric variable.
-
-        Args:
-            variable (eda_report.univariate.Variable): The data to plot.
-
-        Returns:
-            io.BytesIO: The probability plot in PNG.
-        """
-        fig = Figure(figsize=(6.5, 4.5))
-        ax = fig.subplots()
-        probplot(variable.data, fit=True, plot=ax)
-        ax.lines[0].set_color("C0")
-        ax.lines[1].set_color("k")
-        ax.set_title(f"Probability plot of {variable.name}")
-        return savefig(fig)
-
-    def _plot_bar(self, variable: Variable) -> BytesIO:
-        """Get a barplot for a categorical, boolean or datetime variable.
-
-        Args:
-            variable (eda_report.univariate.Variable): The data to plot.
-
-        Returns:
-            io.BytesIO: The barplot in PNG format.
-        """
-        fig = Figure()
-        ax = fig.subplots()
-
-        # Include no more than 10 of the most common values
-        top_10 = variable.data.value_counts().nlargest(10)
-        ax.bar(top_10.index, top_10, alpha=0.8)
-        if (num_unique := variable.num_unique) > 10:
-            ax.set_title(
-                f"Bar-plot of {variable.name} (Top 10 of {num_unique})"
-            )
-        else:
-            ax.set_title(f"Bar-plot of {variable.name}")
-
-        # Annotate bars
-        for p in ax.patches:
-            ax.annotate(
-                f"{p.get_height():,.0f}",
-                ha="center",
-                size=8,
-                xy=(p.get_x() + p.get_width() / 2, p.get_height() * 1.02),
-            )
-
-        return savefig(fig)
-
-    def _plot_variable(self, variable: Variable) -> Tuple[str, dict]:
-        """Plot graphs based on the ``Variable`` type.
-
-        For **numeric** variables, a *box-plot*, *dist-plot* and *probability
-        plot* are produced.
-
-        For **categorical**, **boolean** or **datetime** objects, only a *bar
-        plot* is produced.
-
-        Args:
-            variable (eda_report.univariate.Variable): The data to plot.
-
-        Returns:
-            Tuple[str, Dict]: The variable's name, and a dictionary of its
-            graphs.
-        """
-        if variable.var_type == "numeric":
-            graphs = {
-                "box_plot": self._plot_box(variable),
-                "kde_plot": self._plot_kde(variable),
-                "prob_plot": self._plot_prob(variable),
-            }
-        else:  # {"boolean", "categorical", "datetime"}:
-            graphs = {"bar_plot": self._plot_bar(variable)}
-
-        return variable.name, graphs
-
-    def _get_univariate_graphs(self) -> Dict[str, Dict]:
-        """Concurrently plot graphs for the variables present.
-
-        Returns:
-            Dict[str, Dict]: Variable names as keys, and their graphs as
-            nested dictionaries.
-        """
-        with Pool() as p:
-            univariate_graphs = dict(
-                tqdm(
-                    # Plot variables in parallel processes
-                    p.imap(self._plot_variable, self.variables),
-                    # Progress-bar options
-                    total=len(self.variables),
-                    bar_format=(
-                        "{desc} {percentage:3.0f}%|{bar:35}| "
-                        "{n_fmt}/{total_fmt}"
-                    ),
-                    desc="Plot variables:    ",
-                    dynamic_ncols=True,
-                )
-            )
-        return univariate_graphs
 
 
 class BivariatePlots(BasePlot):

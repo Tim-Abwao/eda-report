@@ -167,7 +167,7 @@ class ReportDocument(ReportContent):
 
             self._create_table(var_info["statistics"], column_widths=[2.5, 2])
 
-            for graph in var_info["graphs"].values():
+            for graph in var_info["graphs"]:
                 self.document.add_picture(graph, width=Inches(4.4))
                 picture_paragraph = self.document.paragraphs[-1]
                 picture_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
