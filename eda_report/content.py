@@ -100,15 +100,16 @@ class AnalysisResult:
             Dict[str, Dict]: Univariate graphs.
         """
         with Pool() as p:
-            variables = [
-                stat.variable for stat in self.univariate_stats.values()
-            ]
+            variables_and_hue = (
+                (stat.variable, self.TARGET_VARIABLE)
+                for stat in self.univariate_stats.values()
+            )
             univariate_graphs = dict(
                 tqdm(
                     # Plot variables in parallel processes
-                    p.imap(plot_variable, variables),
+                    p.imap(plot_variable, variables_and_hue),
                     # Progress-bar options
-                    total=len(variables),
+                    total=len(self.univariate_stats),
                     bar_format=(
                         "{desc} {percentage:3.0f}%|{bar:35}| "
                         "{n_fmt}/{total_fmt}"

@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from io import BytesIO
 from multiprocessing import Pool
-from typing import Dict, Optional, Sequence, Tuple
+from typing import Sequence, Tuple
 
 import matplotlib as mpl
 import numpy as np
@@ -13,7 +13,6 @@ from scipy.stats import gaussian_kde, probplot
 from tqdm import tqdm
 
 from eda_report.multivariate import MultiVariable
-from eda_report.univariate import Variable
 from eda_report.validate import validate_univariate_input
 
 # Matplotlib configuration
@@ -197,8 +196,9 @@ def bar_plot(data: Series, *, label: str) -> Figure:
     return fig
 
 
-def plot_variable(variable: Variable, hue=None) -> Sequence:
+def plot_variable(variable_and_hue: Tuple, hue=None) -> Sequence:
     """Get graphs (as PNG images) for a variable based on it's type."""
+    variable, hue = variable_and_hue
     if variable.var_type == "numeric":
         graphs = [
             savefig(
