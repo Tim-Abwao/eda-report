@@ -68,7 +68,9 @@ def box_plot(data: Series, *, label: str, hue: Series = None) -> Figure:
     Returns:
         matplotlib.figure.Figure: Matplotlib figure with the box-plot.
     """
+    original_data = data
     data = data.dropna()
+
     fig = Figure()
     ax = fig.subplots()
 
@@ -76,6 +78,7 @@ def box_plot(data: Series, *, label: str, hue: Series = None) -> Figure:
         bplot = ax.boxplot(data, labels=[label], sym=".")
         ax.set_yticklabels("")
     else:
+        hue = hue[original_data.notna()]
         groups = {key: group for key, group in data.groupby(hue)}
         bplot = ax.boxplot(groups.values(), labels=groups.keys(), sym=".")
 
@@ -100,7 +103,9 @@ def kde_plot(data: Series, *, label: str, hue: Series = None) -> Figure:
     Returns:
         matplotlib.figure.Figure: Matplotlib figure with the kde-plot.
     """
+    original_data = data
     data = data.dropna()
+
     fig = Figure()
     ax = fig.subplots()
 
@@ -123,8 +128,9 @@ def kde_plot(data: Series, *, label: str, hue: Series = None) -> Figure:
         kernel = gaussian_kde(data)
         density = kernel(eval_points)
         ax.plot(eval_points, density, label=label)
-        ax.fill_between(eval_points, density, alpha=0.4)
+        ax.fill_between(eval_points, density, alpha=0.3)
     else:
+        hue = hue[original_data.notna()]
         for key, _series in data.groupby(hue):
             kernel = gaussian_kde(_series)
             density = kernel(eval_points)
@@ -133,7 +139,7 @@ def kde_plot(data: Series, *, label: str, hue: Series = None) -> Figure:
 
     ax.set_ylim(0)
     ax.legend()
-    ax.set_title(f"Distribution plot of {label}")
+    ax.set_title(f"Density plot of {label}")
 
     return fig
 
