@@ -38,7 +38,7 @@ class TestDtypeDetection:
         assert numeric.var_type == "numeric"
 
 
-class TestVariableProperties:
+class TestGeneralVariableProperties:
 
     variable = Variable(list(range(11)) + [None], name="some-variable")
     unnamed_variable = Variable(list("ababdea"))
@@ -80,8 +80,10 @@ class TestVariableProperties:
 
 class TestCategoricalStats:
 
-    majority_unique = analyze_univariate(["a", "b", "c", "d", None, "a"])
-    majority_repeating = analyze_univariate(["a", "b", "c", "d"] * 3)
+    majority_unique = Variable(
+        ["a", "b", "c", "d", None, "a"]
+    ).summary_statistics
+    majority_repeating = Variable(["a", "b", "c", "d"] * 3).summary_statistics
 
     def test_data_type(self):
         assert isinstance(self.majority_unique, CategoricalStats)
@@ -133,21 +135,21 @@ class TestCategoricalStats:
 
 class TestBooleanVariables:
     # Boolean variables are treated as categorical. Only the var_type differs.
-    boolean_from_int = analyze_univariate([1, 0, 1] * 5)
-    boolean_variable = analyze_univariate([True, False, True] * 5)
+    boolean_from_int = Variable([1, 0, 1] * 5)
+    boolean_variable = Variable([True, False, True] * 5)
 
     def test_dtype(self):
-        assert is_categorical_dtype(self.boolean_from_int.variable.data)
-        assert is_categorical_dtype(self.boolean_variable.variable.data)
-        assert self.boolean_from_int.variable.var_type == "boolean"
-        assert self.boolean_variable.variable.var_type == "boolean"
+        assert is_categorical_dtype(self.boolean_from_int.data)
+        assert is_categorical_dtype(self.boolean_variable.data)
+        assert self.boolean_from_int.var_type == "boolean"
+        assert self.boolean_variable.var_type == "boolean"
 
 
 class TestDateTimeStats:
 
-    datetime = analyze_univariate(
+    datetime = Variable(
         date_range("01-01-2022", periods=10, freq="D"), name="dates"
-    )
+    ).summary_statistics
 
     def test_data_type(self):
         assert isinstance(self.datetime, DatetimeStats)
@@ -181,7 +183,7 @@ class TestDateTimeStats:
 
 class TestNumericStats:
 
-    numeric = analyze_univariate(data=range(50), name="1 to 50")
+    numeric = Variable(data=range(50), name="1 to 50").summary_statistics
 
     def test_data_type(self):
         assert isinstance(self.numeric, NumericStats)
@@ -226,3 +228,10 @@ class TestNumericStats:
             "normal\nShapiro-Wilk test            0.0580895        Possibly "
             "normal"
         )
+
+
+def test_analyse_variable():
+    name, stats = analyze_univariate(("wantufifty", range(50)))
+
+    assert name == "wantufifty"
+    assert isinstance(stats, Variable)

@@ -3,40 +3,38 @@ from io import BytesIO
 from eda_report.content import AnalysisResult, ReportContent
 from eda_report.multivariate import MultiVariable
 from eda_report.univariate import CategoricalStats, NumericStats
-from seaborn import load_dataset
+from pandas import DataFrame
 
-data = load_dataset("iris")
+data = DataFrame(
+    {"A": range(50), "B": [1, 2, 3, 4, 5] * 10, "C": list("ab") * 25}
+)
 
 
 class TestAnalysisResult:
-    results = AnalysisResult(data, graph_color="blue")
+    results = AnalysisResult(data, graph_color="green", groupby_data="C")
 
     def test_general_properties(self):
         assert isinstance(self.results.multivariable, MultiVariable)
-        assert self.results.GRAPH_COLOR == "blue"
-        assert self.results.GROUPBY_DATA is None
+        assert self.results.GRAPH_COLOR == "green"
+        assert self.results.GROUPBY_DATA.equals(data["C"])
 
     def test_univariate_stats(self):
         assert isinstance(
-            self.results.univariate_stats["species"], CategoricalStats
+            self.results.univariate_stats["A"].summary_statistics, NumericStats
         )
-        for key in {
-            "sepal_length",
-            "sepal_width",
-            "petal_length",
-            "petal_width",
-        }:
-            assert isinstance(self.results.univariate_stats[key], NumericStats)
+        assert isinstance(
+            self.results.univariate_stats["B"].summary_statistics,
+            CategoricalStats,
+        )
+        assert isinstance(
+            self.results.univariate_stats["C"].summary_statistics,
+            CategoricalStats,
+        )
 
     def test_univariate_graphs(self):
-        for key in {
-            "petal_length",
-            "sepal_width",
-            "species",
-            "petal_width",
-            "sepal_length",
-        }:
-            for graph in self.results.univariate_graphs[key].values():
+        for key, graphs in self.results.univariate_graphs.items():
+            assert key in set("ABC")
+            for graph in graphs.values():
                 assert isinstance(graph, BytesIO)
 
     def test_bivariate_graphs(self):
@@ -54,62 +52,34 @@ class TestAnalysisResult:
 
 
 class TestReportContent:
-    content = ReportContent(
-        data,
-        title="Some Title",
-        graph_color="magenta",
-        groupby_data="species",
-    )
+    content = ReportContent(data, title="Some Title")
 
     def test_general_attributes(self):
         assert isinstance(self.content, AnalysisResult)
-        assert self.content.GRAPH_COLOR == "magenta"
+        assert self.content.GRAPH_COLOR == "cyan"
         assert self.content.TITLE == "Some Title"
-        assert self.content.GROUPBY_DATA.equals(data["species"])
+        assert self.content.GROUPBY_DATA is None
 
     def test_intro(self):
         assert self.content.intro_text == (
-            "The dataset consists of 150 rows (observations) and 5 columns "
-            "(features), 4 of which are numeric."
+            "The dataset consists of 50 rows (observations) and 3 columns "
+            "(features), 2 of which are numeric."
         )
 
     def test_variable_info(self):
-        species_info = self.content.variable_info["species"]
-        assert set(species_info.keys()) == {
+        A_info = self.content.variable_info["A"]
+        assert set(A_info.keys()) == {
             "description",
             "graphs",
             "statistics",
             "normality_tests",
         }
-        assert species_info["description"] == (
-            "Species is a categorical variable with 3 unique values. "
-            "None of its values are missing."
+        assert A_info["description"] == (
+            "A is a numeric variable with 50 unique values. None of its values"
+            " are missing."
         )
 
     def test_bivariate_summaries(self):
         assert self.content.bivariate_summaries == {
-            ("sepal_width", "petal_length"): (
-                "Sepal_Width and Petal_Length have moderate negative "
-                "correlation (-0.43)."
-            ),
-            ("sepal_length", "sepal_width"): (
-                "Sepal_Length and Sepal_Width have very weak negative "
-                "correlation (-0.12)."
-            ),
-            ("sepal_width", "petal_width"): (
-                "Sepal_Width and Petal_Width have weak negative correlation"
-                " (-0.37)."
-            ),
-            ("petal_length", "petal_width"): (
-                "Petal_Length and Petal_Width have very strong positive "
-                "correlation (0.96)."
-            ),
-            ("sepal_length", "petal_length"): (
-                "Sepal_Length and Petal_Length have very strong positive "
-                "correlation (0.87)."
-            ),
-            ("sepal_length", "petal_width"): (
-                "Sepal_Length and Petal_Width have very strong positive "
-                "correlation (0.82)."
-            ),
+            ("A", "B"): "A and B have very weak positive correlation (0.10)."
         }
