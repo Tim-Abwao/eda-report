@@ -1,4 +1,3 @@
-from collections.abc import Iterable
 from io import BytesIO
 from multiprocessing import Pool
 from typing import Sequence, Tuple
@@ -13,7 +12,6 @@ from scipy.stats import gaussian_kde, probplot
 from tqdm import tqdm
 
 from eda_report.multivariate import MultiVariable
-from eda_report.validate import validate_univariate_input
 
 # Matplotlib configuration
 mpl.rc("figure", autolayout=True, dpi=150, figsize=(6.5, 4))
@@ -210,28 +208,6 @@ def plot_variable(variable_and_hue: Tuple, hue=None) -> Sequence:
         graphs = [savefig(bar_plot(data=variable.data, label=variable.name))]
 
     return variable.name, graphs
-
-
-class BasePlot:
-    """Defines general plot settings, such as the the color palette and hue.
-
-    Args:
-        graph_color (str, optional): The color to apply to the generated
-            graphs. Defaults to "cyan".
-        hue (Iterable, optional): Data to use to group values. Defaults to
-            None.
-    """
-
-    def __init__(
-        self, *, graph_color: str = "cyan", hue: Iterable = None
-    ) -> None:
-        self.GRAPH_COLOR = graph_color
-        self.HUE = validate_univariate_input(hue)
-
-        if self.HUE is None:
-            set_custom_palette(graph_color, num=2)
-        else:
-            set_custom_palette(graph_color, num=self.HUE.nunique())
 
 
 def plot_correlation(variables: MultiVariable) -> Figure:
