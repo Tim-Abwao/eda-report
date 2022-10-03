@@ -1,7 +1,6 @@
 from multiprocessing import Pool
-from typing import Any, Dict, Iterable, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, Optional, Union
 
-from pandas import Series
 from tqdm import tqdm
 
 from eda_report.multivariate import MultiVariable
@@ -10,12 +9,7 @@ from eda_report.plotting import (
     plot_variable,
     set_custom_palette,
 )
-from eda_report.univariate import (
-    CategoricalStats,
-    DatetimeStats,
-    NumericStats,
-    analyze_univariate,
-)
+from eda_report.univariate import Variable, analyze_univariate
 from eda_report.validate import validate_groupby_data
 
 
@@ -52,25 +46,7 @@ class AnalysisResult:
         self.univariate_graphs = self._get_univariate_graphs()
         self.bivariate_graphs = plot_multivariable(self.multivariable)
 
-    def _analyze_variable(
-        self, items: Tuple[str, Series]
-    ) -> Tuple[str, Union[CategoricalStats, DatetimeStats, NumericStats]]:
-        """Get summary statistics for a single variable.
-
-        Args:
-            items (Tuple[str, Series]): Pair returned by
-                :func:`pandas.DataFrame.iteritems`.
-
-        Returns:
-            Tuple[str, Union[CategoricalStats, DatetimeStats, NumericStats]]:
-            Variable name, and summary statistics.
-        """
-        name, data = items
-        return name, analyze_univariate(data, name=name)
-
-    def _get_univariate_statistics(
-        self,
-    ) -> Dict[str, Union[CategoricalStats, DatetimeStats, NumericStats]]:
+    def _get_univariate_statistics(self) -> Dict:
         """Compute summary statistics for all variables present.
 
         Returns:
@@ -81,7 +57,7 @@ class AnalysisResult:
         with Pool() as p:
             univariate_stats = dict(
                 tqdm(
-                    p.imap(self._analyze_variable, data.iteritems()),
+                    p.imap(analyze_univariate, data.items()),
                     total=data.shape[1],
                     bar_format=(
                         "{desc} {percentage:3.0f}%|{bar:35}| "
@@ -100,10 +76,10 @@ class AnalysisResult:
             Dict[str, Dict]: Univariate graphs.
         """
         with Pool() as p:
-            variables_and_hue = (
-                (stat.variable, self.GROUPBY_DATA)
+            variables_and_hue = [
+                (stat, self.GROUPBY_DATA)
                 for stat in self.univariate_stats.values()
-            )
+            ]
             univariate_graphs = dict(
                 tqdm(
                     # Plot variables in parallel processes
@@ -181,10 +157,7 @@ class ReportContent(AnalysisResult):
 
         return f"The dataset consists of {rows} and {cols}{numeric}."
 
-    def _describe_variable(
-        self,
-        univariate_stat: Union[CategoricalStats, DatetimeStats, NumericStats],
-    ) -> Dict[str, Any]:
+    def _describe_variable(self, variable: Variable) -> Dict[str, Any]:
         """Get summary statistics for a variable.
 
         Args:
@@ -193,7 +166,6 @@ class ReportContent(AnalysisResult):
         Returns:
             Dict[str, Any]: Summary statistics.
         """
-        variable = univariate_stat.variable
         if variable.num_unique == 1:
             unique_vals = "1 unique value"
         else:
@@ -207,10 +179,12 @@ class ReportContent(AnalysisResult):
             ),
             "graphs": self.univariate_graphs[variable.name],
             "statistics": (
-                univariate_stat._get_summary_statistics().to_frame().round(4)
+                variable.summary_statistics._get_summary_statistics()
+                .to_frame()
+                .round(4)
             ),
             "normality_tests": (
-                univariate_stat._test_for_normality()
+                variable.summary_statistics._test_for_normality()
                 if variable.var_type == "numeric"
                 else None
             ),

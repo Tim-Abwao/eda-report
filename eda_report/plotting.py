@@ -308,11 +308,12 @@ def plot_regression(data) -> Figure:
 def plot_multivariable(variables: MultiVariable):
 
     if hasattr(variables, "var_pairs"):
-        paired_data_gen = (
-            variables.data.loc[:, pair].dropna()
-            for pair in variables.var_pairs
-        )
+
         with Pool() as p:
+            paired_data_gen = [
+                variables.data.loc[:, pair].dropna()
+                for pair in variables.var_pairs
+            ]
             bivariate_regression_plots = dict(
                 tqdm(
                     p.imap(plot_regression, paired_data_gen),

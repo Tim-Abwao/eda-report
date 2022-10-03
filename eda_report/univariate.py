@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 from textwrap import shorten
-from typing import Optional, Union
+from typing import Optional, Tuple
 
 from pandas import DataFrame, Series
 from pandas.api.types import (
@@ -53,6 +53,11 @@ class Variable:
         #: ``number (percentage%)`` e.g "4 (16.67%)".
         self.missing = self._get_missing_values_info()
 
+        self._get_summary_statistics()
+
+    def __repr__(self) -> str:
+        return repr(self.summary_statistics)
+
     def rename(self, name: str = None) -> None:
         """Rename the variable as specified.
 
@@ -90,6 +95,16 @@ class Variable:
                 self.data = self.data.astype("category")
 
         return "categorical"
+
+    def _get_summary_statistics(self) -> None:
+        """Compute summary statistics for the variable."""
+        if self.var_type == "numeric":
+            stats = NumericStats(self)
+        elif self.var_type == "datetime":
+            stats = DatetimeStats(self)
+        else:
+            stats = CategoricalStats(self)
+        self.summary_statistics = stats
 
     def _get_missing_values_info(self) -> Optional[str]:
         """Get the number of values missing from the variable.
@@ -348,25 +363,12 @@ class NumericStats:
         return results
 
 
-def analyze_univariate(
-    data: Iterable, *, name: str = None
-) -> Union[CategoricalStats, DatetimeStats, NumericStats]:
+def analyze_univariate(name_and_data: Tuple) -> Variable:
     """Convert a one-dimensional dataset into a
     :class:`~eda_report.univariate.Variable`, and get summary statistics.
 
-    Args:
-        data (Iterable): The data to analyze.
-        name (str, optional): The name to assign the variable. Defaults to
-            None.
-
-    Returns:
-        Union[CategoricalStats, DatetimeStats, NumericStats]: Summary
-        statistics
     """
+    name, data = name_and_data
     var = Variable(data, name=name)
-    if var.var_type == "numeric":
-        return NumericStats(variable=var)
-    elif var.var_type == "datetime":
-        return DatetimeStats(variable=var)
-    else:
-        return CategoricalStats(variable=var)
+
+    return name, var

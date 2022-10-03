@@ -5,7 +5,7 @@ from typing import Optional, Sequence
 
 from pandas.core.frame import DataFrame
 
-from eda_report.univariate import analyze_univariate
+from eda_report.univariate import Variable
 from eda_report.validate import validate_multivariate_input
 
 
@@ -64,7 +64,9 @@ class MultiVariable:
             str: The string representation of the ``MultiVariable`` instance.
         """
         if self.data.shape[1] == 1:
-            return str(analyze_univariate(self.data.squeeze()))
+            return str(
+                Variable(self.data.squeeze(), name=self.data.columns[0])
+            )
 
         if self.numeric_cols is None:
             numeric_info = numeric_stats = ""
