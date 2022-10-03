@@ -138,15 +138,15 @@ def validate_univariate_input(
         return series
 
 
-def validate_target_variable(
-    *, data: DataFrame, target_variable: Union[int, str]
+def validate_groupby_data(
+    *, data: DataFrame, groupby_data: Union[int, str]
 ) -> Optional[Series]:
     """Ensures that the specified *target variable* (column label or index) is
     present in the data.
 
     Args:
         data (DataFrame): The data being analyzed.
-        target_variable (Union[int, str]): A column label or index.
+        groupby_data (Union[int, str]): A column label or index.
 
     Raises:
         TargetVariableError: If the supplied column label does not exist, or
@@ -155,31 +155,31 @@ def validate_target_variable(
     Returns:
         Optional[pandas.Series]: The target variable's data.
     """
-    if target_variable is None:
+    if groupby_data is None:
         return None
-    elif isinstance(target_variable, int):
+    elif isinstance(groupby_data, int):
         try:
-            target_data = data.iloc[:, target_variable]
+            target_data = data.iloc[:, groupby_data]
         except IndexError:
             raise TargetVariableError(
-                f"Column index {target_variable} is not in the range"
+                f"Column index {groupby_data} is not in the range"
                 f" [0, {data.columns.size}]."
             )
         check_cardinality(target_data)
         return target_data
-    elif isinstance(target_variable, str):
+    elif isinstance(groupby_data, str):
         try:
-            target_data = data[target_variable]
+            target_data = data[groupby_data]
         except KeyError:
             raise TargetVariableError(
-                f"{target_variable!r} is not in {data.columns.to_list()}"
+                f"{groupby_data!r} is not in {data.columns.to_list()}"
             )
         check_cardinality(target_data)
         return target_data
     else:
-        # If target_variable is neither an index(int) or label(str)
+        # If groupby_data is neither an index(int) or label(str)
         logging.warning(
-            f"Target variable '{target_variable}' ignored."
+            f"Target variable '{groupby_data}' ignored."
             " Not a valid column index or label."
         )
         return None

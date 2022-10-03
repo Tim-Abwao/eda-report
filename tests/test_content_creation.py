@@ -14,7 +14,7 @@ class TestAnalysisResult:
     def test_general_properties(self):
         assert isinstance(self.results.multivariable, MultiVariable)
         assert self.results.GRAPH_COLOR == "blue"
-        assert self.results.TARGET_VARIABLE is None
+        assert self.results.GROUPBY_DATA is None
 
     def test_univariate_stats(self):
         assert isinstance(
@@ -58,14 +58,14 @@ class TestReportContent:
         data,
         title="Some Title",
         graph_color="magenta",
-        target_variable="species",
+        groupby_data="species",
     )
 
     def test_general_attributes(self):
         assert isinstance(self.content, AnalysisResult)
         assert self.content.GRAPH_COLOR == "magenta"
         assert self.content.TITLE == "Some Title"
-        assert self.content.TARGET_VARIABLE.equals(data["species"])
+        assert self.content.GROUPBY_DATA.equals(data["species"])
 
     def test_intro(self):
         assert self.content.intro_text == (

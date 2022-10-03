@@ -13,7 +13,7 @@ class TestReportWithIdealInput:
         data,
         title="Test Report",
         graph_color="teal",
-        target_variable="species",
+        groupby_data="species",
         output_filename=BytesIO(),
     )
 
@@ -64,8 +64,8 @@ class TestReportWithIdealInput:
     def test_table_style(self):
         assert self.report.TABLE_STYLE == "Table Grid"
 
-    def test_target_variable(self):
-        assert self.report.TARGET_VARIABLE.equals(self.data["species"])
+    def test_groupby_data(self):
+        assert self.report.GROUPBY_DATA.equals(self.data["species"])
 
     def test_variable_info(self):
         assert list(self.report.variable_info.keys()) == [

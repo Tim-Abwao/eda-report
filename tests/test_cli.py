@@ -29,7 +29,7 @@ class TestCLIArgumentParsing:
         assert report.OUTPUT_FILENAME == f"{temp_data_dir}/cli-test-1.docx"
         assert report.TITLE == "CLI Test"
         assert report.GRAPH_COLOR == "teal"
-        assert report.TARGET_VARIABLE.name == "A"
+        assert report.GROUPBY_DATA.name == "A"
 
     def test_with_only_input_file(self, temp_data_dir, monkeypatch):
         # Supply the input file it has no default.
@@ -42,7 +42,7 @@ class TestCLIArgumentParsing:
         assert report.OUTPUT_FILENAME == "eda-report.docx"
         assert report.TITLE == "Exploratory Data Analysis Report"
         assert report.GRAPH_COLOR == "cyan"
-        assert report.TARGET_VARIABLE is None
+        assert report.GROUPBY_DATA is None
 
         Path("eda-report.docx").unlink()  # Remove resultant report
 

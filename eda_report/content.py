@@ -16,7 +16,7 @@ from eda_report.univariate import (
     NumericStats,
     analyze_univariate,
 )
-from eda_report.validate import validate_target_variable
+from eda_report.validate import validate_groupby_data
 
 
 class AnalysisResult:
@@ -26,7 +26,7 @@ class AnalysisResult:
         data (Iterable): The data to analyse.
         graph_color (str, optional): The color to apply to the graphs.
             Defaults to "cyan".
-        target_variable (Union[str, int], optional): The column to
+        groupby_data (Union[str, int], optional): The column to
             use to group values. Defaults to None.
 
     """
@@ -35,18 +35,18 @@ class AnalysisResult:
         self,
         data: Iterable,
         graph_color: str = "cyan",
-        target_variable: Union[str, int] = None,
+        groupby_data: Union[str, int] = None,
     ) -> None:
         self.GRAPH_COLOR = graph_color
         self.multivariable = MultiVariable(data)
-        self.TARGET_VARIABLE = validate_target_variable(
-            data=self.multivariable.data, target_variable=target_variable
+        self.GROUPBY_DATA = validate_groupby_data(
+            data=self.multivariable.data, groupby_data=groupby_data
         )
 
-        if self.TARGET_VARIABLE is None:
+        if self.GROUPBY_DATA is None:
             set_custom_palette(graph_color, num=2)
         else:
-            set_custom_palette(graph_color, num=self.TARGET_VARIABLE.nunique())
+            set_custom_palette(graph_color, num=self.GROUPBY_DATA.nunique())
 
         self.univariate_stats = self._get_univariate_statistics()
         self.univariate_graphs = self._get_univariate_graphs()
@@ -101,7 +101,7 @@ class AnalysisResult:
         """
         with Pool() as p:
             variables_and_hue = (
-                (stat.variable, self.TARGET_VARIABLE)
+                (stat.variable, self.GROUPBY_DATA)
                 for stat in self.univariate_stats.values()
             )
             univariate_graphs = dict(
@@ -130,7 +130,7 @@ class ReportContent(AnalysisResult):
             "Exploratory Data Analysis Report".
         graph_color (str, optional): The color to apply to the graphs.
             Defaults to "cyan".
-        target_variable (Union[str, int], optional): The column to
+        groupby_data (Union[str, int], optional): The column to
             use to group values. Defaults to None.
     """
 
@@ -140,10 +140,10 @@ class ReportContent(AnalysisResult):
         *,
         title: str = "Exploratory Data Analysis Report",
         graph_color: str = "cyan",
-        target_variable: Union[str, int] = None,
+        groupby_data: Union[str, int] = None,
     ) -> None:
         super().__init__(
-            data, graph_color=graph_color, target_variable=target_variable
+            data, graph_color=graph_color, groupby_data=groupby_data
         )
         self.TITLE = title
         self.intro_text = self._get_introductory_summary()

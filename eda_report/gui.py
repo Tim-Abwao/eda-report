@@ -20,7 +20,7 @@ except (ImportError, ModuleNotFoundError) as error:
 from eda_report.document import ReportDocument
 from eda_report.exceptions import TargetVariableError
 from eda_report.read_file import df_from_file
-from eda_report.validate import validate_target_variable
+from eda_report.validate import validate_groupby_data
 
 background_image = pkgutil.get_data(__name__, "images/background.png")
 icon = pkgutil.get_data(__name__, "images/icon.png")
@@ -138,7 +138,7 @@ class EDAGUI(Frame):  # pragma: no cover
             self._get_report_title()
 
             self.current_action.set("Waiting for target variable...")
-            self._get_target_variable()
+            self._get_groupby_data()
 
             self.current_action.set("Waiting for graph color...")
             self._get_graph_color()
@@ -152,7 +152,7 @@ class EDAGUI(Frame):  # pragma: no cover
                 title=self.report_title,
                 graph_color=self.graph_color,
                 output_filename=self.save_name,
-                target_variable=self.target_variable,
+                groupby_data=self.groupby_data,
             )
             self.current_action.set("")
             showinfo(message=f"Done! Report saved as {self.save_name!r}.")
@@ -199,26 +199,26 @@ class EDAGUI(Frame):  # pragma: no cover
 
         self.report_title = report_title or "Exploratory Data Analysis Report"
 
-    def _get_target_variable(self) -> None:
+    def _get_groupby_data(self) -> None:
         """Inquire about the target variable, and create a text box to
         collect input.
         """
         if askyesno(message="Would you like to specify a target variable?"):
-            self.target_variable = askstring(
+            self.groupby_data = askstring(
                 title="Target Variable",
                 prompt="Please enter the name of the target variable:",
             )
             try:
-                validate_target_variable(
-                    data=self.data, target_variable=self.target_variable
+                validate_groupby_data(
+                    data=self.data, groupby_data=self.groupby_data
                 )
             except TargetVariableError as error:
-                self.target_variable = None
+                self.groupby_data = None
                 showwarning(
                     title="Invalid Target Variable", message=error.message
                 )
         else:
-            self.target_variable = None
+            self.groupby_data = None
 
     def _get_graph_color(self) -> None:
         """Creates a graphical color picking tool to help set the desired

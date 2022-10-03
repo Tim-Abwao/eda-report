@@ -92,5 +92,5 @@ def run_from_cli() -> Optional[ReportDocument]:
             title=args.title,
             graph_color=args.color,
             output_filename=args.outfile,
-            target_variable=args.target,
+            groupby_data=args.target,
         )
