@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 from eda_report.multivariate import MultiVariable
 from eda_report.plotting import (
-    BivariatePlots,
+    plot_multivariable,
     plot_variable,
     set_custom_palette,
 )
@@ -50,11 +50,7 @@ class AnalysisResult:
 
         self.univariate_stats = self._get_univariate_statistics()
         self.univariate_graphs = self._get_univariate_graphs()
-        self.bivariate_graphs = BivariatePlots(
-            self.multivariable,
-            graph_color=self.GRAPH_COLOR,
-            hue=self.TARGET_VARIABLE,
-        ).graphs
+        self.bivariate_graphs = plot_multivariable(self.multivariable)
 
     def _analyze_variable(
         self, items: Tuple[str, Series]

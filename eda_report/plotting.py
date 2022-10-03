@@ -234,156 +234,115 @@ class BasePlot:
             set_custom_palette(graph_color, num=self.HUE.nunique())
 
 
-class BivariatePlots(BasePlot):
-    """Plots instances of :class:`~eda_report.multivariate.MultiVariable`.
+def plot_correlation(variables: MultiVariable) -> Figure:
+    """Create a bar chart showing the top 20 most correlated variables.
 
-    Produces a *correlation heatmap*, *regression-plots* and *ecdf-plots*, if
-    2 or more numeric columns are present, with more than 5% of their values
-    being unique.
+    Returns:
+        Figure: A bar-plot in PNG format as bytes.
+    """
+    pairs = list(variables.var_pairs)
+    corr_data = (
+        variables.correlation_df.unstack()  # get MultiIndex of cols
+        .loc[pairs]  # select unique pairs
+        .sort_values(key=abs)  # sort by magnitude
+        .tail(20)  # select top 20
+    )
+    labels = corr_data.index.map(" vs ".join)
+
+    fig = Figure(figsize=(7, 6.3))
+    ax = fig.subplots()
+    ax.barh(labels, corr_data)
+    ax.set_xlim(-1, 1)
+    ax.spines["left"].set_visible(False)
+    ax.yaxis.set_visible(False)
+    ax.axvline(0, 0, 1, color="#777")
+
+    for p, label in zip(ax.patches, labels):
+        p.set_alpha(abs(p.get_width()))
+        p.set_edgecolor("#777")
+
+        if p.get_width() < 0:
+            p.set_facecolor("steelblue")
+            ax.text(
+                p.get_x(),
+                p.get_y() + p.get_height() / 2,
+                f"{p.get_width():,.2f} ({label})  ",
+                size=8,
+                ha="right",
+                va="center",
+            )
+        else:
+            p.set_facecolor("orangered")
+            ax.text(
+                p.get_x(),
+                p.get_y() + p.get_height() / 2,
+                f"  {p.get_width():,.2}  ({label})",
+                size=8,
+                ha="left",
+                va="center",
+            )
+
+    ax.set_title(f"Pearson Correlation (Top {len(corr_data)})")
+
+    return fig
+
+
+def plot_regression(data) -> Figure:
+    """Get a regression-plot and ecdf-plot for the provided column pair.
 
     Args:
-        variables (MultiVariable): The data to plot.
-        graph_color (str, optional): The color to apply to the generated
-            graphs. Defaults to "cyan".
-        hue (pandas.Series, optional): Data to use to group values.
-            Defaults to None.
+        var_pair (Tuple[str, str]): Numeric column pair.
 
-    Attributes:
-        graphs (Dict[str, io.BytesIO]):
-            A dictionary of graphs, with graph names as keys, and file-objects
-            containing the plotted graphs as values.
-
-            Bi-variate regression-plots are further nested in a dict of
-            :class:`~io.BytesIO` objects, with tuples (col_i, col_j) as keys.
+    Returns:
+        io.BytesIO: The regression-plot and ecdf-plot as subplots, in PNG
+        format.
     """
+    fig = Figure(figsize=(5, 4.8))
+    ax = fig.subplots()
 
-    def __init__(
-        self,
-        variables: MultiVariable,
-        *,
-        graph_color: str = "cyan",
-        hue: Series = None,
-    ) -> None:
-        super().__init__(graph_color=graph_color, hue=hue)
-        self.variables = variables
-        self.graphs = self._plot_graphs()
+    data = data.dropna()
+    if len(data) > 50000:
+        data = data.sample(50000)
 
-    def _plot_graphs(self) -> Optional[Dict]:
-        """Get a heatmap of the correlation in all numeric columns, and
-        regression-plots & ecdf-plots of numeric column pairs.
+    var1, var2 = data.columns
+    x = data[var1]
+    y = data[var2]
+    slope, intercept = np.polyfit(x, y, deg=1)
+    line_x = np.linspace(x.min(), x.max(), num=100)
 
-        Returns:
-            Optional[Dict]: A dictionary with the correlation heatmap and
-            regression + ECDF subplots.
-        """
-        if hasattr(self.variables, "var_pairs"):
-            with Pool() as p:
-                bivariate_regression_plots = dict(
-                    tqdm(
-                        p.imap(
-                            self._regression_plot, self.variables.var_pairs
-                        ),
-                        total=len(self.variables.var_pairs),
-                        bar_format=(
-                            "{desc} {percentage:3.0f}%|{bar:35}| "
-                            "{n_fmt}/{total_fmt} pairs."
-                        ),
-                        desc="Bivariate analysis:",
-                        dynamic_ncols=True,
-                    )
-                )
+    ax.scatter(x, y, s=40, alpha=0.7, edgecolors="#444")
+    ax.plot(line_x, slope * line_x + intercept, color="#444", lw=2)
+    ax.set_title(f"Slope: {slope:,.4f}\nIntercept: {intercept:,.4f}", size=11)
+    ax.set_xlabel(var1)
+    ax.set_ylabel(var2)
 
-            return {
-                "correlation_heatmap": self._plot_correlation(),
-                "regression_plots": bivariate_regression_plots,
-            }
-        else:
-            return None
+    return (var1, var2), savefig(fig)
 
-    def _plot_correlation(self) -> BytesIO:
-        """Create a bar chart showing the top 20 most correlated variables.
 
-        Returns:
-            io.BytesIO: A bar-plot in PNG format as bytes.
-        """
-        fig = Figure(figsize=(7, 7))
-        ax = fig.subplots()
-        pairs = list(self.variables.var_pairs)
-        corr_data = (
-            self.variables.correlation_df.unstack()  # get MultiIndex of cols
-            .loc[pairs]  # select unique pairs
-            .sort_values(key=abs)  # sort by magnitude
-            .tail(20)  # select top 20
+def plot_multivariable(variables: MultiVariable):
+
+    if hasattr(variables, "var_pairs"):
+        paired_data_gen = (
+            variables.data.loc[:, pair].dropna()
+            for pair in variables.var_pairs
         )
-        labels = corr_data.index.map(" vs ".join)
-
-        fig = mpl.figure.Figure(figsize=(7, 6.3))
-        ax = fig.subplots()
-        ax.barh(labels, corr_data, label=labels)
-        ax.set_xlim(-1, 1)
-        ax.spines["left"].set_visible(False)
-        ax.yaxis.set_visible(False)
-        ax.axvline(0, 0, 1, color="#777")
-
-        for p in ax.patches:
-            p.set_alpha(abs(p.get_width()))
-            p.set_edgecolor("#777")
-
-            if p.get_width() < 0:
-                p.set_facecolor("steelblue")
-                ax.text(
-                    p.get_x(),
-                    p.get_y() + p.get_height() / 2,
-                    f"{p.get_width():,.2f} ({p.get_label()})  ",
-                    size=8,
-                    ha="right",
-                    va="center",
+        with Pool() as p:
+            bivariate_regression_plots = dict(
+                tqdm(
+                    p.imap(plot_regression, paired_data_gen),
+                    total=len(variables.var_pairs),
+                    bar_format=(
+                        "{desc} {percentage:3.0f}%|{bar:35}| "
+                        "{n_fmt}/{total_fmt} pairs."
+                    ),
+                    desc="Bivariate analysis:",
+                    dynamic_ncols=True,
                 )
-            else:
-                p.set_facecolor("orangered")
-                ax.text(
-                    p.get_x(),
-                    p.get_y() + p.get_height() / 2,
-                    f"  {p.get_width():,.2}  ({p.get_label()})",
-                    size=8,
-                    ha="left",
-                    va="center",
-                )
+            )
 
-        ax.set_title(f"Pearson Correlation (Top {len(corr_data)})")
-
-        return savefig(fig)
-
-    def _regression_plot(self, var_pair: Tuple[str, str]) -> BytesIO:
-        """Get a regression-plot and ecdf-plot for the provided column pair.
-
-        Args:
-            var_pair (Tuple[str, str]): Numeric column pair.
-
-        Returns:
-            io.BytesIO: The regression-plot and ecdf-plot as subplots, in PNG
-            format.
-        """
-        fig = Figure(figsize=(5, 4.8))
-        ax = fig.subplots()
-
-        data = self.variables.data.dropna()
-        var1, var2 = var_pair
-
-        if len(self.variables.data) > 50000:
-            data = data.sample(50000)
-
-        x = data[var1]
-        y = data[var2]
-        slope, intercept = np.polyfit(x, y, deg=1)
-        line_x = np.linspace(x.min(), x.max(), num=100)
-
-        ax.scatter(x, y, s=40, alpha=0.7, edgecolors="#444")
-        ax.plot(line_x, slope * line_x + intercept, color="#444", lw=2)
-        ax.set_title(
-            f"Slope: {slope:,.4f}\nIntercept: {intercept:,.4f}", size=11
-        )
-        ax.set_xlabel(var1)
-        ax.set_ylabel(var2)
-
-        return var_pair, savefig(fig)
+        return {
+            "correlation_heatmap": savefig(plot_correlation(variables)),
+            "regression_plots": bivariate_regression_plots,
+        }
+    else:
+        return None
