@@ -1,6 +1,6 @@
 from io import BytesIO
 from multiprocessing import Pool
-from typing import Sequence, Tuple
+from typing import Tuple
 
 import matplotlib as mpl
 import numpy as np
@@ -194,18 +194,22 @@ def bar_plot(data: Series, *, label: str) -> Figure:
     return fig
 
 
-def plot_variable(variable_and_hue: Tuple, hue=None) -> Sequence:
+def plot_variable(variable_and_hue: Tuple, hue=None) -> Tuple:
     """Get graphs (as PNG images) for a variable based on it's type."""
     variable, hue = variable_and_hue
     if variable.var_type == "numeric":
-        graphs = [
-            savefig(
+        graphs = {
+            plot_func.__name__: savefig(
                 plot_func(data=variable.data, hue=hue, label=variable.name)
             )
             for plot_func in [box_plot, kde_plot, prob_plot]
-        ]
+        }
     else:  # {"boolean", "categorical", "datetime"}:
-        graphs = [savefig(bar_plot(data=variable.data, label=variable.name))]
+        graphs = {
+            "bar_plot": savefig(
+                bar_plot(data=variable.data, label=variable.name)
+            )
+        }
 
     return variable.name, graphs
 
