@@ -302,7 +302,7 @@ def plot_regression(data) -> Figure:
     ax.set_xlabel(var1)
     ax.set_ylabel(var2)
 
-    return (var1, var2), savefig(fig)
+    return (var1, var2), fig
 
 
 def plot_multivariable(variables: MultiVariable):
@@ -328,7 +328,10 @@ def plot_multivariable(variables: MultiVariable):
 
         return {
             "correlation_heatmap": savefig(plot_correlation(variables)),
-            "regression_plots": bivariate_regression_plots,
+            "regression_plots": {
+                var_pair: savefig(plot)
+                for var_pair, plot in bivariate_regression_plots.items()
+            },
         }
     else:
         return None
