@@ -91,14 +91,14 @@ class ReportDocument(ReportContent):
         self.document.add_page_break()
 
     def _format_heading_spacing(
-        self, format: ParagraphFormat, before: int = 21, after: int = 7
+        self, format: ParagraphFormat, before: int = 15, after: int = 7
     ) -> None:
         """Set the spacing above or below a heading.
 
         Args:
             format (ParagraphFormat): The heading's format.
             before (int, optional): Size of spacing above the heading in pt.
-                Defaults to 21.
+                Defaults to 15.
             after (int, optional): Size of spacing below the heading in pt.
                 Defaults to 7.
         """
@@ -156,7 +156,7 @@ class ReportDocument(ReportContent):
                 f"1.{idx}. {var_name}".title(), level=2
             )
             self._format_heading_spacing(
-                heading.paragraph_format, before=20, after=5
+                heading.paragraph_format, before=12, after=5
             )
             self.document.add_paragraph(var_info["description"])
 
@@ -214,7 +214,7 @@ class ReportDocument(ReportContent):
                 f"2.{idx} {var_pair[0]} vs {var_pair[1]}".title(), level=2
             )
             self._format_heading_spacing(
-                heading.paragraph_format, before=20, after=5
+                heading.paragraph_format, before=16, after=5
             )
             self.document.add_paragraph(self.bivariate_summaries[var_pair])
             self.document.add_picture(
