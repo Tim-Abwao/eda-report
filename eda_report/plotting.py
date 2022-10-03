@@ -188,6 +188,8 @@ def bar_plot(data: Series, *, label: str) -> Figure:
     else:
         ax.set_title(f"Bar-plot of {label}")
 
+    ax.tick_params(axis="x", rotation=90)  # Improve visibility of long labels
+
     # Annotate bars
     for p in ax.patches:
         ax.annotate(
