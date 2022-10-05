@@ -13,7 +13,7 @@ The command ``eda-report`` launches a graphical window to help select a *csv* or
 
    A ``tkinter``-based graphical user interface to the application
 
-You will be prompted to enter your desired *title*, *target variable(for grouping values)*, *graph color* & *output file-name*. Afterwards, a report will be generated, as specified, from the contents of the selected file.
+You will be prompted to enter your desired *title*, *groupby variable(for grouping values)*, *graph color* & *output file-name*. Afterwards, a report will be generated, as specified, from the contents of the selected file.
 
 .. hint::
     For help with `Tk` - related issues, consider visiting `TkDocs`_.

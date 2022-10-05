@@ -207,7 +207,7 @@ class EDAGUI(Frame):  # pragma: no cover
             message="Would you like to specify a variable to group by?"
         ):
             self.groupby_data = askstring(
-                title="Group-by Variable",
+                title="Select Group-by Variable",
                 prompt="Please enter the name of the group-by variable:",
             )
             try:

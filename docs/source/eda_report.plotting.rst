@@ -16,7 +16,7 @@ You can conveniently view the generated figures in a *jupyter notebook* using
 
    %matplotlib inline
 
-as shown in this `demo notebook`_
+as shown in this `demo notebook`_.
 
 .. _demo notebook: https://mybinder.org/v2/gh/Tim-Abwao/eda-report/HEAD?filepath=eda-report-basics.ipynb
 
