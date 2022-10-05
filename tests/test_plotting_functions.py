@@ -26,15 +26,45 @@ def test_savefig_function():
     assert isinstance(saved, BytesIO)
 
 
-def test_set_custom_palette():
-    desired_color = "green"
-    num_colors = 5
-    set_custom_palette(color=desired_color, num=num_colors)
+class TestSetCustomPalette:
+    # Desired_color will be first, (0.25, 0.25, 0.25) last.
 
-    colors = mpl.rcParams["axes.prop_cycle"].by_key().get("color")
-    assert to_rgb(desired_color) == pytest.approx(colors[0])
-    assert (0.25, 0.25, 0.25) == pytest.approx(colors[-1])
-    assert len(colors) == num_colors
+    def test_int_hue(self):
+        desired_color = "red"
+        hue = 5
+        set_custom_palette(color=desired_color, hue=hue)
+
+        colors = mpl.rcParams["axes.prop_cycle"].by_key().get("color")
+        assert to_rgb(desired_color) == pytest.approx(colors[0])
+        assert (0.25, 0.25, 0.25) == pytest.approx(colors[-1])
+        assert len(colors) == hue
+
+    def test_iterable_hue(self):
+        desired_color = "green"
+        hue = list("abcdeabcdabcaba")
+        set_custom_palette(color=desired_color, hue=hue)
+
+        colors = mpl.rcParams["axes.prop_cycle"].by_key().get("color")
+        assert to_rgb(desired_color) == pytest.approx(colors[0])
+        assert (0.25, 0.25, 0.25) == pytest.approx(colors[-1])
+        assert len(colors) == 5  # cardinality of hue
+
+    def test_null_hue(self):
+        desired_color = "blue"
+        set_custom_palette(color=desired_color)
+
+        colors = mpl.rcParams["axes.prop_cycle"].by_key().get("color")
+        assert to_rgb(desired_color) == pytest.approx(colors[0])
+        assert (0.25, 0.25, 0.25) == pytest.approx(colors[-1])
+        assert len(colors) == 2
+
+    def test_invalid_hue(self):
+        with pytest.raises(TypeError) as error:
+            set_custom_palette("#eee", 1.25)
+
+        assert (
+            "Invalid hue input. Expected an int or an iterable, but got 1.25"
+        ) in str(error.value)
 
 
 class TestBoxplot:
@@ -138,7 +168,9 @@ class TestBarplot:
 class TestPlotvariable:
     def test_numeric_plots(self):
         numeric_var = Variable(range(25), name="numbers")
-        name, graphs = _plot_variable(variable_and_hue=(numeric_var, None))
+        name, graphs = _plot_variable(
+            variables_hue_and_color=(numeric_var, None, "teal")
+        )
 
         assert name == numeric_var.name
         assert set(graphs.keys()) == {"box_plot", "kde_plot", "prob_plot"}
@@ -147,7 +179,9 @@ class TestPlotvariable:
 
     def test_categorical_plots(self):
         categorical_var = Variable(list("abcdeabcdabcaba"), name="letters")
-        name, graphs = _plot_variable(variable_and_hue=(categorical_var, None))
+        name, graphs = _plot_variable(
+            variables_hue_and_color=(categorical_var, None, "navy")
+        )
 
         assert name == categorical_var.name
         assert set(graphs.keys()) == {"bar_plot"}
@@ -174,7 +208,7 @@ class TestPlotCorrelation:
 
 def testplot_regression_function():
     data = DataFrame({"A": range(60000), "B": [1, 2, 3] * 20000})
-    var_pair, reg_plot = _plot_regression(data)
+    var_pair, reg_plot = _plot_regression(data_and_color=(data, "lime"))
 
     assert var_pair == ("A", "B")
     assert isinstance(reg_plot, Figure)
@@ -188,11 +222,11 @@ def testplot_regression_function():
 class TestPlotMultivariable:
     def test_without_numeric_pairs(self):
         data = MultiVariable(range(50))
-        assert _plot_multivariable(data) is None
+        assert _plot_multivariable(data, color="red") is None
 
     def test_with_numeric_pairs(self):
         data = MultiVariable([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-        graphs = _plot_multivariable(data)
+        graphs = _plot_multivariable(data, color="green")
 
         assert set(graphs.keys()) == {
             "correlation_plot",
