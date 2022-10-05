@@ -4,11 +4,7 @@ from typing import Any, Dict, Iterable, Optional, Union
 from tqdm import tqdm
 
 from eda_report.multivariate import MultiVariable
-from eda_report.plotting import (
-    _plot_multivariable,
-    _plot_variable,
-    set_custom_palette,
-)
+from eda_report.plotting import _plot_multivariable, _plot_variable
 from eda_report.univariate import Variable, _analyze_univariate
 from eda_report.validate import validate_groupby_data
 
@@ -36,15 +32,11 @@ class _AnalysisResult:
         self.GROUPBY_DATA = validate_groupby_data(
             data=self.multivariable.data, groupby_data=groupby_data
         )
-
-        if self.GROUPBY_DATA is None:
-            set_custom_palette(graph_color, num=2)
-        else:
-            set_custom_palette(graph_color, num=self.GROUPBY_DATA.nunique())
-
         self.univariate_stats = self._get_univariate_statistics()
         self.univariate_graphs = self._get_univariate_graphs()
-        self.bivariate_graphs = _plot_multivariable(self.multivariable)
+        self.bivariate_graphs = _plot_multivariable(
+            self.multivariable, color=graph_color
+        )
 
     def _get_univariate_statistics(self) -> Dict:
         """Compute summary statistics for all variables present.
@@ -76,14 +68,14 @@ class _AnalysisResult:
             Dict[str, Dict]: Univariate graphs.
         """
         with Pool() as p:
-            variables_and_hue = [
-                (stat, self.GROUPBY_DATA)
+            variables_hue_and_color = [
+                (stat, self.GROUPBY_DATA, self.GRAPH_COLOR)
                 for stat in self.univariate_stats.values()
             ]
             univariate_graphs = dict(
                 tqdm(
                     # Plot variables in parallel processes
-                    p.imap(_plot_variable, variables_and_hue),
+                    p.imap(_plot_variable, variables_hue_and_color),
                     # Progress-bar options
                     total=len(self.univariate_stats),
                     bar_format=(

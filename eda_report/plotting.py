@@ -1,13 +1,12 @@
 from io import BytesIO
 from multiprocessing import Pool
-from typing import Dict, Iterable, Optional, Tuple
+from typing import Dict, Iterable, Optional, Tuple, Union
 
 import matplotlib as mpl
 import numpy as np
 from cycler import cycler
 from matplotlib.colors import to_rgb
 from matplotlib.figure import Figure
-from pandas import DataFrame
 from scipy.stats import gaussian_kde, probplot
 from tqdm import tqdm
 
@@ -223,17 +222,19 @@ def bar_plot(data: Iterable, *, label: str) -> Figure:
     return fig
 
 
-def _plot_variable(variable_and_hue: Tuple) -> Tuple:
+def _plot_variable(variables_hue_and_color: Tuple) -> Tuple:
     """Helper function to concurrently plot variables in a multiprocessing
     Pool.
 
     Args:
-        variable_and_hue (Tuple): A variable, and hue data.
+        variables_hue_and_color (Tuple): A variable, hue data and the desired
+            theme.
 
     Returns:
         Tuple: `variable`s name, and graphs in a dict.
     """
-    variable, hue = variable_and_hue
+    variable, hue, color = variables_hue_and_color
+    set_custom_palette(color, hue)
     if variable.var_type == "numeric":
         graphs = {
             plot_func.__name__: savefig(
@@ -310,7 +311,7 @@ def plot_correlation(variables: Iterable) -> Figure:
 
 
 def regression_plot(
-    x: Iterable, y: Iterable, labels: Tuple[str, str]
+    x: Iterable, y: Iterable, labels: Tuple[str, str], color: str
 ) -> Figure:
     """Get a regression-plot from the provided pair of values.
 
@@ -337,7 +338,7 @@ def regression_plot(
     slope, intercept = np.polyfit(x, y, deg=1)
     line_x = np.linspace(x.min(), x.max(), num=100)
 
-    ax.scatter(x, y, s=40, alpha=0.7, edgecolors="#444")
+    ax.scatter(x, y, s=40, alpha=0.7, color=color, edgecolors="#444")
     ax.plot(line_x, slope * line_x + intercept, color="#444", lw=2)
     ax.set_title(
         f"Slope: {slope:,.4f}\nIntercept: {intercept:,.4f}\n"
@@ -350,28 +351,32 @@ def regression_plot(
     return fig
 
 
-def _plot_regression(var_pair_df: DataFrame) -> Tuple:
+def _plot_regression(data_and_color: Tuple) -> Tuple:
     """Helper function to plot regression plots concurrently.
 
     Args:
-        var_pair_df (DataFrame): A pair of numeric values.
+        data_and_color (Tuple): A pair of numeric values.
 
     Returns:
         Tuple: Names for the pair of values, and a figure with the regression
         plot.
     """
-    var1, var2 = var_pair_df.columns
+    data, color = data_and_color
+    var1, var2 = data.columns
     fig = regression_plot(
-        x=var_pair_df[var1], y=var_pair_df[var2], labels=(var1, var2)
+        x=data[var1], y=data[var2], labels=(var1, var2), color=color
     )
     return (var1, var2), fig
 
 
-def _plot_multivariable(variables: MultiVariable) -> Optional[Dict]:
+def _plot_multivariable(
+    variables: MultiVariable, color: str = None
+) -> Optional[Dict]:
     """Concurrently plot regression plots in a multiprocessing Pool.
 
     Args:
         variables (MultiVariable): Bi-variate analysis results.
+        color (str, optional): The color to apply to the graphs.
 
     Returns:
         Optional[Dict]: A dictionary with a correlation plot and regression
@@ -379,9 +384,13 @@ def _plot_multivariable(variables: MultiVariable) -> Optional[Dict]:
     """
     if hasattr(variables, "var_pairs"):
 
+        set_custom_palette(
+            color=color,
+        )
         with Pool() as p:
             paired_data_gen = [
-                variables.data.loc[:, pair] for pair in variables.var_pairs
+                (variables.data.loc[:, pair], color)
+                for pair in variables.var_pairs
             ]
             bivariate_regression_plots = dict(
                 tqdm(
