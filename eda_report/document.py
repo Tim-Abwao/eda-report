@@ -220,10 +220,6 @@ class ReportDocument(_ReportContent):
             picture_paragraph = self.document.paragraphs[-1]
             picture_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-            # Add a page break after every 2 pairs
-            if idx % 2 == 0:
-                self.document.add_page_break()
-
     def _create_table(
         self,
         data: DataFrame,
