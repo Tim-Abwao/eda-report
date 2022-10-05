@@ -1,13 +1,13 @@
 import pytest
 from eda_report.exceptions import (
     EmptyDataError,
+    GroupbyVariableError,
     InputError,
-    TargetVariableError,
 )
 from eda_report.validate import (
     clean_column_labels,
-    validate_multivariate_input,
     validate_groupby_data,
+    validate_multivariate_input,
     validate_univariate_input,
 )
 from pandas import DataFrame, Series
@@ -93,14 +93,14 @@ class TestTargetValidation:
 
     def test_valid_column_index(self):
         # Check that a valid column index returns the appropriate column data.
-        assert validate_groupby_data(
-            data=self.data, groupby_data=3
-        ).equals(self.data.get("D"))
+        assert validate_groupby_data(data=self.data, groupby_data=3).equals(
+            self.data.get("D")
+        )
 
     def test_invalid_column_index(self):
         # Check that an error is raised for a column index that is out of
         # bounds.
-        with pytest.raises(TargetVariableError) as error:
+        with pytest.raises(GroupbyVariableError) as error:
             validate_groupby_data(data=self.data, groupby_data=10)
         assert "Column index 10 is not in the range [0, 5]." in str(
             error.value
@@ -108,32 +108,27 @@ class TestTargetValidation:
 
     def test_valid_column_label(self):
         # Check that a valid column label returns the appropriate column data.
-        assert validate_groupby_data(
-            data=self.data, groupby_data="D"
-        ).equals(self.data.get("D"))
+        assert validate_groupby_data(data=self.data, groupby_data="D").equals(
+            self.data.get("D")
+        )
 
     def test_invalid_column_label(self):
         # Check that an invalid column label raises an error.
-        with pytest.raises(TargetVariableError) as error:
+        with pytest.raises(GroupbyVariableError) as error:
             validate_groupby_data(data=self.data, groupby_data="X")
         assert "'X' is not in ['A', 'B', 'C', 'D', 'E']" in str(error.value)
 
     def test_null_input(self):
         # Check that `groupby_data=None` returns `None`
-        assert (
-            validate_groupby_data(data=self.data, groupby_data=None)
-            is None
-        )
+        assert validate_groupby_data(data=self.data, groupby_data=None) is None
 
     def test_invalid_input_type(self, caplog):
         # Check that invalid input (i.e not in {str, int, None} logs a warning
         # and returns None
+        assert validate_groupby_data(data=self.data, groupby_data=1.0) is None
         assert (
-            validate_groupby_data(data=self.data, groupby_data=1.0)
-            is None
-        )
-        assert (
-            "Target variable '1.0' ignored. Not a valid column index or label."
+            "Group-by variable '1.0' ignored. "
+            "Not a valid column index or label."
         ) in caplog.text
 
     def test_groupby_data_with_excess_categories(self, caplog):
@@ -141,13 +136,13 @@ class TestTargetValidation:
         # error and log a warning that color-coding won't be applied.
         _data = DataFrame([range(11)] * 2, index=["X", "Y"]).T
         expected_message = (
-            "Target variable 'Y' not used to group values. "
+            "Group-by variable 'Y' not used to group values. "
             "It has high cardinality (11) and would clutter graphs."
         )
-        with pytest.raises(TargetVariableError) as error:
-            assert validate_groupby_data(
-                data=_data, groupby_data=1
-            ).equals(_data.iloc[:, 1])
+        with pytest.raises(GroupbyVariableError) as error:
+            assert validate_groupby_data(data=_data, groupby_data=1).equals(
+                _data.iloc[:, 1]
+            )
         assert expected_message in str(error.value)
         assert expected_message in caplog.text
 

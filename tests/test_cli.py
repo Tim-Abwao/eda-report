@@ -21,7 +21,7 @@ class TestCLIArgumentParsing:
                 "CLI Test",
                 "-c",
                 "teal",
-                "-T",
+                "-g",
                 "A",
             ],
         )

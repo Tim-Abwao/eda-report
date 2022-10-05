@@ -19,10 +19,10 @@ class TestReportWithIdealInput:
     )
 
     def test_general_properties(self):
-        # Largely covered in ReportContent tests
+        # Largely covered in _ReportContent tests
         assert self.report.TITLE == "Test Report"
         assert self.report.GRAPH_COLOR == "teal"
-        assert "correlation_heatmap" in self.report.bivariate_graphs
+        assert "correlation_plot" in self.report.bivariate_graphs
         assert "regression_plots" in self.report.bivariate_graphs
         assert self.report.TABLE_STYLE == "Table Grid"
 

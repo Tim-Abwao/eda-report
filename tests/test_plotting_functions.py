@@ -1,15 +1,16 @@
 from io import BytesIO
 
+import matplotlib as mpl
 import pytest
 from eda_report.multivariate import MultiVariable
 from eda_report.plotting import (
+    _plot_multivariable,
+    _plot_regression,
+    _plot_variable,
     bar_plot,
     box_plot,
     kde_plot,
     plot_correlation,
-    plot_multivariable,
-    plot_regression,
-    plot_variable,
     prob_plot,
     savefig,
     set_custom_palette,
@@ -17,8 +18,7 @@ from eda_report.plotting import (
 from eda_report.univariate import Variable
 from matplotlib.colors import to_rgb
 from matplotlib.figure import Figure
-from pandas import Series, DataFrame
-import matplotlib as mpl
+from pandas import DataFrame, Series
 
 
 def test_savefig_function():
@@ -138,7 +138,7 @@ class TestBarplot:
 class TestPlotvariable:
     def test_numeric_plots(self):
         numeric_var = Variable(range(25), name="numbers")
-        name, graphs = plot_variable(variable_and_hue=(numeric_var, None))
+        name, graphs = _plot_variable(variable_and_hue=(numeric_var, None))
 
         assert name == numeric_var.name
         assert set(graphs.keys()) == {"box_plot", "kde_plot", "prob_plot"}
@@ -147,7 +147,7 @@ class TestPlotvariable:
 
     def test_categorical_plots(self):
         categorical_var = Variable(list("abcdeabcdabcaba"), name="letters")
-        name, graphs = plot_variable(variable_and_hue=(categorical_var, None))
+        name, graphs = _plot_variable(variable_and_hue=(categorical_var, None))
 
         assert name == categorical_var.name
         assert set(graphs.keys()) == {"bar_plot"}
@@ -157,26 +157,24 @@ class TestPlotvariable:
 
 class TestPlotCorrelation:
     def test_with_few_numeric_pairs(self):
-        variables = MultiVariable([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-        corr_plot = plot_correlation(variables)
+        corr_plot = plot_correlation([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
 
         assert isinstance(corr_plot, Figure)
         assert corr_plot.axes[0].get_title() == "Pearson Correlation (Top 3)"
-        assert len(corr_plot.axes[0].patches) == len(variables.var_pairs)
+        assert len(corr_plot.axes[0].patches) == 3  # 3 unique pairs
 
     def test_with_excess_numeric_pairs(self):
         # Should only plot the top 20 by magnitude
-        variables = MultiVariable([range(25), [4, 5, 6, 7, 8] * 5])
-        corr_plot = plot_correlation(variables)
+        corr_plot = plot_correlation([range(10), [4, 5, 6, 7, 8] * 2])
 
         assert isinstance(corr_plot, Figure)
         assert corr_plot.axes[0].get_title() == "Pearson Correlation (Top 20)"
-        assert len(corr_plot.axes[0].patches) == 20  # Top 20 of 25
+        assert len(corr_plot.axes[0].patches) == 20  # Top 20 of 45 pairs
 
 
-def test_plot_regression_function():
+def testplot_regression_function():
     data = DataFrame({"A": range(60000), "B": [1, 2, 3] * 20000})
-    var_pair, reg_plot = plot_regression(data)
+    var_pair, reg_plot = _plot_regression(data)
 
     assert var_pair == ("A", "B")
     assert isinstance(reg_plot, Figure)
@@ -190,18 +188,18 @@ def test_plot_regression_function():
 class TestPlotMultivariable:
     def test_without_numeric_pairs(self):
         data = MultiVariable(range(50))
-        assert plot_multivariable(data) is None
+        assert _plot_multivariable(data) is None
 
     def test_with_numeric_pairs(self):
         data = MultiVariable([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-        graphs = plot_multivariable(data)
+        graphs = _plot_multivariable(data)
 
         assert set(graphs.keys()) == {
-            "correlation_heatmap",
+            "correlation_plot",
             "regression_plots",
         }
-        heatmap = graphs["correlation_heatmap"]
+        corr_plot = graphs["correlation_plot"]
         reg_plots = list(graphs["regression_plots"].values())
 
-        for graph in reg_plots + [heatmap]:
+        for graph in reg_plots + [corr_plot]:
             assert isinstance(graph, BytesIO)

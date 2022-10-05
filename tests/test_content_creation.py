@@ -1,8 +1,8 @@
 from io import BytesIO
 
-from eda_report.content import AnalysisResult, ReportContent
+from eda_report.content import _AnalysisResult, _ReportContent
 from eda_report.multivariate import MultiVariable
-from eda_report.univariate import CategoricalStats, NumericStats
+from eda_report.univariate import _CategoricalStats, _NumericStats
 from pandas import DataFrame
 
 data = DataFrame(
@@ -11,7 +11,7 @@ data = DataFrame(
 
 
 class TestAnalysisResult:
-    results = AnalysisResult(data, graph_color="green", groupby_data="C")
+    results = _AnalysisResult(data, graph_color="green", groupby_data="C")
 
     def test_general_properties(self):
         assert isinstance(self.results.multivariable, MultiVariable)
@@ -20,15 +20,16 @@ class TestAnalysisResult:
 
     def test_univariate_stats(self):
         assert isinstance(
-            self.results.univariate_stats["A"].summary_statistics, NumericStats
+            self.results.univariate_stats["A"].summary_statistics,
+            _NumericStats,
         )
         assert isinstance(
             self.results.univariate_stats["B"].summary_statistics,
-            CategoricalStats,
+            _CategoricalStats,
         )
         assert isinstance(
             self.results.univariate_stats["C"].summary_statistics,
-            CategoricalStats,
+            _CategoricalStats,
         )
 
     def test_univariate_graphs(self):
@@ -39,11 +40,11 @@ class TestAnalysisResult:
 
     def test_bivariate_graphs(self):
         assert set(self.results.bivariate_graphs.keys()) == {
-            "correlation_heatmap",
+            "correlation_plot",
             "regression_plots",
         }
         assert isinstance(
-            self.results.bivariate_graphs["correlation_heatmap"], BytesIO
+            self.results.bivariate_graphs["correlation_plot"], BytesIO
         )
         for graph in self.results.bivariate_graphs[
             "regression_plots"
@@ -52,10 +53,10 @@ class TestAnalysisResult:
 
 
 class TestReportContent:
-    content = ReportContent(data, title="Some Title")
+    content = _ReportContent(data, title="Some Title")
 
     def test_general_attributes(self):
-        assert isinstance(self.content, AnalysisResult)
+        assert isinstance(self.content, _AnalysisResult)
         assert self.content.GRAPH_COLOR == "cyan"
         assert self.content.TITLE == "Some Title"
         assert self.content.GROUPBY_DATA is None

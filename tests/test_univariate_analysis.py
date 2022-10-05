@@ -1,10 +1,10 @@
 import pytest
 from eda_report.univariate import (
-    CategoricalStats,
-    DatetimeStats,
-    NumericStats,
     Variable,
-    analyze_univariate,
+    _analyze_univariate,
+    _CategoricalStats,
+    _DatetimeStats,
+    _NumericStats,
 )
 from pandas import Series, Timestamp, date_range
 from pandas.api.types import (
@@ -78,7 +78,7 @@ class TestGeneralVariableProperties:
         assert self.unnamed_variable.unique == list("abde")
 
 
-class TestCategoricalStats:
+class Test_CategoricalStats:
 
     majority_unique = Variable(
         ["a", "b", "c", "d", None, "a"]
@@ -86,8 +86,8 @@ class TestCategoricalStats:
     majority_repeating = Variable(["a", "b", "c", "d"] * 3).summary_statistics
 
     def test_data_type(self):
-        assert isinstance(self.majority_unique, CategoricalStats)
-        assert isinstance(self.majority_repeating, CategoricalStats)
+        assert isinstance(self.majority_unique, _CategoricalStats)
+        assert isinstance(self.majority_repeating, _CategoricalStats)
 
         assert is_string_dtype(self.majority_unique.variable.data)
         assert self.majority_unique.variable.var_type == "categorical"
@@ -152,7 +152,7 @@ class TestDateTimeStats:
     ).summary_statistics
 
     def test_data_type(self):
-        assert isinstance(self.datetime, DatetimeStats)
+        assert isinstance(self.datetime, _DatetimeStats)
         assert is_datetime64_any_dtype(self.datetime.variable.data)
         assert self.datetime.variable.var_type == "datetime"
 
@@ -181,12 +181,12 @@ class TestDateTimeStats:
         )
 
 
-class TestNumericStats:
+class Test_NumericStats:
 
     numeric = Variable(data=range(50), name="1 to 50").summary_statistics
 
     def test_data_type(self):
-        assert isinstance(self.numeric, NumericStats)
+        assert isinstance(self.numeric, _NumericStats)
         assert is_numeric_dtype(self.numeric.variable.data)
         assert self.numeric.variable.var_type == "numeric"
 
@@ -231,7 +231,7 @@ class TestNumericStats:
 
 
 def test_analyse_variable():
-    name, stats = analyze_univariate(("wantufifty", range(50)))
+    name, stats = _analyze_univariate(("wantufifty", range(50)))
 
     assert name == "wantufifty"
     assert isinstance(stats, Variable)
