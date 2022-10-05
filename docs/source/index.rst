@@ -12,7 +12,7 @@ Automatically analyze a dataset, and get:
 
 #. Revealing visualisations.
 
-   - *Box-plots*, *dist-plots*, *normal-probability-plots*, *scatter-plots* and a *correlation heatmap* for numeric variables.
+   - *Box-plots*, *kde-plots*, *normal-probability-plots*, *scatter-plots* and a *correlation bar-chart* for numeric variables.
    - *Bar-plots* for categorical variables.
 
 #. A report in *Word* (.docx) format.

@@ -1,32 +1,62 @@
 UNIVARIATE
 ==========
 
-CategoricalStats
--------------------
->>> cat = Variable(list("abcdefgabcdeabcdaba"), name="text")
->>> CategoricalStats(cat)
+Categorical
+-----------
+>>> Variable(list("abcdefgabcdefabcdeabcdabcaba"), name="text")
                 Overview
                 ========
 Name: text
 Type: categorical
-Number of Observations: 19
+Number of Observations: 28
 Unique Values: 7 -> ['a', 'b', 'c', 'd', 'e', 'f', 'g']
 Missing Values: None
 
           Most Common Items
           -----------------
              
-a  5 (26.32%)
-b  4 (21.05%)
-c  3 (15.79%)
-d  3 (15.79%)
-e  2 (10.53%)
+a  7 (25.00%)
+b  6 (21.43%)
+c  5 (17.86%)
+d  4 (14.29%)
+e  3 (10.71%)
 
-DatetimeStats
-----------------
+Numeric
+-------
+>>> Variable(range(1, 51), name="1 to 50")
+                Overview
+                ========
+Name: 1 to 50
+Type: numeric
+Unique Values: 50 -> [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, [...]
+Missing Values: None
+
+          Summary Statistics
+          ------------------
+                                
+Number of observations  50.00000
+Average                 25.50000
+Standard Deviation      14.57738
+Minimum                  1.00000
+Lower Quartile          13.25000
+Median                  25.50000
+Upper Quartile          37.75000
+Maximum                 50.00000
+Skewness                 0.00000
+Kurtosis                -1.20000
+
+          Tests for Normality
+          -------------------
+                               p-value Conclusion at α = 0.05
+D'Agostino's K-squared test  0.0015981  Unlikely to be normal
+Kolmogorov-Smirnov test      0.0000000  Unlikely to be normal
+Shapiro-Wilk test            0.0580895        Possibly normal
+
+Datetime
+--------
 >>> import pandas as pd
->>> dt = Variable(pd.date_range("2022-03-08", periods=20, freq="D"), name="dttm")
->>> DatetimeStats(dt)
+>>> dt = pd.date_range("2022-03-08", periods=20, freq="D")
+>>> Variable(dt, name="dttm")
                 Overview
                 ========
 Name: dttm
@@ -45,46 +75,13 @@ Median                  2022-03-17 12:00:00
 Upper Quartile          2022-03-22 06:00:00
 Maximum                 2022-03-27 00:00:00
 
-NumericStats
----------------
->>> num = Variable(range(50), name="1 to 50")
->>> NumericStats(num)
-                Overview
-                ========
-Name: 1 to 50
-Type: numeric
-Unique Values: 50 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, [...]
-Missing Values: None
-
-          Summary Statistics
-          ------------------
-                                
-Number of observations  50.00000
-Average                 24.50000
-Standard Deviation      14.57738
-Minimum                  0.00000
-Lower Quartile          12.25000
-Median                  24.50000
-Upper Quartile          36.75000
-Maximum                 49.00000
-Skewness                 0.00000
-Kurtosis                -1.20000
-
-          Tests for Normality
-          -------------------
-                               p-value Conclusion at α = 0.05
-D'Agostino's K-squared test  0.0015981  Unlikely to be normal
-Kolmogorov-Smirnov test      0.0000000  Unlikely to be normal
-Shapiro-Wilk test            0.0580895        Possibly normal
 
 MULTIVARIATE
 ==============
 
 MultiVariable
 -------------
->>> from seaborn import load_dataset
->>> data = load_dataset("iris")
->>> MultiVariable(data)
+>>> MultiVariable(iris_data)
                         OVERVIEW
                         ========
 Numeric features: sepal_length, sepal_width, petal_length, petal_width
@@ -112,12 +109,12 @@ petal_length & petal_width --> very strong positive correlation (0.96)
 sepal_length & sepal_width --> very weak negative correlation (-0.12)
 sepal_width & petal_width --> weak negative correlation (-0.37)
 
+
 CLI
 ===
-
 $ eda-report -h
 usage: eda-report [-h] [-i INFILE] [-o OUTFILE] [-t TITLE] [-c COLOR]
-                  [-T TARGET]
+                  [-g GROUPBY]
 
 Automatically analyze data and generate reports. A graphical user interface
 will be launched if none of the optional arguments is specified.
@@ -134,19 +131,17 @@ optional arguments:
                         Exploratory Data Analysis Report)
   -c COLOR, --color COLOR
                         The color to apply to graphs (default: cyan)
-  -T TARGET, --target TARGET
-                        The target variable (dependent feature), used to group
-                        plotted values. An integer value is treated as a
-                        column index, whereas a string is treated as a column
-                        label.
+  -g GROUPBY, -T GROUPBY, --groupby GROUPBY, --target GROUPBY
+                        The variable to use for grouping plotted values. An
+                        integer value is treated as a column index, whereas a
+                        string is treated as a column label.
+
 
 TOP LEVEL
 =========
 
 eda_report.get_word_report
---------------------------
->>> from seaborn import load_dataset
->>> iris_data = load_dataset("iris")        
+--------------------------       
 >>> get_word_report(iris_data)
 Analyze variables:  100%|███████████████████████████████████| 5/5
 Plot variables:     100%|███████████████████████████████████| 5/5
@@ -186,8 +181,6 @@ Kurtosis                -1.20000
 D'Agostino's K-squared test  0.0015981  Unlikely to be normal
 Kolmogorov-Smirnov test      0.0000000  Unlikely to be normal
 Shapiro-Wilk test            0.0580895        Possibly normal
->>> from seaborn import load_dataset
->>> iris_data = load_dataset("iris")
 >>> summarize(iris_data)
                         OVERVIEW
                         ========
@@ -215,3 +208,12 @@ sepal_length & petal_length --> very strong positive correlation (0.87)
 petal_length & petal_width --> very strong positive correlation (0.96)
 sepal_length & sepal_width --> very weak negative correlation (-0.12)
 sepal_width & petal_width --> weak negative correlation (-0.37)
+
+
+PLOTTING
+========
+
+bar_plot
+--------
+import eda_report.plotting as ep
+ep.bar_plot(mpg_data["origin"], label="Country of Origin")

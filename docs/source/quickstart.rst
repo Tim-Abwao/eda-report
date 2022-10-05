@@ -28,7 +28,7 @@ You can specify the input file and an output file-name with::
     $ eda-report -i data.csv -o some_name.docx
 
 .. literalinclude:: examples.txt
-       :lines: 118-141
+       :lines: 115-137
 
 From an Interactive Session
 ---------------------------
@@ -36,9 +36,11 @@ From an Interactive Session
 You can use the :func:`~eda_report.summarize` function to analyze datasets:
 
 .. literalinclude:: examples.txt
-       :lines: 159-188
+       :lines: 154-183
 
 You can use the :func:`~eda_report.get_word_report` function to generate reports:
 
 .. literalinclude:: examples.txt
-   :lines: 148-155
+   :lines: 145-150
+
+You can plot various statitsical graphs. See :ref:`plotting-examples`.
