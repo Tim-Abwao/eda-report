@@ -22,9 +22,9 @@ class ReportDocument(_ReportContent):
 
     The report consists of 3 main sections:
 
-    #. An *Overview* of the data and its features.
-    #. *Univariate Analysis*: Summary statistics and graphs for each feature.
-    #. *Bivariate Analysis*: Pairwise comparisons of numerical features.
+    #. An **Overview** of the data and its features.
+    #. **Univariate Analysis**: Summary statistics and graphs for each feature.
+    #. **Bivariate Analysis**: Pairwise comparisons of numerical features.
 
     .. _python-docx: https://python-docx.readthedocs.io/en/latest/
 
@@ -198,7 +198,7 @@ class ReportDocument(_ReportContent):
         )
 
         self.document.add_picture(
-            self.bivariate_graphs["correlation_heatmap"],
+            self.bivariate_graphs["correlation_plot"],
             width=Inches(6.7),
         )
         picture_paragraph = self.document.paragraphs[-1]

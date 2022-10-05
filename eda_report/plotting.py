@@ -1,13 +1,13 @@
 from io import BytesIO
 from multiprocessing import Pool
-from typing import Tuple
+from typing import Dict, Iterable, Optional, Tuple
 
 import matplotlib as mpl
 import numpy as np
 from cycler import cycler
 from matplotlib.colors import to_rgb
 from matplotlib.figure import Figure
-from pandas import Series
+from pandas import DataFrame
 from scipy.stats import gaussian_kde, probplot
 from tqdm import tqdm
 
@@ -16,7 +16,6 @@ from eda_report.validate import (
     validate_multivariate_input,
     validate_univariate_input,
 )
-from pandas import DataFrame
 
 # Matplotlib configuration
 mpl.rc("figure", autolayout=True, dpi=150, figsize=(6.5, 4))
@@ -36,7 +35,8 @@ def savefig(figure: Figure) -> BytesIO:
 
     This is a utility function helpful in by-passing the *filesystem*. Graphs
     are stored in :class:`~io.BytesIO` objects, and can then be read
-    directly as *attributes*, thus allowing rapid in-memory access.
+    directly as *attributes*, thus allowing rapid in-memory access when
+    compiling the report.
 
     Args:
         figure (matplotlib.figure.Figure): Graph content.
@@ -51,7 +51,8 @@ def savefig(figure: Figure) -> BytesIO:
 
 
 def set_custom_palette(color: str, num: int) -> None:
-    """Create a custom colormap based on the specified `color`.
+    """Create a custom color-map consisting of `num` shades of the specified
+    `color`.
 
     Args:
         color (str): Valid matplotlib color specifier.
@@ -81,14 +82,14 @@ def box_plot(data: Iterable, *, label: str, hue: Iterable = None) -> Figure:
     ax = fig.subplots()
 
     if hue is None:
-        bplot = ax.boxplot(data, labels=[label], sym=".")
+        bxplot = ax.boxplot(data, labels=[label], sym=".")
         ax.set_yticklabels("")
     else:
-        hue = hue[original_data.notna()]
-        groups = {key: group for key, group in data.groupby(hue)}
-        bplot = ax.boxplot(groups.values(), labels=groups.keys(), sym=".")
+        hue = validate_univariate_input(hue)[original_data.notna()]
+        groups = {key: series for key, series in data.groupby(hue)}
+        bxplot = ax.boxplot(groups.values(), labels=groups.keys(), sym=".")
 
-    for idx, patch in enumerate(bplot["boxes"]):
+    for idx, patch in enumerate(bxplot["boxes"]):
         patch.set_facecolor(f"C{idx}")
         patch.set_alpha(0.75)
 
@@ -129,16 +130,16 @@ def kde_plot(data: Iterable, *, label: str, hue: Iterable = None) -> Figure:
         )
         return fig
 
-    eval_points = np.linspace(*(data.agg([min, max])), num=len(data))
+    eval_points = np.linspace(data.min(), data.max(), num=len(data))
     if hue is None:
         kernel = gaussian_kde(data)
         density = kernel(eval_points)
         ax.plot(eval_points, density, label=label)
         ax.fill_between(eval_points, density, alpha=0.3)
     else:
-        hue = hue[original_data.notna()]
-        for key, _series in data.groupby(hue):
-            kernel = gaussian_kde(_series)
+        hue = validate_univariate_input(hue)[original_data.notna()]
+        for key, series in data.groupby(hue):
+            kernel = gaussian_kde(series)
             density = kernel(eval_points)
             ax.plot(eval_points, density, label=key, alpha=0.75)
             ax.fill_between(eval_points, density, alpha=0.25)
@@ -160,7 +161,7 @@ def prob_plot(data: Iterable, *, label: str, hue: Iterable = None) -> Figure:
             None. (Present just for API consistency, for now)
 
     Returns:
-        matplotlib.figure.Figure: Matplotlib figure with the kde-plot.
+        matplotlib.figure.Figure: Matplotlib figure with the probability-plot.
     """
     original_data = validate_univariate_input(data)
     data = original_data.dropna()
@@ -171,6 +172,7 @@ def prob_plot(data: Iterable, *, label: str, hue: Iterable = None) -> Figure:
     ax.lines[0].set_color("C0")
     ax.lines[1].set_color("k")
     ax.set_title(f"Probability plot of {label}")
+
     return fig
 
 
@@ -240,7 +242,8 @@ def plot_correlation(variables: Iterable) -> Figure:
         variables (Iterable): 2-dimensional data.
 
     Returns:
-        Figure: A bar-plot in PNG format as bytes.
+        matplotlib.figure.Figure: A bar-plot of correlation data in PNG format
+        as bytes.
     """
     if not isinstance(variables, MultiVariable):
         variables = MultiVariable(variables)

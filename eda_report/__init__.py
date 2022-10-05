@@ -26,8 +26,8 @@ def get_word_report(
             Defaults to "cyan".
         groupby_data (Union[str, int], optional): The label/index for the
             column to use to group values. Defaults to None.
-        output_filename (str, optional): The name and location to save the
-         report document. Defaults to "eda-report.docx".
+        output_filename (str, optional): The name and path to save the report
+            document. Defaults to "eda-report.docx".
         table_style (str, optional): The style to apply to the tables created.
             Defaults to "Table Grid".
 
@@ -36,7 +36,7 @@ def get_word_report(
 
     Example:
         .. literalinclude:: examples.txt
-           :lines: 148-155
+           :lines: 145-150
 
     """
     return ReportDocument(
@@ -60,7 +60,7 @@ def summarize(data: Iterable) -> MultiVariable:
 
     Examples:
         .. literalinclude:: examples.txt
-           :lines: 159-217
+           :lines: 154-210
 
     """
     return MultiVariable(data)

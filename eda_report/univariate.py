@@ -15,8 +15,8 @@ from eda_report.validate import validate_univariate_input
 
 class Variable:
 
-    """Defines objects that evaluate the general properties of one-dimensional
-    datasets, such as data type and missing values.
+    """Defines objects that analyze one-dimensional datasets to obtain summary
+    statistics, and evaluate properties such as data type and missing values.
 
     Input data is internally held as a :class:`~pandas.Series` in order
     to leverage pandas_ built-in statistical methods, as well as functions
@@ -29,6 +29,14 @@ class Variable:
         data (Iterable): The data to analyze.
         name (str, optional): The name to assign the variable. Defaults to
             None.
+
+    Examples:
+        .. literalinclude:: examples.txt
+           :lines: 6-22
+        .. literalinclude:: examples.txt
+           :lines: 26-53
+        .. literalinclude:: examples.txt
+           :lines: 57-76
     """
 
     def __init__(self, data: Iterable, *, name: str = None) -> None:
@@ -56,6 +64,12 @@ class Variable:
         self._get_summary_statistics()
 
     def __repr__(self) -> str:
+        """Get the string representation of a variable based on it's summary
+        statistics.
+
+        Returns:
+            str: Summary statistics.
+        """
         return repr(self.summary_statistics)
 
     def rename(self, name: str = None) -> None:
@@ -334,6 +348,7 @@ class _NumericStats:
             }
         )
         results["p-value"] = results["p-value"].apply(lambda x: f"{x:.7f}")
+
         return results
 
 

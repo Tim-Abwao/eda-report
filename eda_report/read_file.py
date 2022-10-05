@@ -26,7 +26,7 @@ def df_from_file(filepath: Union[str, Path]) -> pd.DataFrame:
             file is of an incorrect format or does not exist.
 
     Returns:
-        pandas.core.frame.DataFrame: The specified file's contents.
+        pandas.DataFrame: The specified file's contents.
     """
     file = Path(filepath)
 

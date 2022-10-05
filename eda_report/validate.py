@@ -7,8 +7,8 @@ from pandas.api.types import is_numeric_dtype
 
 from eda_report.exceptions import (
     EmptyDataError,
-    InputError,
     GroupbyVariableError,
+    InputError,
 )
 
 
