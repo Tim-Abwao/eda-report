@@ -18,7 +18,7 @@ except (ImportError, ModuleNotFoundError) as error:
     )
 
 from eda_report.document import ReportDocument
-from eda_report.exceptions import TargetVariableError
+from eda_report.exceptions import GroupbyVariableError
 from eda_report.read_file import df_from_file
 from eda_report.validate import validate_groupby_data
 
@@ -43,8 +43,8 @@ class EDAGUI(Frame):  # pragma: no cover
        :alt: an image of the graphical user interface
 
     If a valid file is selected, *text-input widgets* and a *color-picker
-    tool* pop up to help set the report's *title*, *target variable(optional,
-    to group values)* and *graph color*.
+    tool* pop up to help set the report's *title*,
+    *groupby variable(optional)* and *graph color*.
 
     Afterwards, another file-dialog appears to set the desired location and
     name for the generated report.
@@ -137,7 +137,7 @@ class EDAGUI(Frame):  # pragma: no cover
             self.current_action.set("Waiting for report title...")
             self._get_report_title()
 
-            self.current_action.set("Waiting for target variable...")
+            self.current_action.set("Waiting for group-by variable...")
             self._get_groupby_data()
 
             self.current_action.set("Waiting for graph color...")
@@ -200,22 +200,24 @@ class EDAGUI(Frame):  # pragma: no cover
         self.report_title = report_title or "Exploratory Data Analysis Report"
 
     def _get_groupby_data(self) -> None:
-        """Inquire about the target variable, and create a text box to
+        """Inquire about the groupby variable, and create a text box to
         collect input.
         """
-        if askyesno(message="Would you like to specify a target variable?"):
+        if askyesno(
+            message="Would you like to specify a variable to group by?"
+        ):
             self.groupby_data = askstring(
-                title="Target Variable",
-                prompt="Please enter the name of the target variable:",
+                title="Group-by Variable",
+                prompt="Please enter the name of the group-by variable:",
             )
             try:
                 validate_groupby_data(
                     data=self.data, groupby_data=self.groupby_data
                 )
-            except TargetVariableError as error:
+            except GroupbyVariableError as error:
                 self.groupby_data = None
                 showwarning(
-                    title="Invalid Target Variable", message=error.message
+                    title="Invalid Group-By Variable", message=error.message
                 )
         else:
             self.groupby_data = None

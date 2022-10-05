@@ -58,9 +58,9 @@ def process_cli_args() -> argparse.Namespace:
         "-T",
         "--target",
         help=(
-            "The target variable (dependent feature), used to group plotted "
-            "values. An integer value is treated as a column index, whereas "
-            "a string is treated as a column label."
+            "The variable to use for grouping plotted values. An integer value"
+            " is treated as a column index, whereas a string is treated as a"
+            " column label."
         ),
     )
 
@@ -92,5 +92,5 @@ def run_from_cli() -> Optional[ReportDocument]:
             title=args.title,
             graph_color=args.color,
             output_filename=args.outfile,
-            groupby_data=args.target,
+            groupby_data=args.groupby,
         )

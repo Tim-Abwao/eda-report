@@ -8,7 +8,7 @@ from pandas.api.types import is_numeric_dtype
 from eda_report.exceptions import (
     EmptyDataError,
     InputError,
-    TargetVariableError,
+    GroupbyVariableError,
 )
 
 
@@ -42,27 +42,27 @@ def clean_column_labels(data: DataFrame) -> DataFrame:
     return data
 
 
-def check_cardinality(target_data: Series, *, threshold: int = 10) -> None:
-    """Assesses whether the ``target_data`` is suitable for grouping values,
-    or has too many unique values (> ``threshold``).
+def check_cardinality(groupby_data: Series, *, threshold: int = 10) -> None:
+    """Assesses whether the ``groupby_data`` has too many unique values
+    (> ``threshold``, default 10).
 
     Args:
-        target_data (pandas.Series): The data intended to group values.
+        groupby_data (pandas.Series): The data intended to group values.
         threshold (int, optional): Maximum allowable cardinality. Defaults to
             10.
 
     Raises:
-        TargetVariableError: If the `target_data` has cardinality outside the
+        GroupbyVariableError: If the `groupby_data` has cardinality outside the
             acceptable range.
     """
-    if target_data.nunique() > threshold:
+    if groupby_data.nunique() > threshold:
         message = (
-            f"Target variable '{target_data.name}' not used to group values. "
-            f"It has high cardinality ({target_data.nunique()}) "
+            f"Group-by variable '{groupby_data.name}' not used to group "
+            f"values. It has high cardinality ({groupby_data.nunique()}) "
             f"and would clutter graphs."
         )
         logging.warning(message)
-        raise TargetVariableError(message)
+        raise GroupbyVariableError(message)
 
 
 def validate_multivariate_input(data: Iterable) -> DataFrame:
@@ -141,7 +141,7 @@ def validate_univariate_input(
 def validate_groupby_data(
     *, data: DataFrame, groupby_data: Union[int, str]
 ) -> Optional[Series]:
-    """Ensures that the specified *target variable* (column label or index) is
+    """Ensures that the specified column label/index for grouping values is
     present in the data.
 
     Args:
@@ -149,37 +149,37 @@ def validate_groupby_data(
         groupby_data (Union[int, str]): A column label or index.
 
     Raises:
-        TargetVariableError: If the supplied column label does not exist, or
+        GroupbyVariableError: If the supplied column label does not exist, or
             the supplied column index is out of bounds.
 
     Returns:
-        Optional[pandas.Series]: The target variable's data.
+        Optional[pandas.Series]: The groupby variable's data.
     """
     if groupby_data is None:
         return None
     elif isinstance(groupby_data, int):
         try:
-            target_data = data.iloc[:, groupby_data]
+            groupby_data = data.iloc[:, groupby_data]
         except IndexError:
-            raise TargetVariableError(
+            raise GroupbyVariableError(
                 f"Column index {groupby_data} is not in the range"
                 f" [0, {data.columns.size}]."
             )
-        check_cardinality(target_data)
-        return target_data
+        check_cardinality(groupby_data)
+        return groupby_data
     elif isinstance(groupby_data, str):
         try:
-            target_data = data[groupby_data]
+            groupby_data = data[groupby_data]
         except KeyError:
-            raise TargetVariableError(
+            raise GroupbyVariableError(
                 f"{groupby_data!r} is not in {data.columns.to_list()}"
             )
-        check_cardinality(target_data)
-        return target_data
+        check_cardinality(groupby_data)
+        return groupby_data
     else:
         # If groupby_data is neither an index(int) or label(str)
         logging.warning(
-            f"Target variable '{groupby_data}' ignored."
+            f"Group-by variable '{groupby_data}' ignored."
             " Not a valid column index or label."
         )
         return None

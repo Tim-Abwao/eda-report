@@ -27,7 +27,8 @@ class EmptyDataError(InputError):
     pass
 
 
-class TargetVariableError(InputError):
-    """The *Exception* raised when the specified target variable is invalid."""
+class GroupbyVariableError(InputError):
+    """The *Exception* raised when the specified group-by variable is invalid.
+    """
 
     pass
