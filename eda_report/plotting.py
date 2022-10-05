@@ -192,22 +192,18 @@ def bar_plot(data: Iterable, *, label: str) -> Figure:
 
     # Include no more than 10 of the most common values
     top_10 = data.value_counts().nlargest(10)
-    ax.bar(top_10.index, top_10, alpha=0.8)
-    if (num_unique := data.nunique()) > 10:
-        ax.set_title(f"Bar-plot of {label} (Top 10 of {num_unique})")
-    else:
-        ax.set_title(f"Bar-plot of {label}")
+    bars = ax.bar(top_10.index, top_10, alpha=0.8)
+    ax.bar_label(bars, labels=[f"{x:,.0f}" for x in top_10], padding=2)
 
+    if (num_unique := data.nunique()) > 10:
+        title = f"Bar-plot of {label} (Top 10 of {num_unique})"
+    else:
+        title = f"Bar-plot of {label}"
+    ax.set_title(title)
     ax.tick_params(axis="x", rotation=90)  # Improve visibility of long labels
 
-    # Annotate bars
-    for p in ax.patches:
-        ax.annotate(
-            f"{p.get_height():,.0f}",
-            ha="center",
-            size=8,
-            xy=(p.get_x() + p.get_width() / 2, p.get_height() * 1.02),
-        )
+    return fig
+
 
 def _plot_variable(variable_and_hue: Tuple) -> Tuple:
     """Helper function to concurrently plot variables in a multiprocessing
@@ -260,15 +256,13 @@ def plot_correlation(variables: Iterable) -> Figure:
 
     fig = Figure(figsize=(7, 6.3))
     ax = fig.subplots()
-    ax.barh(labels, corr_data)
+    ax.barh(labels, corr_data, edgecolor="#777")
     ax.set_xlim(-1, 1)
-    ax.spines["left"].set_visible(False)
-    ax.yaxis.set_visible(False)
-    ax.axvline(0, 0, 1, color="#777")
+    ax.spines["left"].set_position("zero")
+    ax.yaxis.set_visible(False)  # hide y-axis labels
 
     for p, label in zip(ax.patches, labels):
         p.set_alpha(abs(p.get_width()))
-        p.set_edgecolor("#777")
 
         if p.get_width() < 0:
             p.set_facecolor("steelblue")
