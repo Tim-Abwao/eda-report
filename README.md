@@ -9,7 +9,7 @@
 
 A Python program to help automate the exploratory data analysis and reporting process.
 
-Input data is analyzed using [pandas][pandas] and [SciPy][scipy]. Graphs are plotted using [matplotlib][matplotlib] and [seaborn][seaborn]. The results are then nicely packaged as a *Word (.docx)* document using [python-docx][python-docx].
+Input data is analyzed using [pandas][pandas] and [SciPy][scipy]. Graphs are plotted using [matplotlib][matplotlib]. The results are then nicely packaged as a *Word (.docx)* document using [python-docx][python-docx].
 
 ## Installation
 
@@ -59,7 +59,7 @@ eda-report -h
 
 ```bash
 usage: eda-report [-h] [-i INFILE] [-o OUTFILE] [-t TITLE] [-c COLOR]
-                  [-T TARGET]
+                  [-g GROUPBY]
 
 Automatically analyze data and generate reports. A graphical user interface
 will be launched if none of the optional arguments is specified.
@@ -76,11 +76,10 @@ optional arguments:
                         Exploratory Data Analysis Report)
   -c COLOR, --color COLOR
                         The color to apply to graphs (default: cyan)
-  -T TARGET, --target TARGET
-                        The target variable (dependent feature), used to group
-                        plotted values. An integer value is treated as a
-                        column index, whereas a string is treated as a column
-                        label.
+  -g GROUPBY, -T GROUPBY, --groupby GROUPBY, --target GROUPBY
+                        The variable to use for grouping plotted values. An
+                        integer value is treated as a column index, whereas a
+                        string is treated as a column label.
 ```
 
 </details>
@@ -90,9 +89,6 @@ optional arguments:
 #### 3.1 Analyze data
 
 ```python
->>> import eda_report
->>> from seaborn import load_dataset
->>> iris_data = load_dataset("iris")
 >>> eda_report.summarize(iris_data)
                         OVERVIEW
                         ========
@@ -133,7 +129,7 @@ Bivariate analysis: 100%|██████████████████�
 <eda_report.document.ReportDocument object at 0x7f196753bd60>
 ```
 
-Visit the [official documentation][docs] for more details.
+Visit the [official documentation][docs] for more info.
 
 [docs]: https://eda-report.readthedocs.io/
 [eda-report-pypi]: https://pypi.org/project/eda-report/
@@ -142,5 +138,4 @@ Visit the [official documentation][docs] for more details.
 [python-docx]: https://python-docx.readthedocs.io/
 [scipy]: https://scipy.org/
 [screencast]: https://raw.githubusercontent.com/Tim-Abwao/eda-report/dev/docs/source/_static/screencast.gif
-[seaborn]: https://seaborn.pydata.org/
 [tkdocs]: https://tkdocs.com/index.html
