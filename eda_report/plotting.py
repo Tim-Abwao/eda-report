@@ -199,11 +199,16 @@ def bar_plot(data: Series, *, label: str) -> Figure:
             xy=(p.get_x() + p.get_width() / 2, p.get_height() * 1.02),
         )
 
-    return fig
+def _plot_variable(variable_and_hue: Tuple) -> Tuple:
+    """Helper function to concurrently plot variables in a multiprocessing
+    Pool.
 
+    Args:
+        variable_and_hue (Tuple): A variable, and hue data.
 
-def plot_variable(variable_and_hue: Tuple, hue=None) -> Tuple:
-    """Get graphs (as PNG images) for a variable based on it's type."""
+    Returns:
+        Tuple: `variable`s name, and graphs in a dict.
+    """
     variable, hue = variable_and_hue
     if variable.var_type == "numeric":
         graphs = {
@@ -304,21 +309,45 @@ def plot_regression(data) -> Figure:
     ax.set_xlabel(var1)
     ax.set_ylabel(var2)
 
+    return fig
+
+
+def _plot_regression(var_pair_df: DataFrame) -> Tuple:
+    """Helper function to plot regression plots concurrently.
+
+    Args:
+        var_pair_df (DataFrame): A pair of numeric values.
+
+    Returns:
+        Tuple: Names for the pair of values, and a figure with the regression
+        plot.
+    """
+    var1, var2 = var_pair_df.columns
+    fig = regression_plot(
+        x=var_pair_df[var1], y=var_pair_df[var2], labels=(var1, var2)
+    )
     return (var1, var2), fig
 
 
-def plot_multivariable(variables: MultiVariable):
+def _plot_multivariable(variables: MultiVariable) -> Optional[Dict]:
+    """Concurrently plot regression plots in a multiprocessing Pool.
 
+    Args:
+        variables (MultiVariable): Bi-variate analysis results.
+
+    Returns:
+        Optional[Dict]: A dictionary with a correlation plot and regression
+        plots.
+    """
     if hasattr(variables, "var_pairs"):
 
         with Pool() as p:
             paired_data_gen = [
-                variables.data.loc[:, pair].dropna()
-                for pair in variables.var_pairs
+                variables.data.loc[:, pair] for pair in variables.var_pairs
             ]
             bivariate_regression_plots = dict(
                 tqdm(
-                    p.imap(plot_regression, paired_data_gen),
+                    p.imap(_plot_regression, paired_data_gen),
                     total=len(variables.var_pairs),
                     bar_format=(
                         "{desc} {percentage:3.0f}%|{bar:35}| "
@@ -330,7 +359,7 @@ def plot_multivariable(variables: MultiVariable):
             )
 
         return {
-            "correlation_heatmap": savefig(plot_correlation(variables)),
+            "correlation_plot": savefig(plot_correlation(variables)),
             "regression_plots": {
                 var_pair: savefig(plot)
                 for var_pair, plot in bivariate_regression_plots.items()

@@ -7,7 +7,7 @@ from docx.shared import Inches, Pt
 from docx.text.parfmt import ParagraphFormat
 from pandas.core.frame import DataFrame
 
-from eda_report.content import ReportContent
+from eda_report.content import _ReportContent
 
 logging.basicConfig(
     format="[%(levelname)s %(asctime)s.%(msecs)03d] %(message)s",
@@ -16,13 +16,9 @@ logging.basicConfig(
 )
 
 
-class ReportDocument(ReportContent):
-    """Creates a :class:`~docx.document.Document`  with analysis results.
-
-    The :class:`~eda_report.content.ReportContent` class is used to analyze
-    the data and generate text and graph content. Then the
-    :class:`~docx.document.Document` class from the `python-docx`_ package is
-    used to publish the results as a *Word* document.
+class ReportDocument(_ReportContent):
+    """Creates a :class:`~docx.document.Document` with analysis results
+    using `python-docx`_.
 
     The report consists of 3 main sections:
 

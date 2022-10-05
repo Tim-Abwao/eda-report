@@ -5,15 +5,15 @@ from tqdm import tqdm
 
 from eda_report.multivariate import MultiVariable
 from eda_report.plotting import (
-    plot_multivariable,
-    plot_variable,
+    _plot_multivariable,
+    _plot_variable,
     set_custom_palette,
 )
-from eda_report.univariate import Variable, analyze_univariate
+from eda_report.univariate import Variable, _analyze_univariate
 from eda_report.validate import validate_groupby_data
 
 
-class AnalysisResult:
+class _AnalysisResult:
     """Analyzes data, and stores the resultant summary statistics and graphs.
 
     Args:
@@ -44,20 +44,20 @@ class AnalysisResult:
 
         self.univariate_stats = self._get_univariate_statistics()
         self.univariate_graphs = self._get_univariate_graphs()
-        self.bivariate_graphs = plot_multivariable(self.multivariable)
+        self.bivariate_graphs = _plot_multivariable(self.multivariable)
 
     def _get_univariate_statistics(self) -> Dict:
         """Compute summary statistics for all variables present.
 
         Returns:
-            Dict[str, Union[CategoricalStats, DatetimeStats, NumericStats]]:
+            Dict[str, Union[_CategoricalStats, _DatetimeStats, _NumericStats]]:
             Summary statistics.
         """
         data = self.multivariable.data
         with Pool() as p:
             univariate_stats = dict(
                 tqdm(
-                    p.imap(analyze_univariate, data.items()),
+                    p.imap(_analyze_univariate, data.items()),
                     total=data.shape[1],
                     bar_format=(
                         "{desc} {percentage:3.0f}%|{bar:35}| "
@@ -83,7 +83,7 @@ class AnalysisResult:
             univariate_graphs = dict(
                 tqdm(
                     # Plot variables in parallel processes
-                    p.imap(plot_variable, variables_and_hue),
+                    p.imap(_plot_variable, variables_and_hue),
                     # Progress-bar options
                     total=len(self.univariate_stats),
                     bar_format=(
@@ -97,7 +97,7 @@ class AnalysisResult:
         return univariate_graphs
 
 
-class ReportContent(AnalysisResult):
+class _ReportContent(_AnalysisResult):
     """Prepares textual summaries of analysis results.
 
     Args:

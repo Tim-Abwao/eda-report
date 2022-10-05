@@ -96,16 +96,6 @@ class Variable:
 
         return "categorical"
 
-    def _get_summary_statistics(self) -> None:
-        """Compute summary statistics for the variable."""
-        if self.var_type == "numeric":
-            stats = NumericStats(self)
-        elif self.var_type == "datetime":
-            stats = DatetimeStats(self)
-        else:
-            stats = CategoricalStats(self)
-        self.summary_statistics = stats
-
     def _get_missing_values_info(self) -> Optional[str]:
         """Get the number of values missing from the variable.
 
@@ -120,21 +110,23 @@ class Variable:
                 f"{missing_values:,} ({missing_values / len(self.data):.2%})"
             )
 
+    def _get_summary_statistics(self) -> None:
+        """Compute summary statistics for the variable based on data type."""
+        if self.var_type == "numeric":
+            stats = _NumericStats(self)
+        elif self.var_type == "datetime":
+            stats = _DatetimeStats(self)
+        else:
+            stats = _CategoricalStats(self)
 
-class CategoricalStats:
-    """Get descriptive statistics for a categorical
-    :class:`~eda_report.univariate.Variable`.
+        self.summary_statistics = stats
 
-    .. note::
-       Not meant to be used directly: use the :func:`eda_report.summarize`
-       function instead.
+
+class _CategoricalStats:
+    """Get descriptive statistics for a categorical variable.
 
     Args:
         variable (Variable): The data to analyze.
-
-    Example:
-        .. literalinclude:: examples.txt
-           :lines: 6-23
     """
 
     def __init__(self, variable: Variable) -> None:
@@ -191,20 +183,11 @@ class CategoricalStats:
         return most_common_items.apply(lambda x: f"{x:,} ({x / n:.2%})")
 
 
-class DatetimeStats:
-    """Get descriptive statistics for a datetime
-    :class:`~eda_report.univariate.Variable`.
-
-    .. note::
-       Not meant to be used directly: use the :func:`eda_report.summarize`
-       function instead.
+class _DatetimeStats:
+    """Get descriptive statistics for a datetime variable.
 
     Args:
         variable (Variable): The data to analyze.
-
-    Example:
-        .. literalinclude:: examples.txt
-           :lines: 27-46
     """
 
     def __init__(self, variable: Variable) -> None:
@@ -250,20 +233,11 @@ class DatetimeStats:
         )
 
 
-class NumericStats:
-    """Get descriptive statistics for a numeric
-    :class:`~eda_report.univariate.Variable`.
-
-    .. note::
-       Not meant to be used directly: use the :func:`eda_report.summarize`
-       function instead.
+class _NumericStats:
+    """Get descriptive statistics for a numeric variable.
 
     Args:
         variable (Variable): The data to analyze.
-
-    Example:
-        .. literalinclude:: examples.txt
-           :lines: 50-78
     """
 
     def __init__(self, variable) -> None:
@@ -363,10 +337,8 @@ class NumericStats:
         return results
 
 
-def analyze_univariate(name_and_data: Tuple) -> Variable:
-    """Convert a one-dimensional dataset into a
-    :class:`~eda_report.univariate.Variable`, and get summary statistics.
-
+def _analyze_univariate(name_and_data: Tuple) -> Variable:
+    """Helper function used to concurrently analyze data with multiprocessing.
     """
     name, data = name_and_data
     var = Variable(data, name=name)
