@@ -55,7 +55,9 @@ def process_cli_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "-g",
         "-T",
+        "--groupby",
         "--target",
         help=(
             "The variable to use for grouping plotted values. An integer value"
