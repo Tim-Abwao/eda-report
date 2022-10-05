@@ -296,8 +296,10 @@ def plot_correlation(variables: Iterable) -> Figure:
     return fig
 
 
-def plot_regression(data) -> Figure:
-    """Get a regression-plot and ecdf-plot for the provided column pair.
+def regression_plot(
+    x: Iterable, y: Iterable, labels: Tuple[str, str]
+) -> Figure:
+    """Get a regression-plot from the provided pair of values.
 
     Args:
         x (Iterable): Numeric values.
@@ -306,14 +308,12 @@ def plot_regression(data) -> Figure:
             axes labels.
 
     Returns:
-        io.BytesIO: The regression-plot and ecdf-plot as subplots, in PNG
-        format.
+        matplotlib.figure.Figure: Matplotlib figure with the regression-plot.
     """
     var1, var2 = labels
     # Convert to DataFrame
     data = validate_multivariate_input({var1: x, var2: y}).dropna()
 
-    data = data.dropna()
     if len(data) > 50000:
         data = data.sample(50000)
 
