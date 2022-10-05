@@ -12,6 +12,11 @@ from scipy.stats import gaussian_kde, probplot
 from tqdm import tqdm
 
 from eda_report.multivariate import MultiVariable
+from eda_report.validate import (
+    validate_multivariate_input,
+    validate_univariate_input,
+)
+from pandas import DataFrame
 
 # Matplotlib configuration
 mpl.rc("figure", autolayout=True, dpi=150, figsize=(6.5, 4))
@@ -57,19 +62,20 @@ def set_custom_palette(color: str, num: int) -> None:
     mpl.rc("axes", prop_cycle=cycler(color=color_array))
 
 
-def box_plot(data: Series, *, label: str, hue: Series = None) -> Figure:
-    """Get a boxplot from numeric values.
+def box_plot(data: Iterable, *, label: str, hue: Iterable = None) -> Figure:
+    """Get a box-plot from numeric values.
+
     Args:
-        data (Series): Values to plot.
-        label (str): A name for the `data`.
-        hue (Series, optional): Values for grouping the `data`. Defaults to
+        data (Iterable): Values to plot.
+        label (str): A name for the `data`, shown in the title.
+        hue (Iterable, optional): Values for grouping the `data`. Defaults to
             None.
 
     Returns:
         matplotlib.figure.Figure: Matplotlib figure with the box-plot.
     """
-    original_data = data
-    data = data.dropna()
+    original_data = validate_univariate_input(data)
+    data = original_data.dropna()
 
     fig = Figure()
     ax = fig.subplots()
@@ -91,20 +97,20 @@ def box_plot(data: Series, *, label: str, hue: Series = None) -> Figure:
     return fig
 
 
-def kde_plot(data: Series, *, label: str, hue: Series = None) -> Figure:
+def kde_plot(data: Iterable, *, label: str, hue: Iterable = None) -> Figure:
     """Get a kde-plot from numeric values.
 
     Args:
-        data (Series): Values to plot.
-        label (str): A name for the `data`.
-        hue (Series, optional): Values for grouping the `data`. Defaults to
+        data (Iterable): Values to plot.
+        label (str): A name for the `data`, shown in the title.
+        hue (Iterable, optional): Values for grouping the `data`. Defaults to
             None.
 
     Returns:
         matplotlib.figure.Figure: Matplotlib figure with the kde-plot.
     """
-    original_data = data
-    data = data.dropna()
+    original_data = validate_univariate_input(data)
+    data = original_data.dropna()
 
     fig = Figure()
     ax = fig.subplots()
@@ -144,19 +150,21 @@ def kde_plot(data: Series, *, label: str, hue: Series = None) -> Figure:
     return fig
 
 
-def prob_plot(data: Series, *, label: str, hue: Series = None) -> Figure:
+def prob_plot(data: Iterable, *, label: str, hue: Iterable = None) -> Figure:
     """Get a probability-plot from numeric values.
 
     Args:
-        data (Series): Values to plot.
-        label (str): A name for the `data`.
-        hue (Series, optional): Values for grouping the `data`. Defaults to
-            None.
+        data (Iterable): Values to plot.
+        label (str): A name for the `data`, shown in the title.
+        hue (Iterable, optional): Values for grouping the `data`. Defaults to
+            None. (Present just for API consistency, for now)
 
     Returns:
         matplotlib.figure.Figure: Matplotlib figure with the kde-plot.
     """
-    data = data.dropna()
+    original_data = validate_univariate_input(data)
+    data = original_data.dropna()
+
     fig = Figure(figsize=(6.5, 4.5))
     ax = fig.subplots()
     probplot(data, fit=True, plot=ax)
@@ -166,17 +174,19 @@ def prob_plot(data: Series, *, label: str, hue: Series = None) -> Figure:
     return fig
 
 
-def bar_plot(data: Series, *, label: str) -> Figure:
-    """Get a bar-plot from categorical values.
+def bar_plot(data: Iterable, *, label: str) -> Figure:
+    """Get a bar-plot from a sequence of values.
 
     Args:
-        data (Series): Values to plot.
-        label (str): A name for the `data`.
+        data (Iterable): Values to plot.
+        label (str): A name for the `data`, shown in the title.
 
     Returns:
         matplotlib.figure.Figure: Matplotlib figure with the kde-plot.
     """
-    data = data.dropna()
+    original_data = validate_univariate_input(data)
+    data = original_data.dropna()
+
     fig = Figure()
     ax = fig.subplots()
 
@@ -227,12 +237,18 @@ def _plot_variable(variable_and_hue: Tuple) -> Tuple:
     return variable.name, graphs
 
 
-def plot_correlation(variables: MultiVariable) -> Figure:
+def plot_correlation(variables: Iterable) -> Figure:
     """Create a bar chart showing the top 20 most correlated variables.
+
+    Args:
+        variables (Iterable): 2-dimensional data.
 
     Returns:
         Figure: A bar-plot in PNG format as bytes.
     """
+    if not isinstance(variables, MultiVariable):
+        variables = MultiVariable(variables)
+
     pairs = list(variables.var_pairs)
     corr_data = (
         variables.correlation_df.unstack()  # get MultiIndex of cols
@@ -284,14 +300,18 @@ def plot_regression(data) -> Figure:
     """Get a regression-plot and ecdf-plot for the provided column pair.
 
     Args:
-        var_pair (Tuple[str, str]): Numeric column pair.
+        x (Iterable): Numeric values.
+        y (Iterable): Numeric values.
+        labels (Tuple[str, str]): Names for `x` and `y` respectively, shown in
+            axes labels.
 
     Returns:
         io.BytesIO: The regression-plot and ecdf-plot as subplots, in PNG
         format.
     """
-    fig = Figure(figsize=(5, 4.8))
-    ax = fig.subplots()
+    var1, var2 = labels
+    # Convert to DataFrame
+    data = validate_multivariate_input({var1: x, var2: y}).dropna()
 
     data = data.dropna()
     if len(data) > 50000:
