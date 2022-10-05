@@ -317,7 +317,8 @@ def regression_plot(
     if len(data) > 50000:
         data = data.sample(50000)
 
-    var1, var2 = data.columns
+    fig = Figure(figsize=(5, 5))
+    ax = fig.subplots()
     x = data[var1]
     y = data[var2]
     slope, intercept = np.polyfit(x, y, deg=1)
@@ -325,7 +326,11 @@ def regression_plot(
 
     ax.scatter(x, y, s=40, alpha=0.7, edgecolors="#444")
     ax.plot(line_x, slope * line_x + intercept, color="#444", lw=2)
-    ax.set_title(f"Slope: {slope:,.4f}\nIntercept: {intercept:,.4f}", size=11)
+    ax.set_title(
+        f"Slope: {slope:,.4f}\nIntercept: {intercept:,.4f}\n"
+        + f"Correlation: {x.corr(y):.4f}",
+        size=11,
+    )
     ax.set_xlabel(var1)
     ax.set_ylabel(var2)
 
