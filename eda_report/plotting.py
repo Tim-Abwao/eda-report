@@ -311,7 +311,7 @@ def plot_correlation(variables: Iterable) -> Figure:
 
 
 def regression_plot(
-    x: Iterable, y: Iterable, labels: Tuple[str, str], color: str
+    x: Iterable, y: Iterable, labels: Tuple[str, str], color: str = None
 ) -> Figure:
     """Get a regression-plot from the provided pair of values.
 
