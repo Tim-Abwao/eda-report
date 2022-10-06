@@ -43,4 +43,4 @@ You can use the :func:`~eda_report.get_word_report` function to generate reports
 .. literalinclude:: examples.txt
    :lines: 145-150
 
-You can plot various statitsical graphs. See :ref:`plotting-examples`.
+You can plot various statistical graphs. See :ref:`plotting-examples`.
