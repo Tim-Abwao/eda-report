@@ -29,9 +29,9 @@ Otherwise, you'll probably need to export them as images.
 
 Plotting Examples
 -----------------
-
->>> fig = box_plot(range(1, 51), label="1 to 50")
->>> fig.savefig("myplot.png")
+>>> import eda_report.plotting as ep
+>>> fig = ep.bar_plot(mpg_data["origin"], label="Country of Origin")
+>>> fig.savefig("bar-plot.png")
 
 .. image:: _static/bar-plot.png
    :width: 80%
