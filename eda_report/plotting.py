@@ -383,19 +383,30 @@ def _plot_multivariable(
         plots.
     """
     if hasattr(variables, "var_pairs"):
+        var_pairs = list(variables.var_pairs)
+
+        if len(variables.var_pairs) > 50:
+            # Take the top 50 var_pairs by magnitude of correlation.
+            # 50 var_pairs == 25+ pages
+            # 20 numeric columns == upto 190 pairs (95+ pages).
+            var_pairs = (
+                variables.correlation_df.unstack()[var_pairs]
+                .sort_values(key=abs)
+                .tail(50)
+                .index
+            )
 
         set_custom_palette(
             color=color,
         )
         with Pool() as p:
             paired_data_gen = [
-                (variables.data.loc[:, pair], color)
-                for pair in variables.var_pairs
+                (variables.data.loc[:, pair], color) for pair in var_pairs
             ]
             bivariate_regression_plots = dict(
                 tqdm(
                     p.imap(_plot_regression, paired_data_gen),
-                    total=len(variables.var_pairs),
+                    total=len(var_pairs),
                     bar_format=(
                         "{desc} {percentage:3.0f}%|{bar:35}| "
                         "{n_fmt}/{total_fmt} pairs."

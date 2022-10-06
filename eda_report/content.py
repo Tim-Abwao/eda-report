@@ -201,12 +201,22 @@ class _ReportContent(_AnalysisResult):
             Optional[Dict[str, str]]: Correlation info.
         """
         if hasattr(self.multivariable, "var_pairs"):
+            var_pairs = list(self.multivariable.var_pairs)
+
+            if len(self.multivariable.var_pairs) > 50:
+                # Take the top 50 var_pairs by magnitude of correlation.
+                var_pairs = (
+                    self.multivariable.correlation_df.unstack()[var_pairs]
+                    .sort_values(key=abs)
+                    .tail(50)
+                    .index
+                )
             return {
                 var_pair: (
                     f"{var_pair[0].title()} and {var_pair[1].title()} have "
                     f"{self.multivariable.correlation_descriptions[var_pair]}."
                 )
-                for var_pair in self.multivariable.var_pairs
+                for var_pair in var_pairs
             }
         else:
             return None

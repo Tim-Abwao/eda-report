@@ -237,3 +237,10 @@ class TestPlotMultivariable:
 
         for graph in reg_plots + [corr_plot]:
             assert isinstance(graph, BytesIO)
+
+    def test_limiting_numeric_pairs(self):
+        data = MultiVariable([range(12), [1, 2, 3, 4] * 3])
+        # `data`` has 12 numeric columns, resulting in up to 66 var_pairs.
+        # Check if only limit = 50 are plotted.
+        graphs = _plot_multivariable(data, color="green")
+        assert len(graphs["regression_plots"]) == 50
