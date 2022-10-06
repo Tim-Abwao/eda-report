@@ -157,9 +157,10 @@ def validate_groupby_data(
     """
     if groupby_data is None:
         return None
-    elif isinstance(groupby_data, int):
+    elif f"{groupby_data}".isdecimal():
+        idx = int(groupby_data)
         try:
-            groupby_data = data.iloc[:, groupby_data]
+            groupby_data = data.iloc[:, idx]
         except IndexError:
             raise GroupbyVariableError(
                 f"Column index {groupby_data} is not in the range"
