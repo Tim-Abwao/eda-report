@@ -286,18 +286,37 @@ def _plot_variable(variables_hue_and_color: Tuple) -> Tuple:
         Tuple: `variable`s name, and graphs in a dict.
     """
     variable, hue, color = variables_hue_and_color
-    set_custom_palette(color, hue)
     if variable.var_type == "numeric":
         graphs = {
-            plot_func.__name__: savefig(
-                plot_func(data=variable.data, hue=hue, label=variable.name)
-            )
-            for plot_func in [box_plot, kde_plot, prob_plot]
+            "box_plot": savefig(
+                box_plot(
+                    data=variable.data,
+                    hue=hue,
+                    label=variable.name,
+                    color=color,
+                )
+            ),
+            "kde_plot": savefig(
+                kde_plot(
+                    data=variable.data,
+                    hue=hue,
+                    label=variable.name,
+                    color=color,
+                )
+            ),
+            "prob_plot": savefig(
+                prob_plot(
+                    data=variable.data,
+                    hue=hue,
+                    label=variable.name,
+                    marker_color=color,
+                )
+            ),
         }
     else:  # {"boolean", "categorical", "datetime"}:
         graphs = {
             "bar_plot": savefig(
-                bar_plot(data=variable.data, label=variable.name)
+                bar_plot(data=variable.data, label=variable.name, color=color)
             )
         }
 
