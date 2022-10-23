@@ -141,7 +141,13 @@ def box_plot(
     return fig
 
 
-def kde_plot(data: Iterable, *, label: str, hue: Iterable = None) -> Figure:
+def kde_plot(
+    data: Iterable,
+    *,
+    label: str,
+    hue: Iterable = None,
+    color: Union[str, Sequence] = None,
+) -> Figure:
     """Get a kde-plot from numeric values.
 
     Args:
@@ -149,6 +155,7 @@ def kde_plot(data: Iterable, *, label: str, hue: Iterable = None) -> Figure:
         label (str): A name for the `data`, shown in the title.
         hue (Iterable, optional): Values for grouping the `data`. Defaults to
             None.
+        color (Union[str, Sequence]): A valid matplotlib color specifier.
 
     Returns:
         matplotlib.figure.Figure: Matplotlib figure with the kde-plot.
@@ -177,15 +184,20 @@ def kde_plot(data: Iterable, *, label: str, hue: Iterable = None) -> Figure:
     if hue is None:
         kernel = gaussian_kde(data)
         density = kernel(eval_points)
-        ax.plot(eval_points, density, label=label)
-        ax.fill_between(eval_points, density, alpha=0.3)
+        ax.plot(eval_points, density, label=label, color=color)
+        ax.fill_between(eval_points, density, alpha=0.3, color=color)
     else:
         hue = validate_univariate_input(hue)[original_data.notna()]
-        for key, series in data.groupby(hue):
+        if color is None:
+            colors = [f"C{idx}" for idx in range(hue.nunique())]
+        else:
+            colors = _get_color_shades_of(color, hue.nunique())
+
+        for color, (key, series) in zip(colors, data.groupby(hue)):
             kernel = gaussian_kde(series)
             density = kernel(eval_points)
-            ax.plot(eval_points, density, label=key, alpha=0.75)
-            ax.fill_between(eval_points, density, alpha=0.25)
+            ax.plot(eval_points, density, label=key, alpha=0.75, color=color)
+            ax.fill_between(eval_points, density, alpha=0.25, color=color)
 
     ax.set_ylim(0)
     ax.legend()
