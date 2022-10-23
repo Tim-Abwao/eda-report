@@ -78,6 +78,17 @@ def set_custom_palette(color: str, hue: Union[int, Iterable] = None) -> None:
     mpl.rc("axes", prop_cycle=cycler(color=color_array))
 
 
+def _get_color_shades_of(color: str, num: int = None) -> Sequence:
+    """Obtain an array of `num` shades of the specified `color`.
+
+    Args:
+        color (str): The desired color.
+        num (int): Desired number of color shades.
+    """
+    color_rgb = to_rgb(color)
+    return np.linspace(color_rgb, (0.25, 0.25, 0.25), num=num)
+
+
 def box_plot(data: Iterable, *, label: str, hue: Iterable = None) -> Figure:
     """Get a box-plot from numeric values.
 
