@@ -1,6 +1,6 @@
 from io import BytesIO
 from multiprocessing import Pool
-from typing import Dict, Iterable, Optional, Tuple, Union
+from typing import Dict, Iterable, Optional, Sequence, Tuple, Union
 
 import matplotlib as mpl
 import numpy as np
@@ -191,12 +191,15 @@ def prob_plot(data: Iterable, *, label: str, hue: Iterable = None) -> Figure:
     return fig
 
 
-def bar_plot(data: Iterable, *, label: str) -> Figure:
+def bar_plot(
+    data: Iterable, *, label: str, color: Union[str, Sequence] = None
+) -> Figure:
     """Get a bar-plot from a sequence of values.
 
     Args:
         data (Iterable): Values to plot.
         label (str): A name for the `data`, shown in the title.
+        color (str): A valid matplotlib color specifier.
 
     Returns:
         matplotlib.figure.Figure: Matplotlib figure with the kde-plot.
@@ -209,7 +212,7 @@ def bar_plot(data: Iterable, *, label: str) -> Figure:
 
     # Include no more than 10 of the most common values
     top_10 = data.value_counts().nlargest(10)
-    bars = ax.bar(top_10.index, top_10, alpha=0.8)
+    bars = ax.bar(top_10.index, top_10, alpha=0.8, color=color)
     ax.bar_label(bars, labels=[f"{x:,.0f}" for x in top_10], padding=2)
 
     if (num_unique := data.nunique()) > 10:
