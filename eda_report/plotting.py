@@ -325,6 +325,7 @@ def _plot_variable(variables_hue_and_color: Tuple) -> Tuple:
 
 def plot_correlation(
     variables: Iterable,
+    max_pairs: int = 20,
     color_pos: Union[str, Sequence] = "orangered",
     color_neg: Union[str, Sequence] = "steelblue",
 ) -> Figure:
@@ -332,6 +333,8 @@ def plot_correlation(
 
     Args:
         variables (Iterable): 2-dimensional data.
+        max_pairs (int): The maximum number of numeric pairs to include in the
+            plot. Defaults to 20.
         color_pos (Union[str, Sequence]): Color for positive correlation bars.
             Defaults to "orangered".
         color_neg (Union[str, Sequence]): Color for negative correlaiton bars.
@@ -349,7 +352,7 @@ def plot_correlation(
         variables.correlation_df.unstack()  # get MultiIndex of cols
         .loc[pairs]  # select unique pairs
         .sort_values(key=abs)  # sort by magnitude
-        .tail(20)  # select top 20
+        .tail(max_pairs)  # select top `max_pairs` (default 20)
     )
     labels = corr_data.index.map(" vs ".join)
 
