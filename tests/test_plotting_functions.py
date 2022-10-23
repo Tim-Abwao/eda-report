@@ -1,9 +1,9 @@
 from io import BytesIO
 
-import matplotlib as mpl
 import pytest
 from eda_report.multivariate import MultiVariable
 from eda_report.plotting import (
+    _get_color_shades_of,
     _plot_multivariable,
     _plot_regression,
     _plot_variable,
@@ -13,7 +13,6 @@ from eda_report.plotting import (
     plot_correlation,
     prob_plot,
     savefig,
-    set_custom_palette,
 )
 from eda_report.univariate import Variable
 from matplotlib.colors import to_rgb
@@ -26,45 +25,11 @@ def test_savefig_function():
     assert isinstance(saved, BytesIO)
 
 
-class TestSetCustomPalette:
-    # Desired_color will be first, (0.25, 0.25, 0.25) last.
-
-    def test_int_hue(self):
-        desired_color = "red"
-        hue = 5
-        set_custom_palette(color=desired_color, hue=hue)
-
-        colors = mpl.rcParams["axes.prop_cycle"].by_key().get("color")
-        assert to_rgb(desired_color) == pytest.approx(colors[0])
-        assert (0.25, 0.25, 0.25) == pytest.approx(colors[-1])
-        assert len(colors) == hue
-
-    def test_iterable_hue(self):
-        desired_color = "green"
-        hue = list("abcdeabcdabcaba")
-        set_custom_palette(color=desired_color, hue=hue)
-
-        colors = mpl.rcParams["axes.prop_cycle"].by_key().get("color")
-        assert to_rgb(desired_color) == pytest.approx(colors[0])
-        assert (0.25, 0.25, 0.25) == pytest.approx(colors[-1])
-        assert len(colors) == 5  # cardinality of hue
-
-    def test_null_hue(self):
-        desired_color = "blue"
-        set_custom_palette(color=desired_color)
-
-        colors = mpl.rcParams["axes.prop_cycle"].by_key().get("color")
-        assert to_rgb(desired_color) == pytest.approx(colors[0])
-        assert (0.25, 0.25, 0.25) == pytest.approx(colors[-1])
-        assert len(colors) == 2
-
-    def test_invalid_hue(self):
-        with pytest.raises(TypeError) as error:
-            set_custom_palette("#eee", 1.25)
-
-        assert (
-            "Invalid hue input. Expected an int or an iterable, but got 1.25"
-        ) in str(error.value)
+def test_get_color_shades_of():
+    color, num_shades = "green", 5
+    green_shades = _get_color_shades_of(color, num_shades)
+    assert green_shades.shape == (num_shades, 3)  # each color is an rgb tuple
+    assert green_shades[0] == pytest.approx(to_rgb(color))
 
 
 class TestBoxplot:
@@ -82,10 +47,41 @@ class TestBoxplot:
         assert self.grouped_box.axes[0].get_title() == "Box-plot of grouped"
 
     def test_grouping(self):
-        # Simple bar has one patch
+        # Simple box-plot has one patch
         assert len(self.simple_box.axes[0].patches) == 1
-        # Grouped bar has hue.nunique() patches
+        # Grouped box-plot has hue.nunique() patches
         assert len(self.grouped_box.axes[0].patches) == self.hue.nunique()
+
+    def test_simple_set_color(self):
+        box1_color = self.simple_box.axes[0].patches[0].get_facecolor()
+
+        _color = "blue"
+        simple_box_2 = box_plot(self.data, label="simple", color=_color)
+        box2_color = simple_box_2.axes[0].patches[0].get_facecolor()
+
+        assert box1_color == pytest.approx(
+            (*to_rgb("C0"), 0.75)  # default color 1 and alpha value
+        )
+        assert box2_color == pytest.approx(
+            (*to_rgb(_color), 0.75)  # _color and alpha value
+        )
+
+    def test_grouped_set_color(self):
+        _color = "lime"
+        # Take last patch since colors are reversed (["CN", .. , "C0"])
+        last_box_color = self.grouped_box.axes[0].patches[-1].get_facecolor()
+
+        grouped_box_2 = box_plot(
+            self.data, hue=self.hue, label="simple", color=_color
+        )
+        last_box2_color = grouped_box_2.axes[0].patches[-1].get_facecolor()
+
+        assert last_box_color == pytest.approx(
+            (*to_rgb("C0"), 0.75)  # default color |hue| and alpha value
+        )
+        assert last_box2_color == pytest.approx(
+            (*to_rgb(_color), 0.75)  # _color and alpha value
+        )
 
 
 class TestKdeplot:
@@ -126,6 +122,29 @@ class TestKdeplot:
             == "[Could not plot kernel density estimate.\n Data is singular.]"
         )
 
+    def test_simple_set_color(self):
+        kde1_color = self.simple_kde.axes[0].lines[0].get_color()
+
+        _color = "violet"
+        simple_kde_2 = kde_plot(self.data, label="simple", color=_color)
+        kde2_color = simple_kde_2.axes[0].lines[0].get_color()
+
+        assert to_rgb(kde1_color) == pytest.approx(to_rgb("C0"))
+        assert to_rgb(kde2_color) == pytest.approx(to_rgb(_color))
+
+    def test_grouped_set_color(self):
+
+        first_kde_color = self.grouped_kde.axes[0].lines[0].get_color()
+
+        _color = "aqua"
+        grouped_kde_2 = kde_plot(
+            self.data, hue=self.hue, label="simple", color=_color
+        )
+        first_kde2_color = grouped_kde_2.axes[0].lines[0].get_color()
+
+        assert to_rgb(first_kde_color) == pytest.approx(to_rgb("C0"))
+        assert to_rgb(first_kde2_color) == pytest.approx(to_rgb(_color))
+
 
 class TestProbplot:
     data = Series(list(range(25)) + [None, None])
@@ -140,6 +159,24 @@ class TestProbplot:
     def test_plot_components(self):
         # Plot should have 2 lines (input data & normal diagonal)
         assert len(self.plot.axes[0].lines) == 2
+
+    def test_default_colors(self):
+        markers, reg_line = self.plot.axes[0].lines
+
+        assert markers.get_color() == "C0"
+        assert reg_line.get_color() == "#222"
+
+    def test_set_colors(self):
+        fig = prob_plot(
+            self.data,
+            label="some-more-data",
+            marker_color="yellow",
+            line_color="salmon",
+        )
+        markers, reg_line = fig.axes[0].lines
+
+        assert markers.get_color() == "yellow"
+        assert reg_line.get_color() == "salmon"
 
 
 class TestBarplot:
@@ -163,6 +200,17 @@ class TestBarplot:
     def test_bar_truncation(self):
         # Check that only the top 10 categories are plotted
         assert len(self.truncated_bar.axes[0].patches) == 10  # only 10 of 14
+
+    def test_default_color(self):
+        bar_color = self.simple_bar.axes[0].patches[0].get_facecolor()
+
+        assert to_rgb(bar_color) == pytest.approx(to_rgb("C0"))
+
+    def test_set_color(self):
+        fig = bar_plot(self.low_cardinality_data, label="test", color="pink")
+        bar_color = fig.axes[0].patches[0].get_facecolor()
+
+        assert to_rgb(bar_color) == pytest.approx(to_rgb("pink"))
 
 
 class TestPlotvariable:
@@ -190,12 +238,15 @@ class TestPlotvariable:
 
 
 class TestPlotCorrelation:
-    def test_with_few_numeric_pairs(self):
-        corr_plot = plot_correlation([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    corr_plot = plot_correlation([[1, 2, 9], [4, 5, 6], [9, 8, 3]])
 
-        assert isinstance(corr_plot, Figure)
-        assert corr_plot.axes[0].get_title() == "Pearson Correlation (Top 3)"
-        assert len(corr_plot.axes[0].patches) == 3  # 3 unique pairs
+    def test_with_few_numeric_pairs(self):
+
+        assert isinstance(self.corr_plot, Figure)
+        assert (
+            self.corr_plot.axes[0].get_title() == "Pearson Correlation (Top 3)"
+        )
+        assert len(self.corr_plot.axes[0].patches) == 3  # 3 unique pairs
 
     def test_with_excess_numeric_pairs(self):
         # Should only plot the top 20 by magnitude
@@ -204,6 +255,29 @@ class TestPlotCorrelation:
         assert isinstance(corr_plot, Figure)
         assert corr_plot.axes[0].get_title() == "Pearson Correlation (Top 20)"
         assert len(corr_plot.axes[0].patches) == 20  # Top 20 of 45 pairs
+
+    def test_default_colors(self):
+        bars = self.corr_plot.axes[0].patches
+        # bars = (0.99, -0.99, -1), from origin
+        pos_bar_color = bars[0].get_facecolor()
+        neg_bar_color = bars[-1].get_facecolor()
+
+        assert to_rgb(pos_bar_color) == pytest.approx(to_rgb("orangered"))
+        assert to_rgb(neg_bar_color) == pytest.approx(to_rgb("steelblue"))
+
+    def test_set_colors(self):
+        corr_plot = plot_correlation(
+            [[1, 2, 9], [4, 5, 6], [9, 8, 3]],
+            color_neg="skyblue",
+            color_pos="maroon",
+        )
+        bars = corr_plot.axes[0].patches
+        # bars = (0.99, -0.99, -1), from origin
+        pos_bar_color = bars[0].get_facecolor()
+        neg_bar_color = bars[-1].get_facecolor()
+
+        assert to_rgb(pos_bar_color) == pytest.approx(to_rgb("maroon"))
+        assert to_rgb(neg_bar_color) == pytest.approx(to_rgb("skyblue"))
 
 
 def testplot_regression_function():
@@ -217,6 +291,12 @@ def testplot_regression_function():
     # Check that a sample of size 50000 is taken for large datasets
     points = reg_plot.axes[0].collections[0].get_offsets().data
     assert len(points) == 50000
+
+    # Check colors
+    assert reg_plot.axes[0].lines[0].get_color() == "#444"  # reg line
+    assert to_rgb(  # markers
+        reg_plot.axes[0].collections[0].get_facecolor()
+    ) == pytest.approx(to_rgb("lime"))
 
 
 class TestPlotMultivariable:
