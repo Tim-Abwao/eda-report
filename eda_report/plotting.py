@@ -89,7 +89,13 @@ def _get_color_shades_of(color: str, num: int = None) -> Sequence:
     return np.linspace(color_rgb, (0.25, 0.25, 0.25), num=num)
 
 
-def box_plot(data: Iterable, *, label: str, hue: Iterable = None) -> Figure:
+def box_plot(
+    data: Iterable,
+    *,
+    label: str,
+    hue: Iterable = None,
+    color: Union[str, Sequence] = None,
+) -> Figure:
     """Get a box-plot from numeric values.
 
     Args:
@@ -97,6 +103,7 @@ def box_plot(data: Iterable, *, label: str, hue: Iterable = None) -> Figure:
         label (str): A name for the `data`, shown in the title.
         hue (Iterable, optional): Values for grouping the `data`. Defaults to
             None.
+        color (Union[str, Sequence]): A valid matplotlib color specifier.
 
     Returns:
         matplotlib.figure.Figure: Matplotlib figure with the box-plot.
@@ -108,16 +115,26 @@ def box_plot(data: Iterable, *, label: str, hue: Iterable = None) -> Figure:
     ax = fig.subplots()
 
     if hue is None:
-        bxplot = ax.boxplot(data, labels=[label], sym=".")
+        bxplot = ax.boxplot(
+            data,
+            labels=[label],
+            sym=".",
+            boxprops=dict(facecolor=color, alpha=0.75),
+        )
         ax.set_yticklabels("")
     else:
         hue = validate_univariate_input(hue)[original_data.notna()]
         groups = {key: series for key, series in data.groupby(hue)}
         bxplot = ax.boxplot(groups.values(), labels=groups.keys(), sym=".")
 
-    for idx, patch in enumerate(bxplot["boxes"]):
-        patch.set_facecolor(f"C{idx}")
-        patch.set_alpha(0.75)
+        if color is None:
+            colors = [f"C{idx}" for idx in range(hue.nunique())]
+        else:
+            colors = _get_color_shades_of(color, hue.nunique())
+
+        for patch, color in zip(bxplot["boxes"], reversed(colors)):
+            patch.set_facecolor(color)
+            patch.set_alpha(0.75)
 
     ax.set_title(f"Box-plot of {label}")
 
