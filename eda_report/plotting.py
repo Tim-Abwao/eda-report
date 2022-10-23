@@ -166,7 +166,14 @@ def kde_plot(data: Iterable, *, label: str, hue: Iterable = None) -> Figure:
     return fig
 
 
-def prob_plot(data: Iterable, *, label: str, hue: Iterable = None) -> Figure:
+def prob_plot(
+    data: Iterable,
+    *,
+    label: str,
+    hue: Iterable = None,
+    marker_color: Union[str, Sequence] = "C0",
+    line_color: Union[str, Sequence] = "#222",
+) -> Figure:
     """Get a probability-plot from numeric values.
 
     Args:
@@ -174,6 +181,8 @@ def prob_plot(data: Iterable, *, label: str, hue: Iterable = None) -> Figure:
         label (str): A name for the `data`, shown in the title.
         hue (Iterable, optional): Values for grouping the `data`. Defaults to
             None. (Present just for API consistency, for now)
+        marker_color (Union[str, Sequence]): Color for the plotted points.
+        line_color (Union[str, Sequence]): Color for the line of best fit.
 
     Returns:
         matplotlib.figure.Figure: Matplotlib figure with the probability-plot.
@@ -184,8 +193,8 @@ def prob_plot(data: Iterable, *, label: str, hue: Iterable = None) -> Figure:
     fig = Figure(figsize=(6.5, 4.5))
     ax = fig.subplots()
     probplot(data, fit=True, plot=ax)
-    ax.lines[0].set_color("C0")
-    ax.lines[1].set_color("k")
+    ax.lines[0].set_color(marker_color)
+    ax.lines[1].set_color(line_color)
     ax.set_title(f"Probability plot of {label}")
 
     return fig
