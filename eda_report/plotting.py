@@ -4,7 +4,6 @@ from typing import Dict, Iterable, Optional, Sequence, Tuple, Union
 
 import matplotlib as mpl
 import numpy as np
-from cycler import cycler
 from matplotlib.colors import to_rgb
 from matplotlib.figure import Figure
 from scipy.stats import gaussian_kde, probplot
@@ -47,35 +46,6 @@ def savefig(figure: Figure) -> BytesIO:
     figure.savefig(graph, format="png")
 
     return graph
-
-
-def set_custom_palette(color: str, hue: Union[int, Iterable] = None) -> None:
-    """Set the default plot color-cycle to shades of the specified `color`.
-
-    Args:
-        color (str): The desired color.
-        hue (Union[int, Iterable], optional): If int, number of color shades
-            = hue. If an iterable, number of color shades = len(hue). If None,
-            number of color shades = 2. Defaults to None.
-
-    Raises:
-        TypeError: If hue is neither None nor an int nor an iterable.
-    """
-    color_rgb = to_rgb(color)
-    if hue is None:
-        num = 2
-    elif isinstance(hue, int):
-        num = hue
-    elif issubclass(type(hue), Iterable):
-        num = len(set(hue))
-    else:
-        raise TypeError(
-            "Invalid hue input. Expected an int or an iterable, but got "
-            f"{hue}."
-        )
-
-    color_array = np.linspace(color_rgb, (0.25, 0.25, 0.25), num=num)
-    mpl.rc("axes", prop_cycle=cycler(color=color_array))
 
 
 def _get_color_shades_of(color: str, num: int = None) -> Sequence:
@@ -481,10 +451,6 @@ def _plot_multivariable(
                 .tail(50)
                 .index
             )
-
-        set_custom_palette(
-            color=color,
-        )
         with Pool() as p:
             paired_data_gen = [
                 (variables.data.loc[:, pair], color) for pair in var_pairs
