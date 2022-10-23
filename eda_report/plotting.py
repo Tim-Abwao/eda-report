@@ -323,11 +323,19 @@ def _plot_variable(variables_hue_and_color: Tuple) -> Tuple:
     return variable.name, graphs
 
 
-def plot_correlation(variables: Iterable) -> Figure:
+def plot_correlation(
+    variables: Iterable,
+    color_pos: Union[str, Sequence] = "orangered",
+    color_neg: Union[str, Sequence] = "steelblue",
+) -> Figure:
     """Create a bar chart showing the top 20 most correlated variables.
 
     Args:
         variables (Iterable): 2-dimensional data.
+        color_pos (Union[str, Sequence]): Color for positive correlation bars.
+            Defaults to "orangered".
+        color_neg (Union[str, Sequence]): Color for negative correlaiton bars.
+            Defaults to "steelblue".
 
     Returns:
         matplotlib.figure.Figure: A bar-plot of correlation data in PNG format
@@ -356,7 +364,7 @@ def plot_correlation(variables: Iterable) -> Figure:
         p.set_alpha(abs(p.get_width()))
 
         if p.get_width() < 0:
-            p.set_facecolor("steelblue")
+            p.set_facecolor(color_neg)
             ax.text(
                 p.get_x(),
                 p.get_y() + p.get_height() / 2,
@@ -366,7 +374,7 @@ def plot_correlation(variables: Iterable) -> Figure:
                 va="center",
             )
         else:
-            p.set_facecolor("orangered")
+            p.set_facecolor(color_pos)
             ax.text(
                 p.get_x(),
                 p.get_y() + p.get_height() / 2,
@@ -382,7 +390,10 @@ def plot_correlation(variables: Iterable) -> Figure:
 
 
 def regression_plot(
-    x: Iterable, y: Iterable, labels: Tuple[str, str], color: str = None
+    x: Iterable,
+    y: Iterable,
+    labels: Tuple[str, str],
+    color: Union[str, Sequence] = None,
 ) -> Figure:
     """Get a regression-plot from the provided pair of values.
 
@@ -391,6 +402,7 @@ def regression_plot(
         y (Iterable): Numeric values.
         labels (Tuple[str, str]): Names for `x` and `y` respectively, shown in
             axes labels.
+        color (Union[str, Sequence]): A valid matplotlib color specifier.
 
     Returns:
         matplotlib.figure.Figure: Matplotlib figure with the regression-plot.
