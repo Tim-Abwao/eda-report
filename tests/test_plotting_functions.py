@@ -266,18 +266,18 @@ class TestPlotCorrelation:
         assert to_rgb(neg_bar_color) == pytest.approx(to_rgb("steelblue"))
 
     def test_set_colors(self):
-        corr_plot = plot_correlation(
+        corr_plot2 = plot_correlation(
             [[1, 2, 9], [4, 5, 6], [9, 8, 3]],
             color_neg="skyblue",
             color_pos="maroon",
         )
-        bars = corr_plot.axes[0].patches
+        bars2 = corr_plot2.axes[0].patches
         # bars = (0.99, -0.99, -1), from origin
-        pos_bar_color = bars[0].get_facecolor()
-        neg_bar_color = bars[-1].get_facecolor()
+        pos_bar_color2 = bars2[0].get_facecolor()
+        neg_bar_color2 = bars2[-1].get_facecolor()
 
-        assert to_rgb(pos_bar_color) == pytest.approx(to_rgb("maroon"))
-        assert to_rgb(neg_bar_color) == pytest.approx(to_rgb("skyblue"))
+        assert to_rgb(pos_bar_color2) == pytest.approx(to_rgb("maroon"))
+        assert to_rgb(neg_bar_color2) == pytest.approx(to_rgb("skyblue"))
 
 
 def testplot_regression_function():
