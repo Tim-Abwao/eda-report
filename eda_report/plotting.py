@@ -189,7 +189,9 @@ def prob_plot(
         data (Iterable): Values to plot.
         label (str): A name for the `data`, shown in the title.
         marker_color (Union[str, Sequence]): Color for the plotted points.
+            Defaults to "C0".
         line_color (Union[str, Sequence]): Color for the line of best fit.
+            Defaults to "#222".
 
     Returns:
         matplotlib.figure.Figure: Matplotlib figure with the probability-plot.
@@ -215,10 +217,10 @@ def bar_plot(
     Args:
         data (Iterable): Values to plot.
         label (str): A name for the `data`, shown in the title.
-        color (str): A valid matplotlib color specifier.
+        color (Union[str, Sequence]): A valid matplotlib color specifier.
 
     Returns:
-        matplotlib.figure.Figure: Matplotlib figure with the kde-plot.
+        matplotlib.figure.Figure: Matplotlib figure with the bar-plot.
     """
     original_data = validate_univariate_input(data)
     data = original_data.dropna()
@@ -293,7 +295,8 @@ def plot_correlation(
     color_pos: Union[str, Sequence] = "orangered",
     color_neg: Union[str, Sequence] = "steelblue",
 ) -> Figure:
-    """Create a bar chart showing the top 20 most correlated variables.
+    """Create a bar chart showing the top ``max_pairs`` most correlated
+    variables.
 
     Args:
         variables (Iterable): 2-dimensional data.
@@ -305,8 +308,7 @@ def plot_correlation(
             Defaults to "steelblue".
 
     Returns:
-        matplotlib.figure.Figure: A bar-plot of correlation data in PNG format
-        as bytes.
+        matplotlib.figure.Figure: A bar-plot of correlation data.
     """
     if not isinstance(variables, MultiVariable):
         variables = MultiVariable(variables)
@@ -368,7 +370,7 @@ def regression_plot(
         x (Iterable): Numeric values.
         y (Iterable): Numeric values.
         labels (Tuple[str, str]): Names for `x` and `y` respectively, shown in
-            axes labels.
+            axis labels.
         color (Union[str, Sequence]): A valid matplotlib color specifier.
 
     Returns:
