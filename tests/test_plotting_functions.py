@@ -312,10 +312,10 @@ class TestPlotMultivariable:
             "correlation_plot",
             "regression_plots",
         }
-        corr_plot = graphs["correlation_plot"]
+        corr_plot_ = graphs["correlation_plot"]
         reg_plots = list(graphs["regression_plots"].values())
 
-        for graph in reg_plots + [corr_plot]:
+        for graph in reg_plots + [corr_plot_]:
             assert isinstance(graph, BytesIO)
 
     def test_limiting_numeric_pairs(self):
