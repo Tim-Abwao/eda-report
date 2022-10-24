@@ -238,15 +238,11 @@ class TestPlotvariable:
 
 
 class TestPlotCorrelation:
-    corr_plot = plot_correlation([[1, 2, 9], [4, 5, 6], [9, 8, 3]])
-
     def test_with_few_numeric_pairs(self):
-
-        assert isinstance(self.corr_plot, Figure)
-        assert (
-            self.corr_plot.axes[0].get_title() == "Pearson Correlation (Top 3)"
-        )
-        assert len(self.corr_plot.axes[0].patches) == 3  # 3 unique pairs
+        corr_plot = plot_correlation([[1, 2, 9], [4, 5, 6], [9, 8, 3]])
+        assert isinstance(corr_plot, Figure)
+        assert corr_plot.axes[0].get_title() == "Pearson Correlation (Top 3)"
+        assert len(corr_plot.axes[0].patches) == 3  # 3 unique pairs
 
     def test_with_excess_numeric_pairs(self):
         # Should only plot the top 20 by magnitude
@@ -257,7 +253,8 @@ class TestPlotCorrelation:
         assert len(corr_plot.axes[0].patches) == 20  # Top 20 of 45 pairs
 
     def test_default_colors(self):
-        bars = self.corr_plot.axes[0].patches
+        corr_plot = plot_correlation([[1, 2, 9], [4, 5, 6], [9, 8, 3]])
+        bars = corr_plot.axes[0].patches
         # bars = (0.99, -0.99, -1), from origin
         pos_bar_color = bars[0].get_facecolor()
         neg_bar_color = bars[-1].get_facecolor()
@@ -312,10 +309,10 @@ class TestPlotMultivariable:
             "correlation_plot",
             "regression_plots",
         }
-        corr_plot_ = graphs["correlation_plot"]
+        corr_plot = graphs["correlation_plot"]
         reg_plots = list(graphs["regression_plots"].values())
 
-        for graph in reg_plots + [corr_plot_]:
+        for graph in reg_plots + [corr_plot]:
             assert isinstance(graph, BytesIO)
 
     def test_limiting_numeric_pairs(self):
