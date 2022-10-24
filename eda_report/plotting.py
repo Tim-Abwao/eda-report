@@ -180,7 +180,6 @@ def prob_plot(
     data: Iterable,
     *,
     label: str,
-    hue: Iterable = None,
     marker_color: Union[str, Sequence] = "C0",
     line_color: Union[str, Sequence] = "#222",
 ) -> Figure:
@@ -189,8 +188,6 @@ def prob_plot(
     Args:
         data (Iterable): Values to plot.
         label (str): A name for the `data`, shown in the title.
-        hue (Iterable, optional): Values for grouping the `data`. Defaults to
-            None. (Present just for API consistency, for now)
         marker_color (Union[str, Sequence]): Color for the plotted points.
         line_color (Union[str, Sequence]): Color for the line of best fit.
 
@@ -276,10 +273,7 @@ def _plot_variable(variables_hue_and_color: Tuple) -> Tuple:
             ),
             "prob_plot": savefig(
                 prob_plot(
-                    data=variable.data,
-                    hue=hue,
-                    label=variable.name,
-                    marker_color=color,
+                    data=variable.data, label=variable.name, marker_color=color
                 )
             ),
         }
