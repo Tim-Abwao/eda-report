@@ -239,7 +239,7 @@ class TestPlotvariable:
 
 class TestPlotCorrelation:
     def test_with_few_numeric_pairs(self):
-        corr_plot = plot_correlation([[1, 2, 9], [4, 5, 6], [9, 8, 3]])
+        corr_plot = plot_correlation([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
         assert isinstance(corr_plot, Figure)
         assert corr_plot.axes[0].get_title() == "Pearson Correlation (Top 3)"
         assert len(corr_plot.axes[0].patches) == 3  # 3 unique pairs
@@ -253,9 +253,9 @@ class TestPlotCorrelation:
         assert len(corr_plot.axes[0].patches) == 20  # Top 20 of 45 pairs
 
     def test_default_colors(self):
-        corr_plot = plot_correlation([[1, 2, 9], [4, 5, 6], [9, 8, 3]])
+        corr_plot = plot_correlation([[1, 2, 8], [3, 5, 5], [9, 8, 1]])
         bars = corr_plot.axes[0].patches
-        # bars = (0.99, -0.99, -1), from origin
+        # bars = (0.96, -0.98, -1), from origin
         pos_bar_color = bars[0].get_facecolor()
         neg_bar_color = bars[-1].get_facecolor()
 
@@ -264,12 +264,12 @@ class TestPlotCorrelation:
 
     def test_set_colors(self):
         corr_plot2 = plot_correlation(
-            [[1, 2, 9], [4, 5, 6], [9, 8, 3]],
+            [[10, 20, 80], [30, 50, 50], [90, 80, 10]],
             color_neg="skyblue",
             color_pos="maroon",
         )
         bars2 = corr_plot2.axes[0].patches
-        # bars = (0.99, -0.99, -1), from origin
+        # bars = (0.96, -0.98, -1), from origin
         pos_bar_color2 = bars2[0].get_facecolor()
         neg_bar_color2 = bars2[-1].get_facecolor()
 
