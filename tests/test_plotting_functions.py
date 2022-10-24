@@ -12,7 +12,7 @@ from eda_report.plotting import (
     kde_plot,
     plot_correlation,
     prob_plot,
-    savefig,
+    _savefig,
 )
 from eda_report.univariate import Variable
 from matplotlib.colors import to_rgb
@@ -21,7 +21,7 @@ from pandas import DataFrame, Series
 
 
 def test_savefig_function():
-    saved = savefig(figure=Figure())
+    saved = _savefig(figure=Figure())
     assert isinstance(saved, BytesIO)
 
 

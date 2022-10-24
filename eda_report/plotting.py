@@ -27,7 +27,7 @@ mpl.rc("boxplot", patchartist=True, vertical=False)
 mpl.rc("boxplot.medianprops", color="black")
 
 
-def savefig(figure: Figure) -> BytesIO:
+def _savefig(figure: Figure) -> BytesIO:
     """Saves the contents of a :class:`~matplotlib.figure.Figure` in PNG
     format, as bytes in a file-like object.
 
@@ -255,7 +255,7 @@ def _plot_variable(variables_hue_and_color: Tuple) -> Tuple:
     variable, hue, color = variables_hue_and_color
     if variable.var_type == "numeric":
         graphs = {
-            "box_plot": savefig(
+            "box_plot": _savefig(
                 box_plot(
                     data=variable.data,
                     hue=hue,
@@ -263,7 +263,7 @@ def _plot_variable(variables_hue_and_color: Tuple) -> Tuple:
                     color=color,
                 )
             ),
-            "kde_plot": savefig(
+            "kde_plot": _savefig(
                 kde_plot(
                     data=variable.data,
                     hue=hue,
@@ -271,7 +271,7 @@ def _plot_variable(variables_hue_and_color: Tuple) -> Tuple:
                     color=color,
                 )
             ),
-            "prob_plot": savefig(
+            "prob_plot": _savefig(
                 prob_plot(
                     data=variable.data, label=variable.name, marker_color=color
                 )
@@ -279,7 +279,7 @@ def _plot_variable(variables_hue_and_color: Tuple) -> Tuple:
         }
     else:  # {"boolean", "categorical", "datetime"}:
         graphs = {
-            "bar_plot": savefig(
+            "bar_plot": _savefig(
                 bar_plot(data=variable.data, label=variable.name, color=color)
             )
         }
@@ -301,7 +301,7 @@ def plot_correlation(
             plot. Defaults to 20.
         color_pos (Union[str, Sequence]): Color for positive correlation bars.
             Defaults to "orangered".
-        color_neg (Union[str, Sequence]): Color for negative correlaiton bars.
+        color_neg (Union[str, Sequence]): Color for negative correlation bars.
             Defaults to "steelblue".
 
     Returns:
@@ -463,9 +463,9 @@ def _plot_multivariable(
             )
 
         return {
-            "correlation_plot": savefig(plot_correlation(variables)),
+            "correlation_plot": _savefig(plot_correlation(variables)),
             "regression_plots": {
-                var_pair: savefig(plot)
+                var_pair: _savefig(plot)
                 for var_pair, plot in bivariate_regression_plots.items()
             },
         }
