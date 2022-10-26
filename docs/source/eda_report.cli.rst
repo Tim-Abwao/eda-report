@@ -1,5 +1,5 @@
-eda\_report.cli module
-======================
+eda\_report.cli
+===============
 
 .. automodule:: eda_report.cli
    :members:

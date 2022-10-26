@@ -1,5 +1,5 @@
-eda\_report.plotting module
-===========================
+eda\_report.plotting
+====================
 
 
 In the interest of efficiency, especially for large datasets with numerous columns; these plotting functions use a *non-interactive* `matplotlib backend`_. This decision was inspired by `Embedding in a web application server`_, which says in part:
@@ -76,7 +76,7 @@ Plotting Examples
    :class: only-dark
 
 >>> fig = ep.regression_plot(mpg_data["acceleration"], mpg_data["horsepower"],
-...                    labels=("Acceleration", "Horsepower"))
+...                          labels=("Acceleration", "Horsepower"))
 >>> fig.savefig("regression-plot.png")
 
 .. image:: _static/regression-plot.png

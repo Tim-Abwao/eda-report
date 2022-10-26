@@ -2,7 +2,7 @@ API Reference
 =============
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 3
 
    eda_report
    eda_report.cli

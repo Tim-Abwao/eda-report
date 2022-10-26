@@ -1,5 +1,5 @@
-eda\_report.exceptions module
-=============================
+eda\_report.exceptions
+======================
 
 .. automodule:: eda_report.exceptions
    :members:

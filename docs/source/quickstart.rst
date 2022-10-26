@@ -36,11 +36,29 @@ From an Interactive Session
 You can use the :func:`~eda_report.summarize` function to analyze datasets:
 
 .. literalinclude:: examples.txt
-       :lines: 154-183
+   :lines: 155-156, 159-185
 
 You can use the :func:`~eda_report.get_word_report` function to generate reports:
 
 .. literalinclude:: examples.txt
    :lines: 145-150
 
-You can plot various statistical graphs. See :ref:`plotting-examples`.
+You can plot various statistical graphs:
+
+>>> import eda_report.plotting as ep
+>>> fig = ep.plot_correlation(mpg_data)
+>>> fig.savefig("correlation-plot.png")
+
+.. image:: _static/correlation-plot.png
+   :width: 80%
+   :align: center
+   :alt: a correlation-plot
+   :class: only-light
+
+.. image:: _static/correlation-plot-dark.png
+   :width: 80%
+   :align: center
+   :alt: a correlation-plot
+   :class: only-dark
+
+See :ref:`plotting-examples`.

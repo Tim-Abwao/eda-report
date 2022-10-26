@@ -1,5 +1,5 @@
 eda_report
----------------
+----------
 
 .. automodule:: eda_report
    :members:

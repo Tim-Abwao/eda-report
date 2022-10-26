@@ -1,5 +1,5 @@
-eda\_report.document module
-===========================
+eda\_report.document
+====================
 
 .. automodule:: eda_report.document
    :members:

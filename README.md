@@ -31,7 +31,7 @@ eda-report
 
 ![screencast of the gui][screencast]
 
-You will be prompted to set a *report title*, *target variable (optional, for grouping values)*, *graph color* and *output filename*, after which the contents of the input file will be analyzed, and the results will be saved in a *Word (.docx)* document.
+You will be prompted to set a *report title*, *group-by variable (optional)*, *graph color* and *output filename*, after which the contents of the input file will be analyzed, and the results will be saved in a *Word (.docx)* document.
 
 >**NOTE:** For help with `Tk` - related issues, consider visiting [TkDocs][tkdocs].
 
@@ -118,7 +118,17 @@ sepal_length & sepal_width --> very weak negative correlation (-0.12)
 sepal_width & petal_width --> weak negative correlation (-0.37)
 ```
 
-#### 3.2 Generate a report
+#### 3.2 Plot statistical graphs
+
+```python
+>>> fig = ep.regression_plot(mpg_data["acceleration"], mpg_data["horsepower"],
+...                          labels=("Acceleration", "Horsepower"))
+>>> fig.savefig("regression-plot.png")
+```
+
+<img src="https://raw.githubusercontent.com/Tim-Abwao/eda-report/dev/docs/source/_static/regression-plot.png" width=400px style="display: block; margin: auto;">
+
+#### 3.3 Generate a report
 
 ```python
 >>> eda_report.get_word_report(iris_data)

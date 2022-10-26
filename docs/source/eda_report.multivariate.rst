@@ -1,5 +1,5 @@
-eda\_report.multivariate module
-===============================
+eda\_report.multivariate
+========================
 
 .. automodule:: eda_report.multivariate
    :members:

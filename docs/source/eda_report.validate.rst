@@ -1,5 +1,5 @@
-eda\_report.validate module
-===========================
+eda\_report.validate
+====================
 
 .. automodule:: eda_report.validate
    :members:

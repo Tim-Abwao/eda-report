@@ -24,7 +24,7 @@ class ReportDocument(_ReportContent):
 
     #. An **Overview** of the data and its features.
     #. **Univariate Analysis**: Summary statistics and graphs for each feature.
-    #. **Bivariate Analysis**: Pairwise comparisons of numerical features.
+    #. **Bivariate Analysis**: Pair-wise comparisons of numerical features.
 
     .. _python-docx: https://python-docx.readthedocs.io/en/latest/
 

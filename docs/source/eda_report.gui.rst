@@ -1,5 +1,5 @@
-eda\_report.gui module
-======================
+eda\_report.gui
+===============
 
 .. automodule:: eda_report.gui
    :members:

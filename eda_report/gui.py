@@ -46,8 +46,8 @@ class EDAGUI(Frame):  # pragma: no cover
     tool* pop up to help set the report's *title*,
     *groupby variable(optional)* and *graph color*.
 
-    Afterwards, another file-dialog appears to set the desired location and
-    name for the generated report.
+    Afterwards, a final file-dialog appears to help select the destination
+    for the generated report.
 
     .. hint::
         For help with `Tk` - related issues, consider visiting `TkDocs`_.

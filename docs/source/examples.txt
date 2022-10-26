@@ -141,7 +141,8 @@ TOP LEVEL
 =========
 
 eda_report.get_word_report
---------------------------       
+--------------------------
+>>> from eda_report import get_word_report
 >>> get_word_report(iris_data)
 Analyze variables:  100%|███████████████████████████████████| 5/5
 Plot variables:     100%|███████████████████████████████████| 5/5
@@ -151,6 +152,7 @@ Bivariate analysis: 100%|██████████████████�
 
 eda_report.summarize
 --------------------
+>>> from eda_report import summarize
 >>> summarize(range(50))
 [WARNING 16:18:48.064] Skipped Bivariate Analysis: There are less than 2 numeric
  variables having > 5% unique values.
@@ -208,12 +210,3 @@ sepal_length & petal_length --> very strong positive correlation (0.87)
 petal_length & petal_width --> very strong positive correlation (0.96)
 sepal_length & sepal_width --> very weak negative correlation (-0.12)
 sepal_width & petal_width --> weak negative correlation (-0.37)
-
-
-PLOTTING
-========
-
-bar_plot
---------
-import eda_report.plotting as ep
-ep.bar_plot(mpg_data["origin"], label="Country of Origin")
