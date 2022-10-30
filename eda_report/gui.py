@@ -13,9 +13,12 @@ try:
     from tkinter.simpledialog import askstring
 except (ImportError, ModuleNotFoundError) as error:
     print(
-        f"{error}. Please visit https://tkdocs.com/tutorial/install.html",
-        "for help installing it.",
+        f"{error}.\nPlease visit https://tkdocs.com/tutorial/install.html for"
+        " help installing it.\n\n"
+        "Or just specify an input file to by-pass the GUI.\n"
+        "Use eda-report -h for more details.",
     )
+    exit()
 
 from eda_report.document import ReportDocument
 from eda_report.exceptions import GroupbyVariableError

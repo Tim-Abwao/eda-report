@@ -2,7 +2,6 @@ import argparse
 from typing import Optional
 
 from eda_report.document import ReportDocument
-from eda_report.gui import EDAGUI
 from eda_report.read_file import df_from_file
 
 
@@ -80,6 +79,8 @@ def run_from_cli() -> Optional[ReportDocument]:
     args = process_cli_args()
 
     if args.infile is None:
+        from eda_report.gui import EDAGUI
+
         # Launch graphical user interface to select and analyze a file
         app = EDAGUI()
         app.mainloop()
