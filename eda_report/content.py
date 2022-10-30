@@ -1,12 +1,41 @@
 from multiprocessing import Pool
 from typing import Any, Dict, Iterable, Optional, Union
 
+import pandas as pd
 from tqdm import tqdm
 
 from eda_report.multivariate import MultiVariable
 from eda_report.plotting import _plot_multivariable, _plot_variable
 from eda_report.univariate import Variable, _analyze_univariate
 from eda_report.validate import validate_groupby_data
+
+
+def _get_contingency_tables(
+    categorical_df: pd.DataFrame, groupby_data: pd.Series
+) -> Dict[str, pd.DataFrame]:
+    """Get contingency tables for categorical columns.
+
+    Args:
+        categorical_df (pandas.DataFrame): Categorical data.
+        groupby_data (pandas.Series): Values to group by.
+
+    Returns:
+        Dict[str, pd.DataFrame]: Contingency tables for each column.
+    """
+    if (categorical_df is None) or (groupby_data is None):
+        return {}
+    contingency_tables = {
+        col: pd.crosstab(
+            categorical_df[col],
+            groupby_data,
+            margins=True,
+            margins_name="Total",
+        )
+        for col in categorical_df
+    }
+    # Exclude groupby data in case it is among the categorical cols
+    contingency_tables.pop(groupby_data.name, None)
+    return contingency_tables
 
 
 class _AnalysisResult:
@@ -33,6 +62,9 @@ class _AnalysisResult:
             data=self.multivariable.data, groupby_data=groupby_data
         )
         self.univariate_stats = self._get_univariate_statistics()
+        self.contingency_tables = _get_contingency_tables(
+            self.multivariable.categorical_cols, self.GROUPBY_DATA
+        )
         self.univariate_graphs = self._get_univariate_graphs()
         self.bivariate_graphs = _plot_multivariable(
             self.multivariable, color=graph_color

@@ -1,6 +1,10 @@
 from io import BytesIO
 
-from eda_report.content import _AnalysisResult, _ReportContent
+from eda_report.content import (
+    _AnalysisResult,
+    _ReportContent,
+    _get_contingency_tables,
+)
 from eda_report.multivariate import MultiVariable
 from eda_report.univariate import _CategoricalStats, _NumericStats
 from pandas import DataFrame
@@ -10,6 +14,40 @@ data = DataFrame(
 )
 
 
+class TestGetContingencyTables:
+    data = DataFrame(
+        [list("abc"), list("abd"), list("bcd")] * 4, columns=list("ABC")
+    )
+
+    def test_with_null_data(self):
+        tables = _get_contingency_tables(
+            categorical_df=None, groupby_data=self.data["C"]
+        )
+        assert tables == {}
+
+    def test_with_null_groupby_data(self):
+        tables = _get_contingency_tables(
+            categorical_df=self.data, groupby_data=None
+        )
+        assert tables == {}
+
+    def test_with_valid_args(self):
+        tables = _get_contingency_tables(
+            categorical_df=self.data, groupby_data=self.data["C"]
+        )
+        assert set(tables.keys()) == {"A", "B"}
+        assert tables["A"].to_dict() == {
+            "c": {"a": 4, "b": 0, "Total": 4},
+            "d": {"a": 4, "b": 4, "Total": 8},
+            "Total": {"a": 8, "b": 4, "Total": 12},
+        }
+        assert tables["B"].to_dict() == {
+            "c": {"b": 4, "c": 0, "Total": 4},
+            "d": {"b": 4, "c": 4, "Total": 8},
+            "Total": {"b": 8, "c": 4, "Total": 12},
+        }
+
+
 class TestAnalysisResult:
     results = _AnalysisResult(data, graph_color="green", groupby_data="C")
 
@@ -17,6 +55,7 @@ class TestAnalysisResult:
         assert isinstance(self.results.multivariable, MultiVariable)
         assert self.results.GRAPH_COLOR == "green"
         assert self.results.GROUPBY_DATA.equals(data["C"])
+        assert self.results.contingency_tables == {}
 
     def test_univariate_stats(self):
         assert isinstance(
@@ -87,6 +126,6 @@ class TestReportContent:
 
 
 def test_limiting_bivariate_summaries():
-    content = _ReportContent([range(12), [1, 2, 3, 4]*3])
+    content = _ReportContent([range(12), [1, 2, 3, 4] * 3])
     # content has 66 var_pairs, but the limit for summaries is 50
     assert len(content.bivariate_summaries) == 50
