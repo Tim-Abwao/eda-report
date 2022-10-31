@@ -86,7 +86,7 @@ def run_from_cli() -> Optional[ReportDocument]:
         app.mainloop()
 
     else:
-        return ReportDocument(
+        ReportDocument(
             args.infile,
             title=args.title,
             graph_color=args.color,

@@ -25,24 +25,18 @@ class TestCLIArgumentParsing:
                 "A",
             ],
         )
-        report = run_from_cli()
-        assert report.OUTPUT_FILENAME == f"{temp_data_dir}/cli-test-1.docx"
-        assert report.TITLE == "CLI Test"
-        assert report.GRAPH_COLOR == "teal"
-        assert report.GROUPBY_DATA.name == "A"
+        run_from_cli()
+        expected_output = temp_data_dir / "cli-test-1.docx"
+        assert expected_output.is_file()
 
     def test_with_only_input_file(self, temp_data_dir, monkeypatch):
         # Supply the input file it has no default.
         monkeypatch.setattr(
             sys, "argv", ["eda-report", "-i", f"{temp_data_dir / 'data.xlsx'}"]
         )
-        report = run_from_cli()
-
-        # Check if the default arguments were set
-        assert report.OUTPUT_FILENAME == "eda-report.docx"
-        assert report.TITLE == "Exploratory Data Analysis Report"
-        assert report.GRAPH_COLOR == "cyan"
-        assert report.GROUPBY_DATA is None
+        run_from_cli()
+        expected_output = Path("eda-report.docx")
+        assert expected_output.is_file()
 
         Path("eda-report.docx").unlink()  # Remove resultant report
 
