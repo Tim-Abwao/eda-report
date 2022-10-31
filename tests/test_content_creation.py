@@ -55,19 +55,21 @@ class TestAnalysisResult:
         assert isinstance(self.results.multivariable, MultiVariable)
         assert self.results.GRAPH_COLOR == "green"
         assert self.results.GROUPBY_DATA.equals(data["C"])
-        assert self.results.contingency_tables == {}
+        assert self.results.bivariate_summaries == {
+            ("A", "B"): "A and B have very weak positive correlation (0.10)."
+        }
 
-    def test_univariate_stats(self):
+    def test_analyzed_variables(self):
         assert isinstance(
-            self.results.univariate_stats["A"].summary_statistics,
+            self.results.analyzed_variables["A"].summary_statistics,
             _NumericStats,
         )
         assert isinstance(
-            self.results.univariate_stats["B"].summary_statistics,
+            self.results.analyzed_variables["B"].summary_statistics,
             _CategoricalStats,
         )
         assert isinstance(
-            self.results.univariate_stats["C"].summary_statistics,
+            self.results.analyzed_variables["C"].summary_statistics,
             _CategoricalStats,
         )
 
@@ -76,6 +78,29 @@ class TestAnalysisResult:
             assert key in set("ABC")
             for graph in graphs.values():
                 assert isinstance(graph, BytesIO)
+
+    def test_univariate_statistics(self):
+        assert set(self.results.univariate_stats) == {"A", "B", "C"}
+        for stats in self.results.univariate_stats.values():
+            assert isinstance(stats, DataFrame)
+
+    def test_normality_tests(self):
+        assert set(self.results.normality_tests) == {"A"}
+
+        for df in self.results.normality_tests.values():
+            assert set(df.index) == {
+                "D'Agostino's K-squared test",
+                "Shapiro-Wilk test",
+                "Kolmogorov-Smirnov test",
+            }
+
+    def test_contingency_tables(self):
+        assert set(self.results.contingency_tables) == {"B"}
+        assert self.results.contingency_tables["B"].to_dict() == {
+            "a": {1: 5, 2: 5, 3: 5, 4: 5, 5: 5, "Total": 25},
+            "b": {1: 5, 2: 5, 3: 5, 4: 5, 5: 5, "Total": 25},
+            "Total": {1: 10, 2: 10, 3: 10, 4: 10, 5: 10, "Total": 50},
+        }
 
     def test_bivariate_graphs(self):
         assert set(self.results.bivariate_graphs.keys()) == {
@@ -106,15 +131,10 @@ class TestReportContent:
             "(features), 2 of which are numeric."
         )
 
-    def test_variable_info(self):
-        A_info = self.content.variable_info["A"]
-        assert set(A_info.keys()) == {
-            "description",
-            "graphs",
-            "statistics",
-            "normality_tests",
-        }
-        assert A_info["description"] == (
+    def test_variable_descriptions(self):
+        desc_A = self.content.variable_descriptions["A"]
+
+        assert desc_A == (
             "A is a numeric variable with 50 unique values. None of its values"
             " are missing."
         )

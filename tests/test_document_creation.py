@@ -43,10 +43,6 @@ class TestReportWithLimitedInput:
         assert isinstance(self.report, ReportDocument)
         assert self.report.TITLE == "One Numeric One Categorical"
         assert self.report.GRAPH_COLOR == "lime"
-        assert list(self.report.variable_info.keys()) == [
-            "categorical",
-            "numeric",
-        ]
 
     def test_bivariate_analysis(self):
         assert self.report.bivariate_summaries is None
