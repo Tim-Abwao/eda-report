@@ -243,35 +243,48 @@ class ReportDocument(_ReportContent):
             header (bool, optional): Whether or not to include column names.
                 Defaults to False.
         """
-        if header:
-            # Add a row of column labels
-            data_with_header = data.copy()
-            data_with_header.loc["", :] = data.columns
-
-            # Ensure that column labels are in the first row
-            data = data_with_header.sort_index()
-
+        n_cols = len(column_widths)
         table = self.document.add_table(
-            rows=len(data),
-            cols=len(column_widths),
+            rows=0,
+            cols=n_cols,
+            style=style or self.document.styles[self.TABLE_STYLE],
         )
-        table.style = style or self.document.styles[self.TABLE_STYLE]
         table.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
         # Set column dimensions
         for idx, width in enumerate(column_widths):
             table.columns[idx].width = Inches(width)
 
-        # Populate the rows
-        for idx, row_data in enumerate(data.itertuples()):
-            for cell, value in zip(table.rows[idx].cells, row_data):
-                cell.text = f"{value}".rstrip("0").rstrip(".")
+        if header:
+            cells = table.add_row().cells
+            header_labels = [""] + list(data.columns)
+            for cell, value in zip(cells, header_labels):
+                cell.text = f"{value}"
 
                 # Font size and type-face have to be set at `run` level
                 run = cell.paragraphs[0].runs[0]
-                font = run.font
-                font.size = Pt(font_size)
-                font.name = font_face
+                run.bold = True
+                run.font.size = Pt(font_size)
+                run.font.name = font_face
+
+        # Populate the rows
+        for row_data in data.itertuples():
+            cells = table.add_row().cells
+            for idx, (cell, value) in enumerate(zip(cells, row_data)):
+                text = f"{value}"
+                # Strip trailing zeros, if text is not all zeros.
+                if set(text) != {"0"}:
+                    text = text.rstrip("0").rstrip(".")
+
+                cell.text = text
+
+                # Font size and type-face have to be set at `run` level
+                run = cell.paragraphs[0].runs[0]
+                run.font.size = Pt(font_size)
+                run.font.name = font_face
+                # Make first column values bold if header is True
+                if idx == 0 and header:
+                    run.bold = True
 
         self.document.add_paragraph()
 
