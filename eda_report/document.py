@@ -145,8 +145,15 @@ class ReportDocument(_ReportContent):
         self._format_heading_spacing(
             univariate_heading.paragraph_format, before=0, after=0
         )
-        for idx, var_name in enumerate(self.variable_info, start=1):
-            var_info = self.variable_info[var_name]
+        for idx, variable in enumerate(
+            self.analyzed_variables.values(), start=1
+        ):
+            var_name = variable.name
+            description = self.variable_descriptions[var_name]
+            summary_stats = self.univariate_stats[var_name]
+            graphs = self.univariate_graphs[var_name]
+            contingency_table = self.contingency_tables.get(var_name)
+            normality_tests = self.normality_tests.get(var_name)
 
             heading = self.document.add_heading(
                 f"1.{idx}. {var_name}".title(), level=2
@@ -154,22 +161,45 @@ class ReportDocument(_ReportContent):
             self._format_heading_spacing(
                 heading.paragraph_format, before=12, after=5
             )
-            self.document.add_paragraph(var_info["description"])
+            self.document.add_paragraph(description)
 
             stats_heading = self.document.add_heading(
                 "Summary Statistics", level=4
             )
             stats_heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-            self._create_table(var_info["statistics"], column_widths=[2.5, 2])
+            self._create_table(summary_stats, column_widths=[2.5, 2])
 
-            for graph in (var_info["graphs"]).values():
+            for graph in (graphs).values():
                 self.document.add_picture(graph, width=Inches(4.4))
                 picture_paragraph = self.document.paragraphs[-1]
                 picture_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-            if (norm_tests := var_info["normality_tests"]) is not None:
+            if contingency_table is not None:
+                contingency_table_heading = self.document.add_heading(
+                    "Contingency table", level=4
+                )
+                contingency_table_heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                subtext = self.document.add_paragraph(
+                    f"Index = '{var_name}' "
+                    f"(missing: {variable.data.isna().sum()}). "
+                    f"Columns = '{self.GROUPBY_DATA.name}' "
+                    f"(missing: {self.GROUPBY_DATA.isna().sum()})"
+                )
+                subtext.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                subtext.runs[0].font.size = Pt(8)
 
+                n_cols = contingency_table.shape[1]
+                max_width = 5 if n_cols > 5.2 else 3.2
+                col_width = max_width / n_cols
+                self._create_table(
+                    data=contingency_table,
+                    header=True,
+                    column_widths=(1.2,) + (col_width,) * n_cols,
+                    font_size=8.5,
+                )
+
+            if normality_tests is not None:
                 norm_test_heading = self.document.add_heading(
                     "Tests for Normality", level=4
                 )
@@ -177,7 +207,7 @@ class ReportDocument(_ReportContent):
 
                 # type | p-value | conclusion
                 self._create_table(
-                    data=norm_tests,
+                    data=normality_tests,
                     header=True,
                     column_widths=(2.2, 1, 2),
                     font_size=8.5,
