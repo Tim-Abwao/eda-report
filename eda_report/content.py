@@ -209,8 +209,7 @@ class _ReportContent(_AnalysisResult):
         )
         self.TITLE = title
         self.intro_text = self._get_introductory_summary()
-        self.variable_info = self._get_variable_info()
-        self.bivariate_summaries = self._get_bivariate_summaries()
+        self.variable_descriptions = self._describe_variables()
 
     def _get_introductory_summary(self) -> str:
         """Get an overview of the number of rows and the nature of columns.
@@ -243,7 +242,7 @@ class _ReportContent(_AnalysisResult):
 
         return f"The dataset consists of {rows} and {cols}{numeric}."
 
-    def _describe_variable(self, variable: Variable) -> Dict[str, Any]:
+    def _describe_variables(self) -> Dict[str, Any]:
         """Get summary statistics for a variable.
 
         Args:
@@ -252,65 +251,16 @@ class _ReportContent(_AnalysisResult):
         Returns:
             Dict[str, Any]: Summary statistics.
         """
-        if variable.num_unique == 1:
-            unique_vals = "1 unique value"
-        else:
-            unique_vals = f"{variable.num_unique:,} unique values"
+        descriptions = {}
+        for name, variable in self.analyzed_variables.items():
+            if variable.num_unique == 1:
+                unique_vals = "1 unique value"
+            else:
+                unique_vals = f"{variable.num_unique:,} unique values"
 
-        return {
-            "description": (
+            descriptions[name] = (
                 f"{variable.name.capitalize()} is a {variable.var_type} "
                 f"variable with {unique_vals}. {variable.missing} of its "
                 "values are missing."
-            ),
-            "graphs": self.univariate_graphs[variable.name],
-            "statistics": (
-                variable.summary_statistics._get_summary_statistics()
-                .to_frame()
-                .round(4)
-            ),
-            "normality_tests": (
-                variable.summary_statistics._test_for_normality()
-                if variable.var_type == "numeric"
-                else None
-            ),
-        }
-
-    def _get_variable_info(self) -> Dict[str, Dict]:
-        """Get brief descriptions of all columns present in the data.
-
-        Returns:
-            Dict[str, Dict]: Summaries of columns present.
-        """
-        return {
-            name: self._describe_variable(stat)
-            for name, stat in sorted(self.univariate_stats.items())
-        }
-
-    def _get_bivariate_summaries(self) -> Optional[Dict[str, str]]:
-        """Get descriptions of the nature of correlation between numeric
-        column pairs.
-
-        Returns:
-            Optional[Dict[str, str]]: Correlation info.
-        """
-        if hasattr(self.multivariable, "var_pairs"):
-            var_pairs = list(self.multivariable.var_pairs)
-
-            if len(self.multivariable.var_pairs) > 50:
-                # Take the top 50 var_pairs by magnitude of correlation.
-                var_pairs = (
-                    self.multivariable.correlation_df.unstack()[var_pairs]
-                    .sort_values(key=abs)
-                    .tail(50)
-                    .index
-                )
-            return {
-                var_pair: (
-                    f"{var_pair[0].title()} and {var_pair[1].title()} have "
-                    f"{self.multivariable.correlation_descriptions[var_pair]}."
-                )
-                for var_pair in var_pairs
-            }
-        else:
-            return None
+            )
+        return descriptions
