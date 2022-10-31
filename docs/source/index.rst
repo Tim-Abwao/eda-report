@@ -3,42 +3,49 @@
 
 Speed up the `exploratory data analysis`_ and reporting process. Automatically analyze a dataset, and get:
 
-#. Statistical properties:
+1. Statistical properties
+-------------------------
 
-   .. literalinclude:: examples.txt
-      :lines: 155-156, 159-212
+Descriptive statistics, bivariate analysis, tests for normality and more:
 
-#. Revealing visualizations:
+.. literalinclude:: examples.txt
+   :lines: 155-156, 159-212
 
-   - *Box-plots*, *kde-plots*, *normal-probability-plots*, *scatter-plots* and a *correlation bar-chart* for numeric variables.
-   - *Bar-plots* for categorical variables.
+2. Revealing visualizations
+---------------------------
 
-   >>> import eda_report.plotting as ep
-   >>> fig = ep.regression_plot(mpg_data["acceleration"], mpg_data["horsepower"],
-   ...                          labels=("Acceleration", "Horsepower"))
-   >>> fig.savefig("regression-plot.png")
+- *Box-plots*, *kde-plots*, *normal-probability-plots*, *scatter-plots* and a *correlation bar-chart* for numeric variables.
+- *Bar-plots* for categorical variables.
 
-   .. image:: _static/regression-plot.png
-      :width: 80%
-      :align: center
-      :alt: a regression-plot
-      :class: only-light
+>>> import eda_report.plotting as ep
+>>> fig = ep.regression_plot(mpg_data["acceleration"], mpg_data["horsepower"],
+...                          labels=("Acceleration", "Horsepower"))
+>>> fig.savefig("regression-plot.png")
 
-   .. image:: _static/regression-plot-dark.png
-      :width: 80%
-      :align: center
-      :alt: a regression-plot
-      :class: only-dark
+.. image:: _static/regression-plot.png
+   :width: 80%
+   :align: center
+   :alt: a regression-plot
+   :class: only-light
 
-#. A report in *Word* (.docx) format:
+.. image:: _static/regression-plot-dark.png
+   :width: 80%
+   :align: center
+   :alt: a regression-plot
+   :class: only-dark
 
-   .. literalinclude:: examples.txt
-           :lines: 145-151
+3. A report in *Word* (.docx) format
+------------------------------------
 
-   .. figure:: _static/report.*
-      :alt: iris dataset report animation
+An exploratory data analysis report document complete with variable descriptions, summary statistics, statistical plots, contingency tables and more:
 
-      A report generated from the *iris dataset*.
+.. literalinclude:: examples.txt
+         :lines: 145-151
+
+.. figure:: _static/report.*
+   :alt: iris dataset report animation
+
+   A report generated from the *iris dataset*.
 
 .. image:: https://mybinder.org/badge_logo.svg
    :target: https://mybinder.org/v2/gh/Tim-Abwao/eda-report/HEAD?filepath=eda-report-basics.ipynb

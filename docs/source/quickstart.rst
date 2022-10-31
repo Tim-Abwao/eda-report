@@ -43,7 +43,7 @@ You can use the :func:`~eda_report.get_word_report` function to generate reports
 .. literalinclude:: examples.txt
    :lines: 145-150
 
-You can plot various statistical graphs:
+You can plot various statistical graphs (see :ref:`plotting-examples`):
 
 >>> import eda_report.plotting as ep
 >>> fig = ep.plot_correlation(mpg_data)
@@ -60,5 +60,3 @@ You can plot various statistical graphs:
    :align: center
    :alt: a correlation-plot
    :class: only-dark
-
-See :ref:`plotting-examples`.
