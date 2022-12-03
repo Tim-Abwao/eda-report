@@ -8,6 +8,7 @@ from docx.text.parfmt import ParagraphFormat
 from pandas.core.frame import DataFrame
 
 from eda_report.content import _ReportContent
+from eda_report.multivariate import _select_dtypes
 
 logging.basicConfig(
     format="[%(levelname)s %(asctime)s.%(msecs)03d] %(message)s",
@@ -70,7 +71,7 @@ class ReportDocument(_ReportContent):
         self._create_title_page()
         self._get_univariate_analysis()
 
-        if hasattr(self.multivariable, "var_pairs"):
+        if self.multivariable._correlation_values is not None:
             self._get_bivariate_analysis()
 
         self._to_file()
@@ -103,14 +104,17 @@ class ReportDocument(_ReportContent):
 
     def _get_numeric_overview_table(self) -> None:
         """Create a table with an overview of the numeric features present."""
-        if self.multivariable.numeric_cols is not None:
+        numeric_cols = _select_dtypes(self.multivariable.data, "number")
+        if numeric_cols is None:
+            return None
+        else:
             heading = self.document.add_heading(
                 "Overview of Numeric Features", level=1
             )
             self._format_heading_spacing(heading.paragraph_format)
             # count | mean | std | min | 25% | 50% | 75% | max
             self._create_table(
-                data=self.multivariable.numeric_stats,
+                data=self.multivariable._numeric_stats,
                 header=True,
                 column_widths=(1.2,) + (0.7,) * 8,
                 font_size=8.5,
@@ -121,14 +125,19 @@ class ReportDocument(_ReportContent):
         """Create a table with an overview of the categorical features
         present.
         """
-        if self.multivariable.categorical_cols is not None:
+        categorical_cols = _select_dtypes(
+            self.multivariable.data, "bool", "category", "object"
+        )
+        if categorical_cols is None:
+            return None
+        else:
             heading = self.document.add_heading(
                 "Overview of Categorical Features", level=1
             )
             self._format_heading_spacing(heading.paragraph_format)
             # column-name | count | unique | top | freq | relative freq
             self._create_table(
-                data=self.multivariable.categorical_stats,
+                data=self.multivariable._categorical_stats,
                 header=True,
                 column_widths=(1.2,) + (0.9,) * 5,
                 font_size=8.5,

@@ -313,18 +313,16 @@ def plot_correlation(
     if not isinstance(variables, MultiVariable):
         variables = MultiVariable(variables)
 
-    pairs = list(variables.var_pairs)
-    corr_data = (
-        variables.correlation_df.unstack()  # get MultiIndex of cols
-        .loc[pairs]  # select unique pairs
-        .sort_values(key=abs)  # sort by magnitude
-        .tail(max_pairs)  # select top `max_pairs` (default 20)
-    )
-    labels = corr_data.index.map(" vs ".join)
+    correlation_info = variables._correlation_values
+    # Show at most `max_pairs` numeric pairs
+    max_pairs = min(max_pairs, len(correlation_info))
+    # Reverse items so largest values appear at the top
+    corr_data = dict(reversed(correlation_info[:max_pairs]))
+    labels = [" vs ".join(pair) for pair in corr_data.keys()]
 
     fig = Figure(figsize=(7, 6.3))
     ax = fig.subplots()
-    ax.barh(labels, corr_data, edgecolor="#777")
+    ax.barh(labels, corr_data.values(), edgecolor="#777")
     ax.set_xlim(-1, 1)
     ax.spines["left"].set_position("zero")
     ax.yaxis.set_visible(False)  # hide y-axis labels
@@ -434,19 +432,16 @@ def _plot_multivariable(
         Optional[Dict]: A dictionary with a correlation plot and regression
         plots.
     """
-    if hasattr(variables, "var_pairs"):
-        var_pairs = list(variables.var_pairs)
-
-        if len(variables.var_pairs) > 50:
-            # Take the top 50 var_pairs by magnitude of correlation.
-            # 50 var_pairs == 25+ pages
-            # 20 numeric columns == upto 190 pairs (95+ pages).
-            var_pairs = (
-                variables.correlation_df.unstack()[var_pairs]
-                .sort_values(key=abs)
-                .tail(50)
-                .index
-            )
+    if variables._correlation_values is None:
+        return None
+    else:
+        # Take the top 50 pairs by magnitude of correlation.
+        # 50 var_pairs == 25+ pages
+        # 20 numeric columns == upto 190 pairs (95+ pages).
+        max_pairs = min(50, len(variables._correlation_values))
+        var_pairs = [
+            pair for pair, _ in variables._correlation_values[:max_pairs]
+        ]
         with Pool() as p:
             paired_data_gen = [
                 (variables.data.loc[:, pair], color) for pair in var_pairs
@@ -471,5 +466,3 @@ def _plot_multivariable(
                 for var_pair, plot in bivariate_regression_plots.items()
             },
         }
-    else:
-        return None

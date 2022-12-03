@@ -4,7 +4,7 @@ from typing import Any, Dict, Iterable, Optional, Union
 import pandas as pd
 from tqdm import tqdm
 
-from eda_report.multivariate import MultiVariable
+from eda_report.multivariate import MultiVariable, _select_dtypes
 from eda_report.plotting import _plot_multivariable, _plot_variable
 from eda_report.univariate import Variable, _analyze_univariate
 from eda_report.validate import validate_groupby_data
@@ -161,26 +161,29 @@ class _AnalysisResult:
         Returns:
             Optional[Dict[str, str]]: Correlation info.
         """
-        if hasattr(self.multivariable, "var_pairs"):
-            var_pairs = list(self.multivariable.var_pairs)
-
-            if len(self.multivariable.var_pairs) > 50:
-                # Take the top 50 var_pairs by magnitude of correlation.
-                var_pairs = (
-                    self.multivariable.correlation_df.unstack()[var_pairs]
-                    .sort_values(key=abs)
-                    .tail(50)
-                    .index
-                )
+        if self.multivariable._correlation_values is None:
+            return None
+        else:
+            # Take the top 50 pairs by magnitude of correlation.
+            # 50 var_pairs == 25+ pages
+            # 20 numeric columns == upto 190 pairs (95+ pages).
+            max_pairs = min(50, len(self.multivariable._correlation_values))
+            var_pairs = [
+                pair
+                for pair, _ in self.multivariable._correlation_values[
+                    :max_pairs
+                ]
+            ]
+            correlation_descriptions = (
+                self.multivariable._correlation_descriptions
+            )
             return {
                 var_pair: (
                     f"{var_pair[0].title()} and {var_pair[1].title()} have "
-                    f"{self.multivariable.correlation_descriptions[var_pair]}."
+                    f"{correlation_descriptions[var_pair]}."
                 )
                 for var_pair in var_pairs
             }
-        else:
-            return None
 
 
 class _ReportContent(_AnalysisResult):
@@ -230,15 +233,13 @@ class _ReportContent(_AnalysisResult):
             cols = f"{num_cols:,} columns (features)"
 
         # Get numeric column info
-        if self.multivariable.numeric_cols is None:
+        numeric_cols = _select_dtypes(self.multivariable.data, "number")
+        if numeric_cols is None:
             numeric = ""
-        elif self.multivariable.numeric_cols.shape[1] == 1:
+        elif numeric_cols.shape[1] == 1:
             numeric = ", 1 of which is numeric"
         else:
-            numeric = (
-                f", {self.multivariable.numeric_cols.shape[1]} of which are"
-                " numeric"
-            )
+            numeric = f", {numeric_cols.shape[1]} of which are numeric"
 
         return f"The dataset consists of {rows} and {cols}{numeric}."
 

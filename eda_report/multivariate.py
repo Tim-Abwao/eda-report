@@ -1,12 +1,82 @@
 import logging
 from collections.abc import Iterable
 from itertools import combinations
-from typing import Optional, Sequence
+from typing import List, Optional, Sequence
 
 from pandas.core.frame import DataFrame
 
 from eda_report.univariate import Variable
 from eda_report.validate import validate_multivariate_input
+
+
+def _compute_correlation(dataframe: DataFrame) -> List:
+    """Get the Pearson correlation coefficients for numeric variables.
+
+    Args:
+        dataframe (pandas.DataFrame): A 2D array of numeric data.
+
+    Returns:
+        Optional[List]: A list of column pairs and their Pearson's correlation
+        coefficients; sorted by magnitude in descending order.
+    """
+    if dataframe is None:
+        return None
+
+    numeric_data = dataframe.select_dtypes("number")
+    if numeric_data.shape[1] < 2:
+        return None
+    else:
+        correlation_df = numeric_data.corr(method="pearson")
+        unique_pairs = list(combinations(correlation_df.columns, r=2))
+        correlation_info = [
+            (pair, correlation_df.at[pair]) for pair in unique_pairs
+        ]
+        return sorted(correlation_info, key=lambda x: -abs(x[1]))
+
+
+def _describe_correlation(corr_value: float) -> str:
+    """Explain the nature and magnitude of correlation.
+
+    Args:
+        corr_value (str): Pearson's correlation coefficient.
+
+    Returns:
+        str: Brief description of correlation type.
+    """
+    nature = " positive" if corr_value > 0 else " negative"
+
+    value = abs(corr_value)
+    if value >= 0.8:
+        strength = "very strong"
+    elif value >= 0.6:
+        strength = "strong"
+    elif value >= 0.4:
+        strength = "moderate"
+    elif value >= 0.2:
+        strength = "weak"
+    elif value >= 0.05:
+        strength = "very weak"
+    else:
+        strength = "virtually no"
+        nature = ""
+
+    return f"{strength}{ nature} correlation ({corr_value:.2f})"
+
+
+def _select_dtypes(
+    dataframe: DataFrame, *dtypes: Sequence[str]
+) -> Optional[DataFrame]:
+    """Get a DataFrame including only the specified `dtypes`.
+
+    Args:
+        dataframe (pandas.DataFrame): A 2D array of numeric data.
+        *dtypes (str): Data types to include e.g. "bool", "number", etc.
+
+    Returns:
+        Optional[DataFrame]: Subset with the desired data types.
+    """
+    selected_cols = dataframe.select_dtypes(include=dtypes)
+    return selected_cols if selected_cols.shape[1] > 0 else None
 
 
 class MultiVariable:
@@ -34,27 +104,7 @@ class MultiVariable:
     def __init__(self, data: Iterable) -> None:
 
         self.data = validate_multivariate_input(data)
-
-        #: :class:`~pandas.DataFrame`: The *numeric columns* present.
-        self.numeric_cols = self._select_cols("number")
-
-        #: :class:`~pandas.DataFrame`: The *categorical columns* present.
-        self.categorical_cols = self._select_cols("object", "bool")
-
-        #: :class:`~pandas.DataFrame`: Summary statistics for numeric columns.
-        self.numeric_stats = self._get_numeric_summary_statistics()
-
-        #: :class:`~pandas.DataFrame`: Summary statistics for categorical
-        #:  columns.
-        self.categorical_stats = self._get_categorical_summary_statistics()
-
-        #: :class:`~pandas.DataFrame`: Pearson correlation coefficients for the
-        #: *numeric columns*.
-        self.correlation_df = self._get_correlation()
-
-        #: Dict[tuple, str]: Brief descriptions of the nature of correlation
-        #: between numeric column pairs.
-        self.correlation_descriptions = {}
+        self._get_summary_statistics()
         self._get_bivariate_analysis()
 
     def __repr__(self) -> str:
@@ -68,32 +118,44 @@ class MultiVariable:
                 Variable(self.data.squeeze(), name=self.data.columns[0])
             )
 
-        if self.numeric_cols is None:
+        numeric_data = _select_dtypes(self.data, "number")
+        if numeric_data is None:
             numeric_info = numeric_stats = ""
         else:
-            numeric_info = f"Numeric features: {', '.join(self.numeric_cols)}"
+            numeric_info = f"Numeric features: {', '.join(numeric_data)}"
             numeric_stats = (
                 "\n\t  Summary Statistics (Numeric features)\n"
                 "\t  -------------------------------------\n"
-                f"{self.numeric_stats}"
+                f"{self._numeric_stats}"
             )
 
-        if self.categorical_cols is None:
+        categorical_data = _select_dtypes(
+            self.data, "bool", "category", "object"
+        )
+        if categorical_data is None:
             categorical_info = categorical_stats = ""
         else:
             categorical_info = (
-                f"Categorical features: {', '.join(self.categorical_cols)}"
+                f"Categorical features: {', '.join(categorical_data)}"
             )
             categorical_stats = (
                 "\n\t  Summary Statistics (Categorical features)\n"
                 "\t  -----------------------------------------\n"
-                f"{self.categorical_stats}"
+                f"{self._categorical_stats}"
             )
-        if hasattr(self, "_corr_description"):
+        if hasattr(self, "_correlation_descriptions"):
+            max_pairs = min(20, len(self._correlation_descriptions))
+            top_20 = list(self._correlation_descriptions.items())[:max_pairs]
+            corr_repr = "\n".join(
+                [
+                    f"{var_pair[0]} & {var_pair[1]} --> {corr_description}"
+                    for var_pair, corr_description in top_20
+                ]
+            )
             correlation_description = (
-                "\n\t  Bivariate Analysis (Correlation)\n"
-                "\t  --------------------------------\n"
-                f"{self._corr_description}"
+                f"\n\t  Pearson's Correlation (Top 20)"
+                "\n\t  ------------------------------\n"
+                f"{corr_repr}"
             )
         else:
             correlation_description = ""
@@ -110,118 +172,45 @@ class MultiVariable:
             ]
         )
 
-    def _select_cols(self, *dtypes: Sequence[str]) -> Optional[DataFrame]:
-        """Get a DataFrame including only the specified ``dtypes``.
-
-        Returns:
-            Optional[DataFrame]: A dataframe with the desired data types.
-        """
-        selected_cols = self.data.select_dtypes(include=dtypes)
-        return selected_cols if selected_cols.shape[1] > 0 else None
-
-    def _get_numeric_summary_statistics(self) -> Optional[DataFrame]:
-        """Compute descriptive statistics for numeric columns.
-
-        Returns:
-            Optional[DataFrame]: Numeric summary statistics.
-        """
-        if self.numeric_cols is not None:
-            numeric_stats = self.numeric_cols.describe().T
-            numeric_stats["skewness"] = self.numeric_cols.skew(
-                numeric_only=True
-            )
-            numeric_stats["kurtosis"] = self.numeric_cols.kurt(
-                numeric_only=True
-            )
-
-            return numeric_stats.round(4)
+    def _get_summary_statistics(self) -> None:
+        """Compute descriptive statistics."""
+        numeric_data = _select_dtypes(self.data, "number")
+        if numeric_data is None:
+            self._numeric_stats = None
         else:
-            return None
+            numeric_stats = numeric_data.describe().T
+            numeric_stats["skewness"] = numeric_data.skew(numeric_only=True)
+            numeric_stats["kurtosis"] = numeric_data.kurt(numeric_only=True)
+            self._numeric_stats = numeric_stats.round(4)
 
-    def _get_categorical_summary_statistics(
-        self,
-    ) -> Optional[DataFrame]:
-        """Compute descriptive statistics for categorical columns.
-
-        Returns:
-            Optional[DataFrame]: Categorical summary statistics.
-        """
-        if self.categorical_cols is not None:
-            categorical_stats = self.categorical_cols.describe().T
+        categorical_data = _select_dtypes(
+            self.data, "category", "object", "bool"
+        )
+        if categorical_data is None:
+            self._categorical_stats = None
+        else:
+            categorical_stats = categorical_data.describe().T
             categorical_stats["relative freq"] = (
                 categorical_stats["freq"] / len(self.data)
             ).apply(lambda x: f"{x :.2%}")
-            return categorical_stats
-        else:
-            return None
+            self._categorical_stats = categorical_stats
 
-    def _get_correlation(self) -> Optional[DataFrame]:
-        """Get the Pearson correlation coefficients for numeric columns.
-
-        Returns:
-            Optional[DataFrame]: Correlation coefficients.
-        """
-        if self.numeric_cols is None:
-            return None
-        else:
-            unique_ratio = self.numeric_cols.nunique() / len(self.data)
-            cols_to_compare = [
-                col for col, ratio in unique_ratio.items() if ratio > 0.05
-            ]
-            if len(cols_to_compare) >= 2:
-                return self.numeric_cols[cols_to_compare].corr()
-            else:
-                return None
-
-    def _quantify_correlation(self, var1: str, var2: str) -> None:
-        """Explain the nature and magnitude of correlation between column
-        pairs.
-
-        Args:
-            var1, var2 (str): Numeric column labels.
-        """
-        correlation = self.correlation_df.loc[var1, var2]
-        nature = " positive" if correlation > 0 else " negative"
-
-        value = abs(correlation)
-        if value >= 0.8:
-            strength = "very strong"
-        elif value >= 0.6:
-            strength = "strong"
-        elif value >= 0.4:
-            strength = "moderate"
-        elif value >= 0.2:
-            strength = "weak"
-        elif value >= 0.05:
-            strength = "very weak"
-        else:
-            strength = "virtually no"
-            nature = ""
-
-        self.correlation_descriptions[
-            (var1, var2)
-        ] = f"{strength}{ nature} correlation ({correlation:.2f})"
+    def _get_correlation_descriptions(self) -> None:
+        """Get brief descriptions of the nature of correlation between numeric
+        column pairs."""
+        self._correlation_descriptions = {
+            pair: _describe_correlation(corr_value)
+            for pair, corr_value in self._correlation_values
+        }
 
     def _get_bivariate_analysis(self) -> None:
         """Compare numeric column pairs."""
-        if self.correlation_df is not None:
-            self.var_pairs = set(
-                combinations(self.correlation_df.columns, r=2)
-            )
-            for var1, var2 in self.var_pairs:
-                self._quantify_correlation(var1, var2)
+        self._correlation_values = _compute_correlation(self.data)
 
-            self._corr_description = "\n".join(
-                [
-                    f"{var_pair[0]} & {var_pair[1]} --> {corr_description}"
-                    for var_pair, corr_description in sorted(
-                        self.correlation_descriptions.items(),
-                        key=lambda x: x[1],
-                    )
-                ]
-            )
-        else:
+        if self._correlation_values is None:
             logging.warning(
                 "Skipped Bivariate Analysis: There are less than 2 numeric "
-                "variables having > 5% unique values."
+                "variables."
             )
+        else:
+            self._get_correlation_descriptions()
