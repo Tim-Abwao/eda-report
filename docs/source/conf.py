@@ -32,7 +32,7 @@ copyright = "2022, Abwao"
 author = "Abwao"
 
 # The full version, including alpha/beta/rc tags
-release = "2.7.2"
+release = "2.7.3"
 
 # -- General configuration ---------------------------------------------------
 
