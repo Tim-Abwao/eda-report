@@ -13,7 +13,7 @@ from eda_report.validate import validate_groupby_data
 def _get_contingency_tables(
     categorical_df: pd.DataFrame, groupby_data: pd.Series
 ) -> Dict[str, pd.DataFrame]:
-    """Get contingency tables for categorical columns.
+    """Get contingency tables for categorical variables.
 
     Args:
         categorical_df (pandas.DataFrame): Categorical data.
@@ -22,18 +22,19 @@ def _get_contingency_tables(
     Returns:
         Dict[str, pd.DataFrame]: Contingency tables for each column.
     """
-    if (categorical_df is None) or (groupby_data is None):
+    if (categorical_df.shape[1] == 0) or (groupby_data is None):
         return {}
+
     contingency_tables = {
         col: pd.crosstab(
-            categorical_df[col],
-            groupby_data,
+            index=categorical_df[col],
+            columns=groupby_data,
             margins=True,
             margins_name="Total",
         )
         for col in categorical_df
     }
-    # Exclude groupby data in case it is among the categorical cols
+    # Exclude groupby_data in case it is among the categorical cols
     contingency_tables.pop(groupby_data.name, None)
     return contingency_tables
 
@@ -63,16 +64,6 @@ class _AnalysisResult:
         )
         self.analyzed_variables = self._analyze_variables()
         self.univariate_stats = self._get_univariate_statistics()
-        self.contingency_tables = _get_contingency_tables(
-            self.multivariable.data[
-                [
-                    col_name
-                    for col_name, var in self.analyzed_variables.items()
-                    if var.var_type != "numeric"
-                ]
-            ],
-            self.GROUPBY_DATA,
-        )
         self.normality_tests = self._test_for_normality()
         self.univariate_graphs = self._get_univariate_graphs()
         self.bivariate_graphs = _plot_multivariable(
@@ -100,6 +91,16 @@ class _AnalysisResult:
                     dynamic_ncols=True,
                 )
             )
+        # Create contingency tables
+        categorical_cols = [
+            col_name
+            for col_name, var in univariate_stats.items()
+            if var.var_type != "numeric"
+        ]
+        self.contingency_tables = _get_contingency_tables(
+            data[categorical_cols], self.GROUPBY_DATA
+        )
+
         return univariate_stats
 
     def _get_univariate_statistics(self) -> Dict[str, pd.DataFrame]:

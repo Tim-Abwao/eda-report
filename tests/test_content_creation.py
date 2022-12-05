@@ -19,9 +19,10 @@ class TestGetContingencyTables:
         [list("abc"), list("abd"), list("bcd")] * 4, columns=list("ABC")
     )
 
-    def test_with_null_data(self):
+    def test_with_empty_data(self):
+        empty_df = self.data[[]]
         tables = _get_contingency_tables(
-            categorical_df=None, groupby_data=self.data["C"]
+            categorical_df=empty_df, groupby_data=self.data["C"]
         )
         assert tables == {}
 
@@ -35,6 +36,7 @@ class TestGetContingencyTables:
         tables = _get_contingency_tables(
             categorical_df=self.data, groupby_data=self.data["C"]
         )
+        # Check that groupby_data "C" is not included
         assert set(tables.keys()) == {"A", "B"}
         assert tables["A"].to_dict() == {
             "c": {"a": 4, "b": 0, "Total": 4},
