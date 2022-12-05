@@ -238,6 +238,13 @@ class TestPlotvariable:
 
 
 class TestPlotCorrelation:
+    def test_with_insufficient_numeric_pairs(self):
+        # Check None is returned if there are < 2 numeric pairs
+        single_numeric = plot_correlation(zip(range(5), list("abcde")))
+        no_numeric = plot_correlation(list("abcde"))
+        assert single_numeric is None
+        assert no_numeric is None
+
     def test_with_few_numeric_pairs(self):
         corr_plot = plot_correlation([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
         assert isinstance(corr_plot, Figure)

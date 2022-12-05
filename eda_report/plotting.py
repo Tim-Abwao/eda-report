@@ -313,22 +313,24 @@ def plot_correlation(
     if not isinstance(variables, MultiVariable):
         variables = MultiVariable(variables)
 
-    correlation_info = variables._correlation_values
-    # Show at most `max_pairs` numeric pairs
-    max_pairs = min(max_pairs, len(correlation_info))
-    # Reverse items so largest values appear at the top
-    corr_data = dict(reversed(correlation_info[:max_pairs]))
+    if variables._correlation_values is None:
+        return None
+
+    # Show at most `max_pairs` numeric pairs.
+    pairs_to_show = variables._correlation_values[:max_pairs]
+    # Reverse items so largest values appear at the top.
+    corr_data = dict(reversed(pairs_to_show))
     labels = [" vs ".join(pair) for pair in corr_data.keys()]
 
     fig = Figure(figsize=(7, 6.3))
     ax = fig.subplots()
-    ax.barh(labels, corr_data.values(), edgecolor="#777")
-    ax.set_xlim(-1, 1)
+    ax.barh(labels, corr_data.values(), edgecolor="#222", linewidth=0.5)
+    ax.set_xlim(-1.1, 1.1)
     ax.spines["left"].set_position("zero")
     ax.yaxis.set_visible(False)  # hide y-axis labels
 
     for p, label in zip(ax.patches, labels):
-        p.set_alpha(abs(p.get_width()))
+        p.set_alpha(min(1, abs(p.get_width()) + 0.1))
 
         if p.get_width() < 0:
             p.set_facecolor(color_neg)
