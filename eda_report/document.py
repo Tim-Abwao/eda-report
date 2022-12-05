@@ -15,6 +15,9 @@ logging.basicConfig(
     level=logging.INFO,
     datefmt="%H:%M:%S",
 )
+# Set matplotlib logging level to WARNING.
+mpl_logger = logging.getLogger("matplotlib")
+mpl_logger.setLevel(logging.WARNING)
 
 
 class ReportDocument(_ReportContent):
@@ -165,7 +168,7 @@ class ReportDocument(_ReportContent):
             normality_tests = self.normality_tests.get(var_name)
 
             heading = self.document.add_heading(
-                f"1.{idx}. {var_name}".title(), level=2
+                f"1.{idx} {var_name}".title(), level=2
             )
             self._format_heading_spacing(
                 heading.paragraph_format, before=12, after=5

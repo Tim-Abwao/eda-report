@@ -230,7 +230,7 @@ def bar_plot(
 
     # Include no more than 10 of the most common values
     top_10 = data.value_counts().nlargest(10)
-    bars = ax.bar(top_10.index, top_10, alpha=0.8, color=color)
+    bars = ax.bar(top_10.index.map(str), top_10, alpha=0.8, color=color)
     ax.bar_label(bars, labels=[f"{x:,.0f}" for x in top_10], padding=2)
 
     if (num_unique := data.nunique()) > 10:
