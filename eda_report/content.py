@@ -33,6 +33,8 @@ def _get_contingency_tables(
             margins_name="Total",
         )
         for col in categorical_df
+        # Only include columns with upto 20 unique values to cut clutter
+        if categorical_df[col].nunique() <= 20
     }
     # Exclude groupby_data in case it is among the categorical cols
     contingency_tables.pop(groupby_data.name, None)
@@ -81,7 +83,9 @@ class _AnalysisResult:
         with Pool() as p:
             univariate_stats = dict(
                 tqdm(
+                    # Analyze variables concurrently
                     p.imap(_analyze_univariate, data.items()),
+                    # Progress-bar options
                     total=data.shape[1],
                     bar_format=(
                         "{desc} {percentage:3.0f}%|{bar:35}| "

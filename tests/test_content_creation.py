@@ -7,7 +7,7 @@ from eda_report.content import (
 )
 from eda_report.multivariate import MultiVariable
 from eda_report.univariate import _CategoricalStats, _NumericStats
-from pandas import DataFrame
+from pandas import DataFrame, Series
 
 data = DataFrame(
     {"A": range(50), "B": [1, 2, 3, 4, 5] * 10, "C": list("ab") * 25}
@@ -48,6 +48,21 @@ class TestGetContingencyTables:
             "d": {"b": 4, "c": 4, "Total": 8},
             "Total": {"b": 8, "c": 4, "Total": 12},
         }
+
+    def test_cardinality_limit(self):
+        high_cardinality_data = DataFrame(
+            {
+                "A": range(50),
+                "B": list("abcdefghijklmnopqrstuvwxy") * 2,
+                "C": list(range(10)) * 5,
+            }
+        )
+        tables = _get_contingency_tables(
+            categorical_df=high_cardinality_data,
+            groupby_data=Series([1, 2] * 25),
+        )
+        # "A" and "B" have > 20 unique values, and so are omitted
+        assert set(tables.keys()) == {"C"}
 
 
 class TestAnalysisResult:
