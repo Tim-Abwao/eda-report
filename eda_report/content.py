@@ -165,15 +165,11 @@ class _AnalysisResult:
         if self.multivariable._correlation_values is None:
             return None
         else:
-            # Take the top 50 pairs by magnitude of correlation.
-            # 50 var_pairs == 25+ pages
-            # 20 numeric columns == upto 190 pairs (95+ pages).
-            max_pairs = min(50, len(self.multivariable._correlation_values))
-            var_pairs = [
-                pair
-                for pair, _ in self.multivariable._correlation_values[
-                    :max_pairs
-                ]
+            # Take the top 20 pairs by magnitude of correlation.
+            # 20 var_pairs ≈ 10+ pages
+            # 20 numeric columns == 190 var_pairs ≈ 95+ pages.
+            pairs_to_include = [
+                pair for pair, _ in self.multivariable._correlation_values[:20]
             ]
             correlation_descriptions = (
                 self.multivariable._correlation_descriptions
@@ -183,7 +179,7 @@ class _AnalysisResult:
                     f"{var_pair[0].title()} and {var_pair[1].title()} have "
                     f"{correlation_descriptions[var_pair]}."
                 )
-                for var_pair in var_pairs
+                for var_pair in pairs_to_include
             }
 
 

@@ -149,5 +149,5 @@ class TestReportContent:
 
 def test_limiting_bivariate_summaries():
     content = _ReportContent([range(12), [1, 2, 3, 4] * 3])
-    # content has 66 var_pairs, but the limit for summaries is 50
-    assert len(content.bivariate_summaries) == 50
+    # content has 66 var_pairs, but the limit for summaries is 20
+    assert len(content.bivariate_summaries) == 20

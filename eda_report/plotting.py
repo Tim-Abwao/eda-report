@@ -437,21 +437,23 @@ def _plot_multivariable(
     if variables._correlation_values is None:
         return None
     else:
-        # Take the top 50 pairs by magnitude of correlation.
-        # 50 var_pairs == 25+ pages
-        # 20 numeric columns == upto 190 pairs (95+ pages).
-        max_pairs = min(50, len(variables._correlation_values))
-        var_pairs = [
-            pair for pair, _ in variables._correlation_values[:max_pairs]
+        # Take the top 20 pairs by magnitude of correlation.
+        # 20 var_pairs ≈ 10+ pages
+        # 20 numeric columns == 190 var_pairs ≈ 95+ pages.
+        pairs_to_include = [
+            pair for pair, _ in variables._correlation_values[:20]
         ]
         with Pool() as p:
             paired_data_gen = [
-                (variables.data.loc[:, pair], color) for pair in var_pairs
+                (variables.data.loc[:, pair], color)
+                for pair in pairs_to_include
             ]
             bivariate_regression_plots = dict(
                 tqdm(
+                    # Plot in parallel processes
                     p.imap(_plot_regression, paired_data_gen),
-                    total=len(var_pairs),
+                    # Progress-bar options
+                    total=len(pairs_to_include),
                     bar_format=(
                         "{desc} {percentage:3.0f}%|{bar:35}| "
                         "{n_fmt}/{total_fmt} pairs."

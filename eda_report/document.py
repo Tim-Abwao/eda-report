@@ -230,12 +230,14 @@ class ReportDocument(_ReportContent):
         variables.
         """
         bivariate_heading = self.document.add_heading(
-            "2. Bivariate Analysis (Correlation)", level=1
+            "2. Bivariate Analysis", level=1
         )
         self._format_heading_spacing(
             bivariate_heading.paragraph_format, before=0
         )
 
+        overview_heading = self.document.add_heading("2.1 Overview", level=2)
+        self._format_heading_spacing(overview_heading.paragraph_format)
         self.document.add_picture(
             self.bivariate_graphs["correlation_plot"],
             width=Inches(6.7),
@@ -244,9 +246,15 @@ class ReportDocument(_ReportContent):
         picture_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
         self.document.add_page_break()
 
+        pairwise_heading = self.document.add_heading(
+            "2.2 Regression Plots (Top 20)", level=2
+        )
+        self._format_heading_spacing(
+            pairwise_heading.paragraph_format, before=0
+        )
         for idx, var_pair in enumerate(self.bivariate_summaries, start=1):
             heading = self.document.add_heading(
-                f"2.{idx} {var_pair[0]} vs {var_pair[1]}".title(), level=2
+                f"2.2.{idx} {var_pair[0]} vs {var_pair[1]}".title(), level=3
             )
             self._format_heading_spacing(
                 heading.paragraph_format, before=16, after=5
