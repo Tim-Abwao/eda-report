@@ -16,15 +16,22 @@ from eda_report.validate import (
 )
 
 # Matplotlib configuration
-mpl.rc("figure", autolayout=True, dpi=150, figsize=(6.5, 4))
-mpl.rc("font", family="serif")
-mpl.rc("axes.spines", top=False, right=False)
-mpl.rc("axes", titlesize=12, titleweight=500)
-mpl.use("agg")  # use non-interactive matplotlib back-end
-
+GENERAL_RC_PARAMS = {
+    "axes.spines.top": False,
+    "axes.spines.right": False,
+    "axes.titlesize": 12,
+    "axes.titleweight": 500,
+    "figure.autolayout": True,
+    "font.family": "serif",
+    "savefig.dpi": 150,
+}
 # Customize boxplots
-mpl.rc("boxplot", patchartist=True, vertical=False)
-mpl.rc("boxplot.medianprops", color="black")
+BOXPLOT_RC_PARAMS = {
+    "boxplot.medianprops.color": "black",
+    "boxplot.patchartist": True,
+    "boxplot.vertical": False,
+    **GENERAL_RC_PARAMS,
+}
 
 
 def _savefig(figure: Figure) -> BytesIO:
@@ -59,6 +66,7 @@ def _get_color_shades_of(color: str, num: int = None) -> Sequence:
     return np.linspace(color_rgb, (0.25, 0.25, 0.25), num=num)
 
 
+@mpl.rc_context(BOXPLOT_RC_PARAMS)
 def box_plot(
     data: Iterable,
     *,
@@ -111,6 +119,7 @@ def box_plot(
     return fig
 
 
+@mpl.rc_context(GENERAL_RC_PARAMS)
 def kde_plot(
     data: Iterable,
     *,
@@ -176,6 +185,7 @@ def kde_plot(
     return fig
 
 
+@mpl.rc_context(GENERAL_RC_PARAMS)
 def prob_plot(
     data: Iterable,
     *,
@@ -209,6 +219,7 @@ def prob_plot(
     return fig
 
 
+@mpl.rc_context(GENERAL_RC_PARAMS)
 def bar_plot(
     data: Iterable, *, label: str, color: Union[str, Sequence] = None
 ) -> Figure:
@@ -289,6 +300,7 @@ def _plot_variable(variables_hue_and_color: Tuple) -> Tuple:
     return variable.name, graphs
 
 
+@mpl.rc_context(GENERAL_RC_PARAMS)
 def plot_correlation(
     variables: Iterable,
     max_pairs: int = 20,
@@ -358,6 +370,7 @@ def plot_correlation(
     return fig
 
 
+@mpl.rc_context(GENERAL_RC_PARAMS)
 def regression_plot(
     x: Iterable,
     y: Iterable,
