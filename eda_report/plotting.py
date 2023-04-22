@@ -9,7 +9,7 @@ from matplotlib.figure import Figure
 from scipy.stats import gaussian_kde, probplot
 from tqdm import tqdm
 
-from eda_report.multivariate import MultiVariable
+from eda_report.bivariate import Dataset
 from eda_report.validate import (
     validate_multivariate_input,
     validate_univariate_input,
@@ -254,23 +254,23 @@ def bar_plot(
     return fig
 
 
-def _plot_variable(variables_hue_and_color: Tuple) -> Tuple:
+def _plot_variable(variable_data_hue_and_color: Tuple) -> Tuple:
     """Helper function to concurrently plot variables in a multiprocessing
     Pool.
 
     Args:
-        variables_hue_and_color (Tuple): A variable, hue data and the desired
-            theme.
+        variable_data_hue_and_color (Tuple): A variable, plot data, hue data
+            and the desired plot color.
 
     Returns:
         Tuple: `variable`s name, and graphs in a dict.
     """
-    variable, hue, color = variables_hue_and_color
+    variable, data, hue, color = variable_data_hue_and_color
     if variable.var_type == "numeric":
         graphs = {
             "box_plot": _savefig(
                 box_plot(
-                    data=variable.data,
+                    data=data,
                     hue=hue,
                     label=variable.name,
                     color=color,
@@ -278,22 +278,20 @@ def _plot_variable(variables_hue_and_color: Tuple) -> Tuple:
             ),
             "kde_plot": _savefig(
                 kde_plot(
-                    data=variable.data,
+                    data=data,
                     hue=hue,
                     label=variable.name,
                     color=color,
                 )
             ),
             "prob_plot": _savefig(
-                prob_plot(
-                    data=variable.data, label=variable.name, marker_color=color
-                )
+                prob_plot(data, label=variable.name, marker_color=color)
             ),
         }
     else:  # {"boolean", "categorical", "datetime"}:
         graphs = {
             "bar_plot": _savefig(
-                bar_plot(data=variable.data, label=variable.name, color=color)
+                bar_plot(data, label=variable.name, color=color)
             )
         }
 
@@ -322,8 +320,8 @@ def plot_correlation(
     Returns:
         matplotlib.figure.Figure: A bar-plot of correlation data.
     """
-    if not isinstance(variables, MultiVariable):
-        variables = MultiVariable(variables)
+    if not isinstance(variables, Dataset):
+        variables = Dataset(variables)
 
     if variables._correlation_values is None:
         return None
@@ -434,13 +432,11 @@ def _plot_regression(data_and_color: Tuple) -> Tuple:
     return (var1, var2), fig
 
 
-def _plot_multivariable(
-    variables: MultiVariable, color: str = None
-) -> Optional[Dict]:
+def _plot_dataset(variables: Dataset, color: str = None) -> Optional[Dict]:
     """Concurrently plot regression plots in a multiprocessing Pool.
 
     Args:
-        variables (MultiVariable): Bi-variate analysis results.
+        variables (Dataset): Bi-variate analysis results.
         color (str, optional): The color to apply to the graphs.
 
     Returns:

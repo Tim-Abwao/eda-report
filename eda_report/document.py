@@ -5,10 +5,9 @@ from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Inches, Pt
 from docx.text.parfmt import ParagraphFormat
-from pandas.core.frame import DataFrame
+from pandas import DataFrame, Series
 
 from eda_report.content import _ReportContent
-from eda_report.multivariate import _select_dtypes
 
 logging.basicConfig(
     format="[%(levelname)s %(asctime)s.%(msecs)03d] %(message)s",
@@ -74,7 +73,7 @@ class ReportDocument(_ReportContent):
         self._create_title_page()
         self._get_univariate_analysis()
 
-        if self.multivariable._correlation_values is not None:
+        if self.dataset._correlation_values is not None:
             self._get_bivariate_analysis()
 
         self._to_file()
@@ -107,8 +106,7 @@ class ReportDocument(_ReportContent):
 
     def _get_numeric_overview_table(self) -> None:
         """Create a table with an overview of the numeric features present."""
-        numeric_cols = _select_dtypes(self.multivariable.data, "number")
-        if numeric_cols is None:
+        if self.dataset._numeric_stats is None:
             return None
         else:
             heading = self.document.add_heading(
@@ -117,7 +115,7 @@ class ReportDocument(_ReportContent):
             self._format_heading_spacing(heading.paragraph_format)
             # count | mean | std | min | 25% | 50% | 75% | max
             self._create_table(
-                data=self.multivariable._numeric_stats,
+                data=self.dataset._numeric_stats,
                 header=True,
                 column_widths=(1.2,) + (0.7,) * 8,
                 font_size=8.5,
@@ -128,10 +126,7 @@ class ReportDocument(_ReportContent):
         """Create a table with an overview of the categorical features
         present.
         """
-        categorical_cols = _select_dtypes(
-            self.multivariable.data, "bool", "category", "object"
-        )
-        if categorical_cols is None:
+        if self.dataset._categorical_stats is None:
             return None
         else:
             heading = self.document.add_heading(
@@ -140,7 +135,7 @@ class ReportDocument(_ReportContent):
             self._format_heading_spacing(heading.paragraph_format)
             # column-name | count | unique | top | freq | relative freq
             self._create_table(
-                data=self.multivariable._categorical_stats,
+                data=self.dataset._categorical_stats,
                 header=True,
                 column_widths=(1.2,) + (0.9,) * 5,
                 font_size=8.5,
@@ -157,12 +152,10 @@ class ReportDocument(_ReportContent):
         self._format_heading_spacing(
             univariate_heading.paragraph_format, before=0, after=0
         )
-        for idx, variable in enumerate(
-            self.analyzed_variables.values(), start=1
-        ):
+        for idx, variable in enumerate(self.variables.values(), start=1):
             var_name = variable.name
             description = self.variable_descriptions[var_name]
-            summary_stats = self.univariate_stats[var_name]
+            summary_stats = Series(self.univariate_stats[var_name]).to_frame()
             graphs = self.univariate_graphs[var_name]
             contingency_table = self.contingency_tables.get(var_name)
             normality_tests = self.normality_tests.get(var_name)
@@ -192,14 +185,14 @@ class ReportDocument(_ReportContent):
                     "Contingency table", level=4
                 )
                 contingency_table_heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                subtext = self.document.add_paragraph(
-                    f"Index = '{var_name}' "
-                    f"(missing: {variable.data.isna().sum()}). "
-                    f"Columns = '{self.GROUPBY_DATA.name}' "
-                    f"(missing: {self.GROUPBY_DATA.isna().sum()})"
-                )
-                subtext.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                subtext.runs[0].font.size = Pt(8)
+                # subtext = self.document.add_paragraph(
+                #     f"Index = '{var_name}' "
+                #     f"(missing: {variable.data.isna().sum()}). "
+                #     f"Columns = '{self.GROUPBY_DATA.name}' "
+                #     f"(missing: {self.GROUPBY_DATA.isna().sum()})"
+                # )
+                # subtext.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                # subtext.runs[0].font.size = Pt(8)
 
                 n_cols = contingency_table.shape[1]
                 max_width = 5 if n_cols > 5.2 else 3.2

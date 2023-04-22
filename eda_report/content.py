@@ -54,8 +54,8 @@ class _ReportContent(_AnalysisResult):
         if self.dataset._numeric_stats is None:
             numeric_descr = ""
         else:
-            num_numeric = len(self.dataset._numeric_stats.index)
-            if num_numeric:
+            num_numeric = self.dataset._numeric_stats.shape[0]
+            if num_numeric == 1:
                 numeric_descr = ", 1 of which is numeric"
             else:
                 numeric_descr = f", {num_numeric} of which are numeric"
