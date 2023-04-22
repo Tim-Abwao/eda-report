@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 from textwrap import shorten
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 from pandas import DataFrame, Series
 from pandas.api.types import (
@@ -40,28 +40,31 @@ class Variable:
     """
 
     def __init__(self, data: Iterable, *, name: str = None) -> None:
-        self.data = validate_univariate_input(data, name=name)
+        data = validate_univariate_input(data, name=name)
 
         #: Optional[str]: The variable's *name*. If no name is specified
         #: during instantiation, the name will be equal to the value of the
         #: ``name`` attribute of the input data (if present), or None.
-        self.name = self.data.name
+        self.name = data.name
 
         #: str: The variable's *type* — one of *"boolean"*, *"categorical"*,
         #: *"datetime"*, *"numeric"* or *"numeric (<10 levels)"*.
-        self.var_type = self._get_variable_type()
+        self.var_type = self._get_variable_type(data)
 
         #: int: The *number of unique values* present in the variable.
-        self.num_unique = self.data.nunique()
+        self.num_unique = data.nunique()
 
         #: list: The *unique values* present in the variable.
-        self.unique = sorted(self.data.dropna().unique())
+        self.unique_values = sorted(data.dropna().unique())
 
         #: str: The number of *missing values* in the form
         #: ``number (percentage%)`` e.g "4 (16.67%)".
-        self.missing = self._get_missing_values_info()
+        self.missing = self._get_missing_values_info(data)
+        self._num_non_null = len(data.dropna())
 
-        self._get_summary_statistics()
+        #: pandas.Series: Descriptive statistics
+        self.summary_stats = self._get_summary_statistics(data)
+        self._normality_test_results = self._test_for_normality(data)
 
     def __repr__(self) -> str:
         """Get the string representation of a variable based on it's summary
@@ -72,34 +75,26 @@ class Variable:
         """
         return repr(self.summary_statistics)
 
-    def rename(self, name: str = None) -> None:
-        """Rename the variable as specified.
-
-        Args:
-            name (str, optional): The name to assign to the variable.
-                Defaults to None.
-        """
-        self.name = self.data.name = name
-
-    def _get_variable_type(self) -> str:
+    def _get_variable_type(self, data: Series) -> str:
         """Determine the variable type.
 
         Returns:
             str: The variable type.
         """
-        if is_numeric_dtype(self.data):
-            if is_bool_dtype(self.data) or set(self.data.dropna()) == {0, 1}:
+        if is_numeric_dtype(data):
+            if is_bool_dtype(data) or set(data.dropna()) == {0, 1}:
                 # Consider boolean data as categorical
                 self.data = self.data.astype("category")
                 return "boolean"
-            elif self.data.nunique() <= 10:
+            elif data.nunique() <= 10:
                 # Consider numeric data with <= 10 unique values categorical
                 self.data = self.data.astype("category").cat.as_ordered()
                 return "numeric (<10 levels)"
             else:
                 return "numeric"
-
-        elif is_datetime64_any_dtype(self.data):
+        elif set(data.dropna()) in [{False, True}, {"No", "Yes"}, {"N", "Y"}]:
+            return "boolean"
+        elif is_datetime64_any_dtype(data):
             return "datetime"
 
         else:
@@ -108,23 +103,21 @@ class Variable:
                 # If 1/3 or less of the values are unique, use categorical
                 self.data = self.data.astype("category")
 
-        return "categorical"
+            return "categorical"
 
-    def _get_missing_values_info(self) -> Optional[str]:
+    def _get_missing_values_info(self, data: Series) -> Optional[str]:
         """Get the number of values missing from the variable.
 
         Returns:
             Optional[str]: Details about the number of missing values.
         """
-        missing_values = self.data.isna().sum()
+        missing_values = data.isna().sum()
         if missing_values == 0:
             return None
         else:
-            return (
-                f"{missing_values:,} ({missing_values / len(self.data):.2%})"
-            )
+            return f"{missing_values:,} ({missing_values / len(data):.2%})"
 
-    def _get_summary_statistics(self) -> None:
+    def _get_summary_statistics(self, data: Series) -> Dict:
         """Compute summary statistics for the variable based on data type."""
         if self.var_type == "numeric":
             stats = _NumericStats(self)
@@ -133,181 +126,9 @@ class Variable:
         else:
             stats = _CategoricalStats(self)
 
-        self.summary_statistics = stats
-
-
-class _CategoricalStats:
-    """Get descriptive statistics for a categorical variable.
-
-    Args:
-        variable (Variable): The data to analyze.
-    """
-
-    def __init__(self, variable: Variable) -> None:
-        self.variable = variable
-
-    def __repr__(self) -> str:
-        """Get the string representation of the analysis results.
-
-        Returns:
-            str: Summary statistics.
-        """
-        sample_values = shorten(
-            f"{self.variable.num_unique} -> {self.variable.unique}", 60
-        )
-        return "\n".join(
-            [
-                "\t\tOverview",
-                "\t\t========",
-                f"Name: {self.variable.name}",
-                f"Type: {self.variable.var_type}",
-                f"Number of Observations: {len(self.variable.data)}",
-                f"Unique Values: {sample_values}",
-                f"Missing Values: {self.variable.missing}\n",
-                "\t  Most Common Items",
-                "\t  -----------------",
-                f"{self._get_most_common().to_frame(name='')}",
-            ]
-        )
-
-    def _get_summary_statistics(self) -> Series:
-        """Calculate summary statistics.
-
-        Returns:
-            pandas.Series: Summary statistics.
-        """
-        return self.variable.data.describe().set_axis(
-            [
-                "Number of observations",
-                "Unique values",
-                "Mode (Most frequent)",
-                "Maximum frequency",
-            ],
-            axis=0,
-        )
-
-    def _get_most_common(self) -> Series:
-        """Get most common items and their relative frequency (%).
-
-        Returns:
-            pandas.Series: Top 5 items by frequency.
-        """
-        most_common_items = self.variable.data.value_counts().head()
-        n = len(self.variable.data)
-        return most_common_items.apply(lambda x: f"{x:,} ({x / n:.2%})")
-
-
-class _DatetimeStats:
-    """Get descriptive statistics for a datetime variable.
-
-    Args:
-        variable (Variable): The data to analyze.
-    """
-
-    def __init__(self, variable: Variable) -> None:
-        self.variable = variable
-
-    def __repr__(self) -> str:
-        """Get the string representation of the analysis results.
-
-        Returns:
-            str: Summary statistics.
-        """
-        return "\n".join(
-            [
-                "\t\tOverview",
-                "\t\t========",
-                f"Name: {self.variable.name}",
-                f"Type: {self.variable.var_type}",
-                f"Number of Observations: {len(self.variable.data)}",
-                f"Missing Values: {self.variable.missing}\n",
-                "\t  Summary Statistics",
-                "\t  ------------------",
-                f"{self._get_summary_statistics().to_frame(name='')}",
-            ]
-        )
-
-    def _get_summary_statistics(self) -> Series:
-        """Calculate summary statistics.
-
-        Returns:
-            pandas.Series: Summary statistics.
-        """
-        return self.variable.data.describe(datetime_is_numeric=True).set_axis(
-            [
-                "Number of observations",
-                "Average",
-                "Minimum",
-                "Lower Quartile",
-                "Median",
-                "Upper Quartile",
-                "Maximum",
-            ],
-            axis=0,
-        )
-
-
-class _NumericStats:
-    """Get descriptive statistics for a numeric variable.
-
-    Args:
-        variable (Variable): The data to analyze.
-    """
-
-    def __init__(self, variable) -> None:
-        self.variable = variable
-
-    def __repr__(self) -> str:
-        """Get the string representation of the analysis results.
-
-        Returns:
-            str: Summary statistics.
-        """
-        sample_values = shorten(
-            f"{self.variable.num_unique} -> {self.variable.unique}", 60
-        )
-        return "\n".join(
-            [
-                "\t\tOverview",
-                "\t\t========",
-                f"Name: {self.variable.name}",
-                f"Type: {self.variable.var_type}",
-                f"Unique Values: {sample_values}",
-                f"Missing Values: {self.variable.missing}\n",
-                "\t  Summary Statistics",
-                "\t  ------------------",
-                f"{self._get_summary_statistics().to_frame(name='')}\n",
-                "\t  Tests for Normality",
-                "\t  -------------------",
-                f"{self._test_for_normality()}",
-            ]
-        )
-
-    def _get_summary_statistics(self) -> Series:
-        """Calculate summary statistics.
-
-        Returns:
-            pandas.Series: Summary statistics.
-        """
-        summary_stats = self.variable.data.describe().set_axis(
-            [
-                "Number of observations",
-                "Average",
-                "Standard Deviation",
-                "Minimum",
-                "Lower Quartile",
-                "Median",
-                "Upper Quartile",
-                "Maximum",
-            ],
-            axis=0,
-        )
-        summary_stats["Skewness"] = self.variable.data.skew()
-        summary_stats["Kurtosis"] = self.variable.data.kurt()
-
-        return summary_stats
-
-    def _test_for_normality(self, alpha: float = 0.05) -> DataFrame:
+    def _test_for_normality(
+        self, data: Series, alpha: float = 0.05
+    ) -> DataFrame:
         """Perform the "D'Agostino's K-squared", "Kolmogorov-Smirnov" and
         "Shapiro-Wilk" tests for normality.
 
@@ -318,38 +139,45 @@ class _NumericStats:
         Returns:
             pandas.DataFrame: Table of results.
         """
-        data = self.variable.data.dropna()
-        # The scikit-learn implementation of the Shapiro-Wilk test reports:
-        # "For N > 5000 the W test statistic is accurate but the p-value may
-        # not be."
-        shapiro_sample = data.sample(5000) if len(data) > 5000 else data
-        tests = [
-            "D'Agostino's K-squared test",
-            "Kolmogorov-Smirnov test",
-            "Shapiro-Wilk test",
-        ]
-        p_values = [
-            stats.normaltest(data).pvalue,
-            stats.kstest(data, "norm", N=200).pvalue,
-            stats.shapiro(shapiro_sample).pvalue,
-        ]
-        conclusion = f"Conclusion at α = {alpha}"
-        results = DataFrame(
-            {
-                "p-value": p_values,
-                conclusion: [p_value > alpha for p_value in p_values],
-            },
-            index=tests,
-        )
-        results[conclusion] = results[conclusion].map(
-            {
-                True: "Possibly normal",
-                False: "Unlikely to be normal",
-            }
-        )
-        results["p-value"] = results["p-value"].apply(lambda x: f"{x:.7f}")
+        data = data.dropna()
 
-        return results
+        if self.var_type == "numeric":
+            # The scikit-learn implementation of the Shapiro-Wilk test reports:
+            # "For N > 5000 the W test statistic is accurate but the p-value
+            # may not be."
+            shapiro_sample = data.sample(5000) if len(data) > 5000 else data
+            tests = [
+                "D'Agostino's K-squared test",
+                "Kolmogorov-Smirnov test",
+                "Shapiro-Wilk test",
+            ]
+            p_values = [
+                stats.normaltest(data).pvalue,
+                stats.kstest(data, "norm", N=200).pvalue,
+                stats.shapiro(shapiro_sample).pvalue,
+            ]
+            conclusion = f"Conclusion at α = {alpha}"
+            results = DataFrame(
+                {
+                    "p-value": p_values,
+                    conclusion: [p_value > alpha for p_value in p_values],
+                },
+                index=tests,
+            )
+            results[conclusion] = results[conclusion].map(
+                {
+                    True: "Possibly normal",
+                    False: "Unlikely to be normal",
+                }
+            )
+            results["p-value"] = results["p-value"].apply(lambda x: f"{x:.7f}")
+
+            return results
+        else:
+            return None
+
+    def rename(self, name: str) -> None:
+        self.name = name
 
 
 def _analyze_univariate(name_and_data: Tuple) -> Variable:
