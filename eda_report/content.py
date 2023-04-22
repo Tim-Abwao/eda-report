@@ -1,190 +1,7 @@
-from multiprocessing import Pool
-from typing import Any, Dict, Iterable, Optional, Union
-
-import pandas as pd
-from tqdm import tqdm
-
-from eda_report.multivariate import MultiVariable, _select_dtypes
-from eda_report.plotting import _plot_multivariable, _plot_variable
-from eda_report.univariate import Variable, _analyze_univariate
-from eda_report.validate import validate_groupby_data
+from typing import Any, Dict, Iterable, Union
 
 
-def _get_contingency_tables(
-    categorical_df: pd.DataFrame, groupby_data: pd.Series
-) -> Dict[str, pd.DataFrame]:
-    """Get contingency tables for categorical variables.
-
-    Args:
-        categorical_df (pandas.DataFrame): Categorical data.
-        groupby_data (pandas.Series): Values to group by.
-
-    Returns:
-        Dict[str, pd.DataFrame]: Contingency tables for each column.
-    """
-    if (categorical_df.shape[1] == 0) or (groupby_data is None):
-        return {}
-
-    contingency_tables = {
-        col: pd.crosstab(
-            index=categorical_df[col],
-            columns=groupby_data,
-            margins=True,
-            margins_name="Total",
-        )
-        for col in categorical_df
-        # Only include columns with upto 20 unique values to cut clutter
-        if categorical_df[col].nunique() <= 20
-    }
-    # Exclude groupby_data in case it is among the categorical cols
-    contingency_tables.pop(groupby_data.name, None)
-    return contingency_tables
-
-
-class _AnalysisResult:
-    """Analyzes data, and stores the resultant summary statistics and graphs.
-
-    Args:
-        data (Iterable): The data to analyse.
-        graph_color (str, optional): The color to apply to the graphs.
-            Defaults to "cyan".
-        groupby_data (Union[str, int], optional): The column to
-            use to group values. Defaults to None.
-
-    """
-
-    def __init__(
-        self,
-        data: Iterable,
-        graph_color: str = "cyan",
-        groupby_data: Union[str, int] = None,
-    ) -> None:
-        self.GRAPH_COLOR = graph_color
-        self.multivariable = MultiVariable(data)
-        self.GROUPBY_DATA = validate_groupby_data(
-            data=self.multivariable.data, groupby_data=groupby_data
-        )
-        self.analyzed_variables = self._analyze_variables()
-        self.univariate_stats = self._get_univariate_statistics()
-        self.normality_tests = self._test_for_normality()
-        self.univariate_graphs = self._get_univariate_graphs()
-        self.bivariate_graphs = _plot_multivariable(
-            self.multivariable, color=graph_color
-        )
-        self.bivariate_summaries = self._get_bivariate_summaries()
-
-    def _analyze_variables(self) -> Dict[str, Variable]:
-        """Compute summary statistics and assess variable properties.
-
-        Returns:
-            Dict[str, Variable]: Univariate analysis results.
-        """
-        data = self.multivariable.data
-        with Pool() as p:
-            univariate_stats = dict(
-                tqdm(
-                    # Analyze variables concurrently
-                    p.imap(_analyze_univariate, data.items()),
-                    # Progress-bar options
-                    total=data.shape[1],
-                    bar_format=(
-                        "{desc} {percentage:3.0f}%|{bar:35}| "
-                        "{n_fmt}/{total_fmt}"
-                    ),
-                    desc="Analyze variables: ",
-                    dynamic_ncols=True,
-                )
-            )
-        # Create contingency tables
-        categorical_cols = [
-            col_name
-            for col_name, var in univariate_stats.items()
-            if var.var_type != "numeric"
-        ]
-        self.contingency_tables = _get_contingency_tables(
-            data[categorical_cols], self.GROUPBY_DATA
-        )
-
-        return univariate_stats
-
-    def _get_univariate_statistics(self) -> Dict[str, pd.DataFrame]:
-        """Get a dataframe of summary statistics for all variables.
-
-        Returns:
-            Dict[str, pandas.DataFrame]: Summary statistics.
-        """
-        return {
-            name: variable.summary_statistics._get_summary_statistics()
-            .to_frame()
-            .round(4)
-            for name, variable in self.analyzed_variables.items()
-        }
-
-    def _test_for_normality(self) -> Dict[str, pd.DataFrame]:
-        """Perform tests for normality.
-
-        Returns:
-            Dict[str, pandas.DataFrame]: Normality test results.
-        """
-        return {
-            name: variable.summary_statistics._test_for_normality()
-            for name, variable in self.analyzed_variables.items()
-            if variable.var_type == "numeric"
-        }
-
-    def _get_univariate_graphs(self) -> Dict[str, Dict]:
-        """Plot graphs for all variables present.
-
-        Returns:
-            Dict[str, Dict]: Univariate graphs.
-        """
-        with Pool() as p:
-            variables_hue_and_color = [
-                (variable, self.GROUPBY_DATA, self.GRAPH_COLOR)
-                for variable in self.analyzed_variables.values()
-            ]
-            univariate_graphs = dict(
-                tqdm(
-                    # Plot variables in parallel processes
-                    p.imap(_plot_variable, variables_hue_and_color),
-                    # Progress-bar options
-                    total=len(self.analyzed_variables),
-                    bar_format=(
-                        "{desc} {percentage:3.0f}%|{bar:35}| "
-                        "{n_fmt}/{total_fmt}"
-                    ),
-                    desc="Plot variables:    ",
-                    dynamic_ncols=True,
-                )
-            )
-        return univariate_graphs
-
-    def _get_bivariate_summaries(self) -> Optional[Dict[str, str]]:
-        """Get descriptions of the nature of correlation between numeric
-        column pairs.
-
-        Returns:
-            Optional[Dict[str, str]]: Correlation info.
-        """
-        if self.multivariable._correlation_values is None:
-            return None
-        else:
-            # Take the top 20 pairs by magnitude of correlation.
-            # 20 var_pairs ≈ 10+ pages
-            # 20 numeric columns == 190 var_pairs ≈ 95+ pages.
-            pairs_to_include = [
-                pair for pair, _ in self.multivariable._correlation_values[:20]
-            ]
-            correlation_descriptions = (
-                self.multivariable._correlation_descriptions
-            )
-            return {
-                var_pair: (
-                    f"{var_pair[0].title()} and {var_pair[1].title()} have "
-                    f"{correlation_descriptions[var_pair]}."
-                )
-                for var_pair in pairs_to_include
-            }
+from eda_report.analysis import _AnalysisResult
 
 
 class _ReportContent(_AnalysisResult):
@@ -221,7 +38,7 @@ class _ReportContent(_AnalysisResult):
         Returns:
             str: Introduction.
         """
-        num_rows, num_cols = self.multivariable.data.shape
+        num_rows, num_cols = self.dataset.data.shape
 
         if num_rows == 1:
             rows = "1 row (observation)"
@@ -234,15 +51,16 @@ class _ReportContent(_AnalysisResult):
             cols = f"{num_cols:,} columns (features)"
 
         # Get numeric column info
-        numeric_cols = _select_dtypes(self.multivariable.data, "number")
-        if numeric_cols is None:
-            numeric = ""
-        elif numeric_cols.shape[1] == 1:
-            numeric = ", 1 of which is numeric"
+        if self.dataset._numeric_stats is None:
+            numeric_descr = ""
         else:
-            numeric = f", {numeric_cols.shape[1]} of which are numeric"
+            num_numeric = len(self.dataset._numeric_stats.index)
+            if num_numeric:
+                numeric_descr = ", 1 of which is numeric"
+            else:
+                numeric_descr = f", {num_numeric} of which are numeric"
 
-        return f"The dataset consists of {rows} and {cols}{numeric}."
+        return f"The dataset consists of {rows} and {cols}{numeric_descr}."
 
     def _describe_variables(self) -> Dict[str, Any]:
         """Get summary statistics for a variable.
@@ -254,7 +72,7 @@ class _ReportContent(_AnalysisResult):
             Dict[str, Any]: Summary statistics.
         """
         descriptions = {}
-        for name, variable in self.analyzed_variables.items():
+        for name, variable in self.variables.items():
             if variable.num_unique == 1:
                 unique_vals = "1 unique value"
             else:
