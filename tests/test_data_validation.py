@@ -1,4 +1,6 @@
 import pytest
+from pandas import DataFrame, Series
+
 from eda_report.exceptions import (
     EmptyDataError,
     GroupbyVariableError,
@@ -10,7 +12,6 @@ from eda_report.validate import (
     validate_multivariate_input,
     validate_univariate_input,
 )
-from pandas import DataFrame, Series
 
 
 class TestMultivariateInputValidation:
@@ -88,7 +89,6 @@ class TestUnivariateInputValidation:
 
 
 class TestTargetValidation:
-
     data = DataFrame([range(5)] * 3, columns=list("ABCDE"))
 
     def test_valid_column_index(self):

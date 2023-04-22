@@ -1,11 +1,11 @@
 import pytest
+from pandas import DataFrame
+
 from eda_report.exceptions import InputError
 from eda_report.read_file import df_from_file
-from pandas import DataFrame
 
 
 class TestFileLoader:
-
     data = DataFrame([[1, 2, 3], [4, 5, 6]], columns=list("ABC"))
 
     def test_csv_file_load(self, temp_data_dir):

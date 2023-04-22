@@ -1,16 +1,15 @@
 from io import BytesIO
 
-from eda_report import get_word_report
-from eda_report.document import ReportDocument
 from pandas.core.frame import DataFrame
+
+from eda_report.document import ReportDocument
 
 
 class TestReportWithIdealInput:
-
     data = DataFrame(
         {"A": range(50), "B": [1, 2, 3, 4, 5] * 10, "C": list("ab") * 25}
     )
-    report = get_word_report(
+    report = ReportDocument(
         data,
         title="Test Report",
         graph_color="teal",
@@ -28,11 +27,10 @@ class TestReportWithIdealInput:
 
 
 class TestReportWithLimitedInput:
-
     data = DataFrame(
         {"categorical": list("ABCDEFGHIJKL" * 2), "numeric": range(24)}
     )
-    report = get_word_report(
+    report = ReportDocument(
         data,
         title="One Numeric One Categorical",
         graph_color="lime",
@@ -50,13 +48,12 @@ class TestReportWithLimitedInput:
 
 
 class TestReportWithUnivariateInput:
-
-    univariate_numeric_report = get_word_report(
+    univariate_numeric_report = ReportDocument(
         DataFrame(range(5)),
         title="Univariate Numeric Report",
         output_filename=BytesIO(),
     )
-    univariate_categorical_report = get_word_report(
+    univariate_categorical_report = ReportDocument(
         DataFrame(["a"]),
         title="Univariate Categorical Report",
         output_filename=BytesIO(),
@@ -71,5 +68,5 @@ class TestReportWithUnivariateInput:
 
 
 def test_output_file(temp_data_dir):
-    get_word_report(range(50), output_filename=temp_data_dir / "eda.docx")
+    ReportDocument(range(50), output_filename=temp_data_dir / "eda.docx")
     assert (temp_data_dir / "eda.docx").is_file()
