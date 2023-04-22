@@ -1,11 +1,10 @@
 import logging
 from collections.abc import Iterable
 from itertools import combinations
-from typing import List, Optional, Sequence
+from typing import List
 
-from pandas.core.frame import DataFrame
+from pandas import DataFrame
 
-from eda_report.univariate import Variable
 from eda_report.validate import validate_multivariate_input
 
 
@@ -63,23 +62,7 @@ def _describe_correlation(corr_value: float) -> str:
     return f"{strength}{ nature} correlation ({corr_value:.2f})"
 
 
-def _select_dtypes(
-    dataframe: DataFrame, *dtypes: Sequence[str]
-) -> Optional[DataFrame]:
-    """Get a DataFrame including only the specified `dtypes`.
-
-    Args:
-        dataframe (pandas.DataFrame): A 2D array of numeric data.
-        *dtypes (str): Data types to include e.g. "bool", "number", etc.
-
-    Returns:
-        Optional[DataFrame]: Subset with the desired data types.
-    """
-    selected_cols = dataframe.select_dtypes(include=dtypes)
-    return selected_cols if selected_cols.shape[1] > 0 else None
-
-
-class MultiVariable:
+class Dataset:
     """Defines objects that analyze two-dimensional datasets.
 
     Input data is held as a :class:`pandas.DataFrame` in order to leverage
@@ -102,42 +85,32 @@ class MultiVariable:
     """
 
     def __init__(self, data: Iterable) -> None:
-
         self.data = validate_multivariate_input(data)
         self._get_summary_statistics()
         self._get_bivariate_analysis()
 
     def __repr__(self) -> str:
-        """Get the string representation for a ``Multivariable``.
+        """Get the string representation for a ``Dataset``.
 
         Returns:
-            str: The string representation of the ``MultiVariable`` instance.
+            str: The string representation of the ``Dataset`` instance.
         """
-        if self.data.shape[1] == 1:
-            return str(
-                Variable(self.data.squeeze(), name=self.data.columns[0])
-            )
-
-        numeric_data = _select_dtypes(self.data, "number")
-        if numeric_data is None:
+        if self._numeric_stats is None:
             numeric_info = numeric_stats = ""
         else:
-            numeric_info = f"Numeric features: {', '.join(numeric_data)}"
+            numeric_cols = ", ".join(self._numeric_stats.index)
+            numeric_info = f"Numeric features: {numeric_cols}"
             numeric_stats = (
                 "\n\t  Summary Statistics (Numeric features)\n"
                 "\t  -------------------------------------\n"
                 f"{self._numeric_stats}"
             )
 
-        categorical_data = _select_dtypes(
-            self.data, "bool", "category", "object"
-        )
-        if categorical_data is None:
+        if self._categorical_stats is None:
             categorical_info = categorical_stats = ""
         else:
-            categorical_info = (
-                f"Categorical features: {', '.join(categorical_data)}"
-            )
+            categorical_cols = ", ".join(self._categorical_stats.index)
+            categorical_info = f"Categorical features: {categorical_cols}"
             categorical_stats = (
                 "\n\t  Summary Statistics (Categorical features)\n"
                 "\t  -----------------------------------------\n"
@@ -174,8 +147,13 @@ class MultiVariable:
 
     def _get_summary_statistics(self) -> None:
         """Compute descriptive statistics."""
-        numeric_data = _select_dtypes(self.data, "number")
-        if numeric_data is None:
+        numeric_data = self.data.select_dtypes("number")
+        # Consider numeric columns with < 11 unique values as categorical
+        categorical_with_numbers = [
+            col for col in numeric_data if numeric_data[col].nunique() < 11
+        ]
+        numeric_data = numeric_data.drop(columns=categorical_with_numbers)
+        if numeric_data.shape[1] < 1:
             self._numeric_stats = None
         else:
             numeric_stats = numeric_data.describe().T
@@ -183,10 +161,17 @@ class MultiVariable:
             numeric_stats["kurtosis"] = numeric_data.kurt(numeric_only=True)
             self._numeric_stats = numeric_stats.round(4)
 
-        categorical_data = _select_dtypes(
-            self.data, "category", "object", "bool"
-        )
-        if categorical_data is None:
+        categorical_data = self.data.drop(columns=numeric_data.columns).copy()
+        # Convert categorical columns with "unique ratio" < 0.3 to categorical
+        # dtype
+        for col in categorical_data:
+            if (categorical_data[col].nunique() / len(categorical_data)) < 0.3:
+                categorical_data[col] = categorical_data[col].astype(
+                    "category"
+                )
+            else:
+                categorical_data[col] = categorical_data[col].astype("string")
+        if categorical_data.shape[1] < 1:
             self._categorical_stats = None
         else:
             categorical_stats = categorical_data.describe().T
