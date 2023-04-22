@@ -6,6 +6,7 @@ import matplotlib as mpl
 import numpy as np
 from matplotlib.colors import to_rgb
 from matplotlib.figure import Figure
+from matplotlib.axes import Axes
 from scipy.stats import gaussian_kde, probplot
 from tqdm import tqdm
 
@@ -58,6 +59,15 @@ def _savefig(figure: Figure) -> BytesIO:
     return graph
 
 
+def _get_axes(ax: Axes = None) -> Axes:
+    if ax is None:
+        return Figure().subplots()
+    elif isinstance(ax, Axes):
+        return ax
+    else:
+        raise TypeError(f"Invalid input for 'ax': {type(ax)}")
+
+
 def _get_color_shades_of(color: str, num: int = None) -> Sequence:
     """Obtain an array of `num` shades of the specified `color`.
 
@@ -76,7 +86,8 @@ def box_plot(
     label: str,
     hue: Iterable = None,
     color: Union[str, Sequence] = None,
-) -> Figure:
+    ax: Axes = None,
+) -> Axes:
     """Get a box-plot from numeric values.
 
     Args:
@@ -91,10 +102,7 @@ def box_plot(
     """
     original_data = validate_univariate_input(data)
     data = original_data.dropna()
-
-    fig = Figure()
-    ax = fig.subplots()
-
+    ax = _get_axes(ax)
     if hue is None:
         bxplot = ax.boxplot(
             data,
@@ -118,8 +126,7 @@ def box_plot(
             patch.set_alpha(0.75)
 
     ax.set_title(f"Box-plot of {label}")
-
-    return fig
+    return ax
 
 
 @mpl.rc_context(GENERAL_RC_PARAMS)
@@ -129,7 +136,8 @@ def kde_plot(
     label: str,
     hue: Iterable = None,
     color: Union[str, Sequence] = None,
-) -> Figure:
+    ax: Axes = None,
+) -> Axes:
     """Get a kde-plot from numeric values.
 
     Args:
@@ -144,10 +152,7 @@ def kde_plot(
     """
     original_data = validate_univariate_input(data)
     data = original_data.dropna()
-
-    fig = Figure()
-    ax = fig.subplots()
-
+    ax = _get_axes(ax)
     if len(data) < 2 or np.isclose(data.std(), 0):
         ax.text(
             x=0.08,
@@ -160,7 +165,7 @@ def kde_plot(
             size=14,
             weight=600,
         )
-        return fig
+        return ax
 
     eval_points = np.linspace(data.min(), data.max(), num=len(data))
     if hue is None:
@@ -185,7 +190,7 @@ def kde_plot(
     ax.legend()
     ax.set_title(f"Density plot of {label}")
 
-    return fig
+    return ax
 
 
 @mpl.rc_context(GENERAL_RC_PARAMS)
@@ -195,7 +200,8 @@ def prob_plot(
     label: str,
     marker_color: Union[str, Sequence] = "C0",
     line_color: Union[str, Sequence] = "#222",
-) -> Figure:
+    ax: Axes = None,
+) -> Axes:
     """Get a probability-plot from numeric values.
 
     Args:
@@ -211,21 +217,23 @@ def prob_plot(
     """
     original_data = validate_univariate_input(data)
     data = original_data.dropna()
-
-    fig = Figure(figsize=(6.5, 4.5))
-    ax = fig.subplots()
+    ax = _get_axes(ax)
     probplot(data, fit=True, plot=ax)
     ax.lines[0].set_color(marker_color)
     ax.lines[1].set_color(line_color)
     ax.set_title(f"Probability plot of {label}")
 
-    return fig
+    return ax
 
 
 @mpl.rc_context(GENERAL_RC_PARAMS)
 def bar_plot(
-    data: Iterable, *, label: str, color: Union[str, Sequence] = None
-) -> Figure:
+    data: Iterable,
+    *,
+    label: str,
+    color: Union[str, Sequence] = None,
+    ax: mpl.axes.Axes = None,
+) -> Axes:
     """Get a bar-plot from a sequence of values.
 
     Args:
@@ -239,9 +247,7 @@ def bar_plot(
     original_data = validate_univariate_input(data)
     data = original_data.dropna()
 
-    fig = Figure()
-    ax = fig.subplots()
-
+    ax = _get_axes(ax)
     # Include no more than 10 of the most common values
     top_10 = data.value_counts().nlargest(10)
     bars = ax.bar(top_10.index.map(str), top_10, alpha=0.8, color=color)
@@ -254,7 +260,7 @@ def bar_plot(
     ax.set_title(title)
     ax.tick_params(axis="x", rotation=90)  # Improve visibility of long labels
 
-    return fig
+    return ax
 
 
 def _plot_variable(variable_data_hue_and_color: Tuple) -> Tuple:
@@ -270,35 +276,22 @@ def _plot_variable(variable_data_hue_and_color: Tuple) -> Tuple:
     """
     variable, data, hue, color = variable_data_hue_and_color
     if variable.var_type == "numeric":
-        graphs = {
-            "box_plot": _savefig(
-                box_plot(
-                    data=data,
-                    hue=hue,
-                    label=variable.name,
-                    color=color,
-                )
+        plots = {
+            "box_plot": box_plot(
+                data=data, hue=hue, label=variable.name, color=color
             ),
-            "kde_plot": _savefig(
-                kde_plot(
-                    data=data,
-                    hue=hue,
-                    label=variable.name,
-                    color=color,
-                )
+            "kde_plot": kde_plot(
+                data=data, hue=hue, label=variable.name, color=color
             ),
-            "prob_plot": _savefig(
-                prob_plot(data, label=variable.name, marker_color=color)
+            "prob_plot": prob_plot(
+                data, label=variable.name, marker_color=color
             ),
         }
     else:  # {"boolean", "categorical", "datetime"}:
-        graphs = {
-            "bar_plot": _savefig(
-                bar_plot(data, label=variable.name, color=color)
-            )
-        }
+        plots = {"bar_plot": bar_plot(data, label=variable.name, color=color)}
 
-    return variable.name, graphs
+    saved_graphs = {name: _savefig(ax.figure) for name, ax in plots.items()}
+    return variable.name, saved_graphs
 
 
 @mpl.rc_context(CORRPLOT_RC_PARAMS)
@@ -307,7 +300,8 @@ def plot_correlation(
     max_pairs: int = 20,
     color_pos: Union[str, Sequence] = "orangered",
     color_neg: Union[str, Sequence] = "steelblue",
-) -> Figure:
+    ax: Axes = None,
+) -> Axes:
     """Create a bar chart showing the top ``max_pairs`` most correlated
     variables.
 
@@ -335,8 +329,7 @@ def plot_correlation(
     corr_data = dict(reversed(pairs_to_show))
     labels = [" vs ".join(pair) for pair in corr_data.keys()]
 
-    fig = Figure(figsize=(7, 6.3))
-    ax = fig.subplots()
+    ax = _get_axes(ax)
     ax.barh(labels, corr_data.values(), edgecolor="#222", linewidth=0.5)
     ax.set_xlim(-1.1, 1.1)
     ax.spines["left"].set_position("zero")
@@ -368,7 +361,7 @@ def plot_correlation(
 
     ax.set_title(f"Pearson Correlation (Top {len(corr_data)})")
 
-    return fig
+    return ax
 
 
 @mpl.rc_context(GENERAL_RC_PARAMS)
@@ -377,7 +370,8 @@ def regression_plot(
     y: Iterable,
     labels: Tuple[str, str],
     color: Union[str, Sequence] = None,
-) -> Figure:
+    ax: Axes = None,
+) -> Axes:
     """Get a regression-plot from the provided pair of values.
 
     Args:
@@ -397,8 +391,7 @@ def regression_plot(
     if len(data) > 50000:
         data = data.sample(50000)
 
-    fig = Figure(figsize=(5, 5))
-    ax = fig.subplots()
+    ax = _get_axes(ax)
     x = data[var1]
     y = data[var2]
     slope, intercept = np.polyfit(x, y, deg=1)
@@ -414,7 +407,7 @@ def regression_plot(
     ax.set_xlabel(var1)
     ax.set_ylabel(var2)
 
-    return fig
+    return ax
 
 
 def _plot_regression(data_and_color: Tuple) -> Tuple:
@@ -429,10 +422,10 @@ def _plot_regression(data_and_color: Tuple) -> Tuple:
     """
     data, color = data_and_color
     var1, var2 = data.columns
-    fig = regression_plot(
+    ax = regression_plot(
         x=data[var1], y=data[var2], labels=(var1, var2), color=color
     )
-    return (var1, var2), fig
+    return (var1, var2), ax
 
 
 def _plot_dataset(variables: Dataset, color: str = None) -> Optional[Dict]:
@@ -476,9 +469,9 @@ def _plot_dataset(variables: Dataset, color: str = None) -> Optional[Dict]:
             )
 
         return {
-            "correlation_plot": _savefig(plot_correlation(variables)),
+            "correlation_plot": _savefig(plot_correlation(variables).figure),
             "regression_plots": {
-                var_pair: _savefig(plot)
+                var_pair: _savefig(plot.figure)
                 for var_pair, plot in bivariate_regression_plots.items()
             },
         }
