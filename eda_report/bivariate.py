@@ -1,6 +1,7 @@
 import logging
 from collections.abc import Iterable
 from itertools import combinations
+from textwrap import indent
 from typing import List
 
 from pandas import DataFrame
@@ -96,52 +97,60 @@ class Dataset:
             str: The string representation of the ``Dataset`` instance.
         """
         if self._numeric_stats is None:
-            numeric_info = numeric_stats = ""
+            numeric_stats = ""
         else:
-            numeric_cols = ", ".join(self._numeric_stats.index)
-            numeric_info = f"Numeric features: {numeric_cols}"
-            numeric_stats = (
-                "\n\t  Summary Statistics (Numeric features)\n"
-                "\t  -------------------------------------\n"
-                f"{self._numeric_stats}"
+            numeric_stats_title = (
+                "Summary Statistics for Numeric features "
+                f"({self._numeric_stats.shape[0]})"
+            )
+            numeric_stats = "\n".join(
+                [
+                    f"\t\t  {numeric_stats_title}",
+                    f"\t\t  {'-' * len(numeric_stats_title)}",
+                    f"{self._numeric_stats}\n",
+                ]
             )
 
         if self._categorical_stats is None:
-            categorical_info = categorical_stats = ""
+            categorical_stats = ""
         else:
-            categorical_cols = ", ".join(self._categorical_stats.index)
-            categorical_info = f"Categorical features: {categorical_cols}"
-            categorical_stats = (
-                "\n\t  Summary Statistics (Categorical features)\n"
-                "\t  -----------------------------------------\n"
-                f"{self._categorical_stats}"
+            categorical_stats_title = (
+                "Summary Statistics for Categorical features "
+                f"({self._categorical_stats.shape[0]})"
+            )
+            categorical_stats = "\n".join(
+                [
+                    f"\t {categorical_stats_title}",
+                    f"\t {'-' * len(categorical_stats_title)}",
+                    indent(f"{self._categorical_stats}\n", " " * 5),
+                ]
             )
         if hasattr(self, "_correlation_descriptions"):
             max_pairs = min(20, len(self._correlation_descriptions))
             top_20 = list(self._correlation_descriptions.items())[:max_pairs]
             corr_repr = "\n".join(
                 [
-                    f"{var_pair[0]} & {var_pair[1]} --> {corr_description}"
+                    f"{var_pair[0] + ' & ' + var_pair[1]:>27} -> "
+                    f"{corr_description}"
                     for var_pair, corr_description in top_20
                 ]
             )
-            correlation_description = (
-                f"\n\t  Pearson's Correlation (Top 20)"
-                "\n\t  ------------------------------\n"
-                f"{corr_repr}"
+            correlation_description = "\n".join(
+                [
+                    "\n\t\t\tPearson's Correlation (Top 20)",
+                    f"\t\t\t{'-' * 30}",
+                    f"{corr_repr}",
+                ]
             )
         else:
             correlation_description = ""
 
         return "\n".join(
             [
-                "\t\t\tOVERVIEW",
-                "\t\t\t========",
-                f"{numeric_info}",
-                f"{categorical_info}",
                 f"{numeric_stats}",
-                f"{categorical_stats}",
+                indent(f"{categorical_stats}", "\t"),
                 f"{correlation_description}",
+                "\t",
             ]
         )
 
