@@ -1,10 +1,12 @@
 from collections.abc import Iterable
 from typing import Union
 
+from eda_report.bivariate import Dataset
 from eda_report.document import ReportDocument
-from eda_report.multivariate import MultiVariable
+from eda_report.univariate import Variable
+from eda_report.validate import validate_multivariate_input
 
-__version__ = "2.7.3"
+__version__ = "2.8.0.a"
 
 
 def get_word_report(
@@ -49,18 +51,22 @@ def get_word_report(
     )
 
 
-def summarize(data: Iterable) -> MultiVariable:
+def summarize(data: Iterable) -> Union[Variable, Dataset]:
     """Get summary statistics for the supplied data.
 
     Args:
         data (Iterable): The data to analyze.
 
     Returns:
-        MultiVariable: Analysis results.
+        Dataset: Analysis results.
 
     Examples:
         .. literalinclude:: examples.txt
            :lines: 155-212
 
     """
-    return MultiVariable(data)
+    data = validate_multivariate_input(data)
+    if data.shape[1] == 1:
+        return Variable(data.squeeze())
+    else:
+        return Dataset(data)
