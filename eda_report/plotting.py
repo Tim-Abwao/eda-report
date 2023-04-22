@@ -22,16 +22,19 @@ GENERAL_RC_PARAMS = {
     "axes.titlesize": 12,
     "axes.titleweight": 500,
     "figure.autolayout": True,
+    "figure.figsize": (6, 4),
     "font.family": "serif",
     "savefig.dpi": 150,
 }
-# Customize boxplots
+# Customize box-plots
 BOXPLOT_RC_PARAMS = {
     "boxplot.medianprops.color": "black",
     "boxplot.patchartist": True,
     "boxplot.vertical": False,
     **GENERAL_RC_PARAMS,
 }
+# Customize correlation-plots
+CORRPLOT_RC_PARAMS = {"figure.figsize": (7, 6.3), **GENERAL_RC_PARAMS}
 
 
 def _savefig(figure: Figure) -> BytesIO:
@@ -298,7 +301,7 @@ def _plot_variable(variable_data_hue_and_color: Tuple) -> Tuple:
     return variable.name, graphs
 
 
-@mpl.rc_context(GENERAL_RC_PARAMS)
+@mpl.rc_context(CORRPLOT_RC_PARAMS)
 def plot_correlation(
     variables: Iterable,
     max_pairs: int = 20,
