@@ -73,7 +73,45 @@ class Variable:
         Returns:
             str: Summary statistics.
         """
-        return repr(self.summary_statistics)
+        sample_values = shorten(
+            f"{self.num_unique} -> {self.unique_values}", 60
+        )
+        basic_details = "\n".join(
+            [
+                f"\nName: {self.name}",
+                f"Type: {self.var_type}",
+                f"Non-null Observations: {self._num_non_null}",
+                f"Unique Values: {sample_values}",
+                f"Missing Values: {self.missing}\n",
+                "\t\t  Summary Statistics",
+                "\t\t  ------------------",
+            ]
+        )
+        if self.var_type == "numeric":
+            summary_stats = "\n".join(
+                [
+                    f"\t{key + ':':21} {value :>15.4f}"
+                    for key, value in self.summary_stats.items()
+                ]
+            )
+            normality_test_results = "\n".join(
+                [
+                    "\n\t\t  Tests for Normality",
+                    "\t\t  -------------------",
+                    f"{self._normality_test_results}",
+                ]
+            )
+            return "\n".join(
+                [basic_details, summary_stats, normality_test_results]
+            )
+        else:
+            summary_stats = "\n".join(
+                [
+                    f"\t{key + ':':21} {str(value):>15}"
+                    for key, value in self.summary_stats.items()
+                ]
+            )
+            return "\n".join([basic_details, summary_stats])
 
     def _get_variable_type(self, data: Series) -> str:
         """Determine the variable type.
@@ -84,11 +122,9 @@ class Variable:
         if is_numeric_dtype(data):
             if is_bool_dtype(data) or set(data.dropna()) == {0, 1}:
                 # Consider boolean data as categorical
-                self.data = self.data.astype("category")
                 return "boolean"
             elif data.nunique() <= 10:
                 # Consider numeric data with <= 10 unique values categorical
-                self.data = self.data.astype("category").cat.as_ordered()
                 return "numeric (<10 levels)"
             else:
                 return "numeric"
@@ -98,11 +134,6 @@ class Variable:
             return "datetime"
 
         else:
-            self.data = self.data.astype("string")
-            if (self.data.nunique() / self.data.shape[0]) <= (1 / 3):
-                # If 1/3 or less of the values are unique, use categorical
-                self.data = self.data.astype("category")
-
             return "categorical"
 
     def _get_missing_values_info(self, data: Series) -> Optional[str]:
@@ -120,11 +151,35 @@ class Variable:
     def _get_summary_statistics(self, data: Series) -> Dict:
         """Compute summary statistics for the variable based on data type."""
         if self.var_type == "numeric":
-            stats = _NumericStats(self)
+            stats = data.describe()
+            return {
+                "Average": stats["mean"],
+                "Standard Deviation": stats["std"],
+                "Minimum": stats["min"],
+                "Lower Quartile": stats["25%"],
+                "Median": stats["50%"],
+                "Upper Quartile": stats["75%"],
+                "Maximum": stats["max"],
+                "Skewness": data.skew(),
+                "Kurtosis": data.kurt(),
+            }
         elif self.var_type == "datetime":
-            stats = _DatetimeStats(self)
+            stats = data.describe()
+            return {
+                "Average": stats["mean"],
+                "Minimum": stats["min"],
+                "Lower Quartile": stats["25%"],
+                "Median": stats["50%"],
+                "Upper Quartile": stats["75%"],
+                "Maximum": stats["max"],
+            }
         else:
-            stats = _CategoricalStats(self)
+            data = data.copy().astype("category")
+            stats = data.describe()
+            return {
+                "Mode (Most frequent)": stats["top"],
+                "Maximum frequency": stats["freq"],
+            }
 
     def _test_for_normality(
         self, data: Series, alpha: float = 0.05
@@ -181,8 +236,7 @@ class Variable:
 
 
 def _analyze_univariate(name_and_data: Tuple) -> Variable:
-    """Helper function used to concurrently analyze data with multiprocessing.
-    """
+    """Helper function to concurrently analyze data with multiprocessing."""
     name, data = name_and_data
     var = Variable(data, name=name)
 
