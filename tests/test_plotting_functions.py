@@ -1,23 +1,24 @@
 from io import BytesIO
 
 import pytest
-from eda_report.multivariate import MultiVariable
+from matplotlib.colors import to_rgb
+from matplotlib.figure import Figure
+from pandas import DataFrame, Series
+
+from eda_report.bivariate import Dataset
 from eda_report.plotting import (
     _get_color_shades_of,
-    _plot_multivariable,
+    _plot_dataset,
     _plot_regression,
     _plot_variable,
+    _savefig,
     bar_plot,
     box_plot,
     kde_plot,
     plot_correlation,
     prob_plot,
-    _savefig,
 )
 from eda_report.univariate import Variable
-from matplotlib.colors import to_rgb
-from matplotlib.figure import Figure
-from pandas import DataFrame, Series
 
 
 def test_savefig_function():
@@ -133,7 +134,6 @@ class TestKdeplot:
         assert to_rgb(kde2_color) == pytest.approx(to_rgb(_color))
 
     def test_grouped_set_color(self):
-
         first_kde_color = self.grouped_kde.axes[0].lines[0].get_color()
 
         _color = "aqua"
@@ -180,7 +180,6 @@ class TestProbplot:
 
 
 class TestBarplot:
-
     low_cardinality_data = Series(list("abcdeabcdabcaba"))
     high_cardinality_data = Series(list("aabbccddeeffgghhiijjkkllmmnn"))
     simple_bar = bar_plot(low_cardinality_data, label="abcde")
@@ -215,9 +214,10 @@ class TestBarplot:
 
 class TestPlotvariable:
     def test_numeric_plots(self):
-        numeric_var = Variable(range(25), name="numbers")
+        data = range(25)
+        numeric_var = Variable(data, name="numbers")
         name, graphs = _plot_variable(
-            variables_hue_and_color=(numeric_var, None, "teal")
+            variable_data_hue_and_color=(numeric_var, data, None, "teal")
         )
 
         assert name == numeric_var.name
@@ -226,9 +226,10 @@ class TestPlotvariable:
             assert isinstance(graph, BytesIO)
 
     def test_categorical_plots(self):
+        data = list("abcdeabcdabcaba")
         categorical_var = Variable(list("abcdeabcdabcaba"), name="letters")
         name, graphs = _plot_variable(
-            variables_hue_and_color=(categorical_var, None, "navy")
+            variable_data_hue_and_color=(categorical_var, data, None, "navy")
         )
 
         assert name == categorical_var.name
@@ -303,14 +304,14 @@ def testplot_regression_function():
     ) == pytest.approx(to_rgb("lime"))
 
 
-class TestPlotMultivariable:
+class TestPlotDataset:
     def test_without_numeric_pairs(self):
-        data = MultiVariable(range(50))
-        assert _plot_multivariable(data, color="red") is None
+        data = Dataset(range(50))
+        assert _plot_dataset(data, color="red") is None
 
     def test_with_numeric_pairs(self):
-        data = MultiVariable([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-        graphs = _plot_multivariable(data, color="green")
+        data = Dataset([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+        graphs = _plot_dataset(data, color="green")
 
         assert set(graphs.keys()) == {
             "correlation_plot",
@@ -323,8 +324,8 @@ class TestPlotMultivariable:
             assert isinstance(graph, BytesIO)
 
     def test_limiting_numeric_pairs(self):
-        data = MultiVariable([range(12), [1, 2, 3, 4] * 3])
+        data = Dataset([range(12), [1, 2, 3, 4] * 3])
         # `data`` has 12 numeric columns, resulting in up to 66 var_pairs.
         # Check if only limit = 20 are plotted.
-        graphs = _plot_multivariable(data, color="green")
+        graphs = _plot_dataset(data, color="green")
         assert len(graphs["regression_plots"]) == 20
