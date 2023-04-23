@@ -249,7 +249,6 @@ def bar_plot(
     """
     original_data = validate_univariate_input(data)
     data = original_data.dropna()
-
     ax = _get_axes(ax)
     # Include no more than 10 of the most common values
     top_10 = data.value_counts().nlargest(10)
@@ -261,6 +260,7 @@ def bar_plot(
     else:
         title = f"Bar-plot of {label}"
     ax.set_title(title)
+    ax.set_ylabel("Count")
     ax.tick_params(axis="x", rotation=90)  # Improve visibility of long labels
 
     return ax
