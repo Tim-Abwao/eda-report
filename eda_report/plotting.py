@@ -25,19 +25,22 @@ GENERAL_RC_PARAMS = {
     "figure.autolayout": True,
     "figure.figsize": (6, 4),
     "font.family": "serif",
-    "savefig.dpi": 150,
+    "savefig.dpi": 120,
 }
 # Customize box-plots
 BOXPLOT_RC_PARAMS = {
+    **GENERAL_RC_PARAMS,
     "boxplot.medianprops.color": "black",
     "boxplot.patchartist": True,
     "boxplot.vertical": False,
-    **GENERAL_RC_PARAMS,
 }
 # Customize correlation-plots
-CORRPLOT_RC_PARAMS = {"figure.figsize": (7, 6.3), **GENERAL_RC_PARAMS}
+CORRPLOT_RC_PARAMS = {**GENERAL_RC_PARAMS, "figure.figsize": (6.7, 6.3)}
+# Customize regression-plots
+REGPLOT_RC_PARAMS = {**GENERAL_RC_PARAMS, "figure.figsize": (5.2, 5)}
 
 
+@mpl.rc_context(GENERAL_RC_PARAMS)
 def _savefig(figure: Figure) -> BytesIO:
     """Saves the contents of a :class:`~matplotlib.figure.Figure` in PNG
     format, as bytes in a file-like object.
@@ -193,7 +196,7 @@ def kde_plot(
     return ax
 
 
-@mpl.rc_context(GENERAL_RC_PARAMS)
+@mpl.rc_context(REGPLOT_RC_PARAMS)
 def prob_plot(
     data: Iterable,
     *,
@@ -364,7 +367,7 @@ def plot_correlation(
     return ax
 
 
-@mpl.rc_context(GENERAL_RC_PARAMS)
+@mpl.rc_context(REGPLOT_RC_PARAMS)
 def regression_plot(
     x: Iterable,
     y: Iterable,
