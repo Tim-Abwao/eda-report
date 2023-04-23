@@ -192,10 +192,12 @@ def kde_plot(
             ax.plot(eval_points, density, label=key, alpha=0.75, color=color)
             ax.fill_between(eval_points, density, alpha=0.25, color=color)
 
-    ax.set_ylim(0)
-    ax.legend()
-    ax.set_title(f"Density plot of {label}")
+        if hue.name is not None:
+            ax.legend(title=f"{hue.name}".title())
 
+    ax.set_xlabel(label)
+    ax.set_ylim(0)
+    ax.set_title(f"Density plot of {label}")
     return ax
 
 
