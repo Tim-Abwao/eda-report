@@ -23,7 +23,7 @@ GENERAL_RC_PARAMS = {
     "axes.titlesize": 12,
     "axes.titleweight": 500,
     "figure.autolayout": True,
-    "figure.figsize": (6, 4),
+    "figure.figsize": (5.6, 3.5),
     "font.family": "serif",
     "savefig.dpi": 120,
 }
@@ -35,7 +35,7 @@ BOXPLOT_RC_PARAMS = {
     "boxplot.vertical": False,
 }
 # Customize correlation-plots
-CORRPLOT_RC_PARAMS = {**GENERAL_RC_PARAMS, "figure.figsize": (6.7, 6.3)}
+CORRPLOT_RC_PARAMS = {**GENERAL_RC_PARAMS, "figure.figsize": (7, 6.3)}
 # Customize regression-plots
 REGPLOT_RC_PARAMS = {**GENERAL_RC_PARAMS, "figure.figsize": (5.2, 5)}
 
