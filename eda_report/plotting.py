@@ -128,6 +128,9 @@ def box_plot(
             patch.set_facecolor(color)
             patch.set_alpha(0.75)
 
+        if hue.name is not None:
+            ax.set_ylabel(f"{hue.name}".title())
+
     ax.set_title(f"Box-plot of {label}")
     return ax
 
