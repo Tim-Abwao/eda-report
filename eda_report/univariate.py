@@ -111,7 +111,21 @@ class Variable:
                     for key, value in self.summary_stats.items()
                 ]
             )
-            return "\n".join([basic_details, summary_stats])
+            most_common = "\n".join(
+                [
+                    f"{str(key):>24}: {value:}"
+                    for key, value in self._most_common_categories.items()
+                ]
+            )
+            return "\n".join(
+                [
+                    basic_details,
+                    summary_stats,
+                    "\n\t\tMost Common Items",
+                    "\t\t-----------------",
+                    most_common,
+                ]
+            )
 
     def _get_variable_type(self, data: Series) -> str:
         """Determine the variable type.
@@ -221,6 +235,25 @@ class Variable:
             return results
         else:
             return None
+
+    def _get_most_common_categories(self, data: Series) -> Dict:
+        """Get the top 10 frequently occuring categories.
+
+        Args:
+            data (pandas.Series): The data to analyze.
+
+        Returns:
+            Dict: Top 10 categories and their frequency info.
+        """
+        data = data.dropna()
+        if self.var_type in {"numeric", "datetime"}:
+            return None
+        else:
+            top_10 = data.value_counts().nlargest(10)
+            return {
+                key: f"{val} ({val/len(data):.2%})"
+                for key, val in top_10.items()
+            }
 
     def rename(self, name: str) -> None:
         self.name = name
