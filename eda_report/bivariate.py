@@ -107,7 +107,7 @@ class Dataset:
                 [
                     f"\t\t  {numeric_stats_title}",
                     f"\t\t  {'-' * len(numeric_stats_title)}",
-                    f"{self._numeric_stats}\n",
+                    indent(f"{self._numeric_stats}\n", "  "),
                 ]
             )
 
@@ -120,9 +120,9 @@ class Dataset:
             )
             categorical_stats = "\n".join(
                 [
-                    f"\t {categorical_stats_title}",
-                    f"\t {'-' * len(categorical_stats_title)}",
-                    indent(f"{self._categorical_stats}\n", " " * 5),
+                    f"\t{categorical_stats_title}",
+                    f"\t{'-' * len(categorical_stats_title)}",
+                    indent(f"{self._categorical_stats}\n", " " * 4),
                 ]
             )
         if hasattr(self, "_correlation_descriptions"):
@@ -130,7 +130,7 @@ class Dataset:
             top_20 = list(self._correlation_descriptions.items())[:max_pairs]
             corr_repr = "\n".join(
                 [
-                    f"{var_pair[0] + ' & ' + var_pair[1]:>27} -> "
+                    f"{var_pair[0] + ' & ' + var_pair[1]:>32} -> "
                     f"{corr_description}"
                     for var_pair, corr_description in top_20
                 ]
@@ -156,7 +156,8 @@ class Dataset:
 
     def _get_summary_statistics(self) -> None:
         """Compute descriptive statistics."""
-        numeric_data = self.data.select_dtypes("number")
+        data = self.data.copy()
+        numeric_data = data.select_dtypes("number")
         # Consider numeric columns with < 11 unique values as categorical
         categorical_with_numbers = [
             col for col in numeric_data if numeric_data[col].nunique() < 11
@@ -166,11 +167,15 @@ class Dataset:
             self._numeric_stats = None
         else:
             numeric_stats = numeric_data.describe().T
+            numeric_stats["count"] = numeric_stats["count"].astype("int")
+            numeric_stats = numeric_stats.rename(
+                columns={"mean": "avg", "std": "stddev"}
+            )
             numeric_stats["skewness"] = numeric_data.skew(numeric_only=True)
             numeric_stats["kurtosis"] = numeric_data.kurt(numeric_only=True)
             self._numeric_stats = numeric_stats.round(4)
 
-        categorical_data = self.data.drop(columns=numeric_data.columns).copy()
+        categorical_data = data.drop(columns=numeric_data.columns).copy()
         # Convert categorical columns with "unique ratio" < 0.3 to categorical
         # dtype
         for col in categorical_data:
