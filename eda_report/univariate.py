@@ -195,9 +195,8 @@ class Variable:
             pandas.DataFrame: Table of results.
         """
         data = data.dropna()
-
         if self.var_type == "numeric":
-            # The scikit-learn implementation of the Shapiro-Wilk test reports:
+            # The scipy implementation of the Shapiro-Wilk test reports:
             # "For N > 5000 the W test statistic is accurate but the p-value
             # may not be."
             shapiro_sample = data.sample(5000) if len(data) > 5000 else data
@@ -211,22 +210,14 @@ class Variable:
                 stats.kstest(data, "norm", N=200).pvalue,
                 stats.shapiro(shapiro_sample).pvalue,
             ]
-            conclusion = f"Conclusion at α = {alpha}"
-            results = DataFrame(
-                {
-                    "p-value": p_values,
-                    conclusion: [p_value > alpha for p_value in p_values],
-                },
-                index=tests,
-            )
-            results[conclusion] = results[conclusion].map(
-                {
-                    True: "Possibly normal",
-                    False: "Unlikely to be normal",
-                }
-            )
-            results["p-value"] = results["p-value"].apply(lambda x: f"{x:.7f}")
-
+            results = DataFrame(index=tests)
+            results["p-value"] = [f"{x:.7f}" for x in p_values]
+            results[f"Conclusion at α = {alpha}"] = [
+                "Possibly normal"
+                if p_value > alpha
+                else "Unlikely to be normal"
+                for p_value in p_values
+            ]
             return results
         else:
             return None
