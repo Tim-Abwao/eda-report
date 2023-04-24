@@ -229,6 +229,7 @@ def prob_plot(
     probplot(data, fit=True, plot=ax)
     ax.lines[0].set_color(marker_color)
     ax.lines[1].set_color(line_color)
+    ax.set_xlabel("Theoretical Quantiles (Normal)")
     ax.set_title(f"Probability plot of {label}")
 
     return ax
