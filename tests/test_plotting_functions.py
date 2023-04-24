@@ -54,7 +54,7 @@ class TestGetAxesFunction:
 
 class TestBoxplot:
     data = Series(list(range(25)) + [None, None])
-    hue = Series([1, 2, 3] * 9)
+    hue = Series([1, 2, 3] * 9, name="hue-name")
     simple_box = box_plot(data, label="simple")
     grouped_box = box_plot(data, label="grouped", hue=hue)
 
@@ -65,6 +65,18 @@ class TestBoxplot:
     def test_plot_title(self):
         assert self.simple_box.get_title() == "Box-plot of simple"
         assert self.grouped_box.get_title() == "Box-plot of grouped"
+
+    def test_axis_labels(self):
+        assert self.simple_box.get_xlabel() == ""
+        assert self.simple_box.get_ylabel() == ""
+        assert self.grouped_box.get_xlabel() == ""
+        assert self.grouped_box.get_ylabel() == "Hue-Name"
+
+        boxplot_with_nameless_hue = box_plot(
+            self.data, label="grouped", hue=self.hue.to_numpy()
+        )
+        assert boxplot_with_nameless_hue.get_xlabel() == ""
+        assert boxplot_with_nameless_hue.get_ylabel() == ""
 
     def test_grouping(self):
         # Simple box-plot has one patch
@@ -106,7 +118,7 @@ class TestBoxplot:
 
 class TestKdeplot:
     data = Series(list(range(25)) + [None, None])
-    hue = Series([1, 2, 3] * 9)
+    hue = Series([1, 2, 3] * 9, name="hue-name")
     simple_kde = kde_plot(data, label="simple")
     grouped_kde = kde_plot(data, label="grouped", hue=hue)
 
@@ -117,6 +129,22 @@ class TestKdeplot:
     def test_plot_title(self):
         assert self.simple_kde.get_title() == "Density plot of simple"
         assert self.grouped_kde.get_title() == "Density plot of grouped"
+
+    def test_axis_labels(self):
+        assert self.simple_kde.get_xlabel() == "simple"
+        assert self.simple_kde.get_ylabel() == ""
+        assert self.grouped_kde.get_xlabel() == "grouped"
+        assert self.grouped_kde.get_ylabel() == ""
+
+    def test_legend(self):
+        assert self.simple_kde.get_legend() is None
+        assert (
+            self.grouped_kde.get_legend().get_title().get_text() == "Hue-Name"
+        )
+        grouped_with_nameless_hue = kde_plot(
+            self.data, label="grouped", hue=self.hue.to_numpy()
+        )
+        assert grouped_with_nameless_hue.get_legend() is None
 
     def test_grouping(self):
         # simple_kde has one line
@@ -173,6 +201,10 @@ class TestProbplot:
     def test_plot_title(self):
         assert self.plot.get_title() == "Probability plot of some-data"
 
+    def test_axis_labels(self):
+        assert self.plot.get_xlabel() == "Theoretical Quantiles (Normal)"
+        assert self.plot.get_ylabel() == "Ordered Values"
+
     def test_plot_components(self):
         # Plot should have 2 lines (input data & normal diagonal)
         assert len(self.plot.lines) == 2
@@ -213,19 +245,21 @@ class TestBarplot:
             == "Bar-plot of a_to_n (Top 10 of 14)"
         )
 
+    def test_axis_labels(self):
+        assert self.simple_bar.get_xlabel() == ""
+        assert self.simple_bar.get_ylabel() == "Count"
+
     def test_bar_truncation(self):
         # Check that only the top 10 categories are plotted
         assert len(self.truncated_bar.patches) == 10  # only 10 of 14
 
     def test_default_color(self):
         bar_color = self.simple_bar.patches[0].get_facecolor()
-
         assert to_rgb(bar_color) == pytest.approx(to_rgb("C0"))
 
     def test_set_color(self):
         fig = bar_plot(self.low_cardinality_data, label="test", color="pink")
         bar_color = fig.patches[0].get_facecolor()
-
         assert to_rgb(bar_color) == pytest.approx(to_rgb("pink"))
 
 
@@ -302,23 +336,35 @@ class TestPlotCorrelation:
         assert to_rgb(neg_bar_color2) == pytest.approx(to_rgb("skyblue"))
 
 
-def testplot_regression_function():
+class TestRegressionPlot:
     data = DataFrame({"A": range(60000), "B": [1, 2, 3] * 20000})
     var_pair, reg_plot = _plot_regression(data_and_color=(data, "lime"))
 
-    assert var_pair == ("A", "B")
-    assert isinstance(reg_plot, Axes)
-    assert "Slope" in reg_plot.get_title()
+    def test_return_type(self):
+        assert self.var_pair == ("A", "B")
+        assert isinstance(self.reg_plot, Axes)
 
-    # Check that a sample of size 50000 is taken for large datasets
-    points = reg_plot.collections[0].get_offsets().data
-    assert len(points) == 50000
+    def test_plot_title(self):
+        title = self.reg_plot.get_title()
+        assert "Slope" in title
+        assert "Intercept" in title
+        assert "Correlation" in title
 
-    # Check colors
-    assert reg_plot.lines[0].get_color() == "#444"  # reg line
-    assert to_rgb(  # markers
-        reg_plot.collections[0].get_facecolor()
-    ) == pytest.approx(to_rgb("lime"))
+    def test_axis_labels(self):
+        var1, var2 = self.var_pair
+        assert self.reg_plot.get_xlabel() == var1
+        assert self.reg_plot.get_ylabel() == var2
+
+    def test_max_sample_size(self):
+        # Check that a sample of size 50000 is taken for large datasets
+        points = self.reg_plot.collections[0].get_offsets().data
+        assert len(points) == 50000
+
+    def test_plot_color(self):
+        assert self.reg_plot.lines[0].get_color() == "#444"  # reg line
+        assert to_rgb(  # markers
+            self.reg_plot.collections[0].get_facecolor()
+        ) == pytest.approx(to_rgb("lime"))
 
 
 class TestPlotDataset:

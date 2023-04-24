@@ -63,9 +63,9 @@ class TestDataset:
             orient="list"
         ) == pytest.approx(
             {
-                "count": [50.0],
-                "mean": [24.5],
-                "std": [14.5774],
+                "count": [50],
+                "avg": [24.5],
+                "stddev": [14.5774],
                 "min": [0.0],
                 "25%": [12.25],
                 "50%": [24.5],
@@ -87,25 +87,25 @@ class TestDataset:
     def test_repr(self):
         assert str(self.dataset) == (
             "\t\t  Summary Statistics for Numeric features (1)\n\t\t  -------"
-            "------------------------------------\n   count  mean      std  "
-            "min    25%   50%    75%   max  skewness  kurtosis\nA   50.0  "
+            "------------------------------------\n     count   avg   stddev  "
+            "min    25%   50%    75%   max  skewness  kurtosis\n  A     50  "
             "24.5  14.5774  0.0  12.25  24.5  36.75  49.0       0.0      -1.2"
-            "\n\n\t\t Summary Statistics for Categorical features (3)\n\t\t -"
-            "----------------------------------------------\n\t       count "
-            "unique   top freq relative freq\n\t     B    50      6     a   "
-            "10        20.00%\n\t     C    50      2  True   26        52.00"
-            "%\n\t     D    50      8     1    7        14.00%\n\n\n\t\t\t"
+            "\n\n\t\tSummary Statistics for Categorical features (3)\n\t\t---"
+            "--------------------------------------------\n\t      count "
+            "unique   top freq relative freq\n\t    B    50      6     a   10"
+            "        20.00%\n\t    C    50      2  True   26        52.00%\n"
+            "\t    D    50      8     1    7        14.00%\n\n\n\t\t\t"
             "Pearson's Correlation (Top 20)\n\t\t\t--------------------------"
-            "----\n                      A & D -> weak positive correlation "
-            "(0.21)\n\t"
+            "----\n                           A & D -> weak positive "
+            "correlation (0.21)\n\t"
         )
 
     def test_numeric_only_repr(self):
         numeric_only = Dataset(sample_data[["A"]])
         assert str(numeric_only) == (
             "\t\t  Summary Statistics for Numeric features (1)\n\t\t  -------"
-            "------------------------------------\n   count  mean      std  "
-            "min    25%   50%    75%   max  skewness  kurtosis\nA   50.0  "
+            "------------------------------------\n     count   avg   stddev "
+            " min    25%   50%    75%   max  skewness  kurtosis\n  A     50  "
             "24.5  14.5774  0.0  12.25  24.5  36.75  49.0       0.0      -1.2"
             "\n\n\n\n\t"
         )
@@ -117,11 +117,10 @@ class TestDataset:
             "variables."
         ) in str(caplog.text)
         assert str(categorical_only) == (
-            "\n\t\t Summary Statistics for Categorical features (2)\n\t\t ---"
-            "--------------------------------------------\n\t       count "
-            "unique   top freq relative freq\n\t     B    50      6     a   "
-            "10        20.00%\n\t     C    50      2  True   26        52.00%"
-            "\n\n\n\t"
+            "\n\t\tSummary Statistics for Categorical features (2)\n\t\t-----"
+            "------------------------------------------\n\t      count unique"
+            "   top freq relative freq\n\t    B    50      6     a   10      "
+            "  20.00%\n\t    C    50      2  True   26        52.00%\n\n\n\t"
         )
 
     def test_correlation_info_truncation_(self):
@@ -143,37 +142,38 @@ class TestDataset:
         assert len(plenty_numeric._correlation_descriptions) == 21
         assert str(plenty_numeric) == (
             "\t\t  Summary Statistics for Numeric features (1)\n\t\t  -------"
-            "------------------------------------\n   count  mean     std  "
-            "min  25%  50%  75%   max  skewness  kurtosis\nA   11.0   5.0  "
-            "3.3166  0.0  2.5  5.0  7.5  10.0       0.0      -1.2\n\n\t\t "
-            "Summary Statistics for Categorical features (6)\n\t\t ----------"
-            "-------------------------------------\n\t       count unique top"
-            " freq relative freq\n\t     B    11      8   4    2        18.18"
-            "%\n\t     C    11      8   9    3        27.27%\n\t     D    11 "
-            "     6   9    4        36.36%\n\t     E    11      6   2    4   "
-            "     36.36%\n\t     F    11      8   2    3        27.27%\n\t   "
-            "  G    11      9   9    3        27.27%\n\n\n\t\t\tPearson's "
+            "------------------------------------\n     count  avg  stddev  "
+            "min  25%  50%  75%   max  skewness  kurtosis\n  A     11  5.0  "
+            "3.3166  0.0  2.5  5.0  7.5  10.0       0.0      -1.2\n\n\t\t"
+            "Summary Statistics for Categorical features (6)\n\t\t------------"
+            "-----------------------------------\n\t      count unique top "
+            "freq relative freq\n\t    B    11      8   4    2        18.18%"
+            "\n\t    C    11      8   9    3        27.27%\n\t    D    11    "
+            "  6   9    4        36.36%\n\t    E    11      6   2    4       "
+            " 36.36%\n\t    F    11      8   2    3        27.27%\n\t    G   "
+            " 11      9   9    3        27.27%\n\n\n\t\t\tPearson's "
             "Correlation (Top 20)\n\t\t\t------------------------------\n    "
-            "                  C & D -> very strong positive correlation "
-            "(0.92)\n                      A & B -> strong positive "
-            "correlation (0.78)\n                      B & C -> strong "
-            "positive correlation (0.68)\n                      B & D -> "
-            "strong positive correlation (0.64)\n                      A & E "
-            "-> moderate positive correlation (0.57)\n                      C"
-            " & F -> moderate negative correlation (-0.40)\n                 "
-            "     A & D -> weak positive correlation (0.38)\n                "
-            "      D & E -> weak positive correlation (0.37)\n               "
-            "       B & E -> weak positive correlation (0.36)\n              "
-            "        B & F -> weak negative correlation (-0.35)\n            "
-            "          D & F -> weak negative correlation (-0.35)\n          "
-            "            A & C -> weak positive correlation (0.33)\n         "
-            "             E & F -> weak negative correlation (-0.29)\n       "
-            "               E & G -> weak negative correlation (-0.23)\n     "
-            "                 A & G -> weak negative correlation (-0.22)\n   "
-            "                   C & E -> very weak positive correlation (0.18"
-            ")\n                      D & G -> very weak positive correlation"
-            " (0.18)\n                      F & G -> very weak negative "
-            "correlation (-0.06)\n                      A & F -> virtually no"
-            " correlation (-0.05)\n                      B & G -> virtually "
-            "no correlation (-0.04)\n\t"
+            "                       C & D -> very strong positive correlation"
+            " (0.92)\n                           A & B -> strong positive "
+            "correlation (0.78)\n                           B & C -> strong "
+            "positive correlation (0.68)\n                           B & D ->"
+            " strong positive correlation (0.64)\n                           "
+            "A & E -> moderate positive correlation (0.57)\n                 "
+            "          C & F -> moderate negative correlation (-0.40)\n      "
+            "                     A & D -> weak positive correlation (0.38)\n"
+            "                           D & E -> weak positive correlation "
+            "(0.37)\n                           B & E -> weak positive "
+            "correlation (0.36)\n                           B & F -> weak "
+            "negative correlation (-0.35)\n                           D & F -"
+            "> weak negative correlation (-0.35)\n                           "
+            "A & C -> weak positive correlation (0.33)\n                     "
+            "      E & F -> weak negative correlation (-0.29)\n              "
+            "             E & G -> weak negative correlation (-0.23)\n       "
+            "                    A & G -> weak negative correlation (-0.22)\n"
+            "                           C & E -> very weak positive "
+            "correlation (0.18)\n                           D & G -> very "
+            "weak positive correlation (0.18)\n                           F &"
+            " G -> very weak negative correlation (-0.06)\n                  "
+            "         A & F -> virtually no correlation (-0.05)\n            "
+            "               B & G -> virtually no correlation (-0.04)\n\t"
         )
