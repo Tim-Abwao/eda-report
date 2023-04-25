@@ -1,7 +1,6 @@
-from typing import Any, Dict, Iterable, Union
+from typing import Dict, Iterable, Union
 
-
-from eda_report.analysis import _AnalysisResult
+from eda_report._analysis import _AnalysisResult
 
 
 class _ReportContent(_AnalysisResult):
@@ -13,7 +12,7 @@ class _ReportContent(_AnalysisResult):
             "Exploratory Data Analysis Report".
         graph_color (str, optional): The color to apply to the graphs.
             Defaults to "cyan".
-        groupby_data (Union[str, int], optional): The column to
+        groupby_variable (Union[str, int], optional): The column to
             use to group values. Defaults to None.
     """
 
@@ -23,10 +22,10 @@ class _ReportContent(_AnalysisResult):
         *,
         title: str = "Exploratory Data Analysis Report",
         graph_color: str = "cyan",
-        groupby_data: Union[str, int] = None,
+        groupby_variable: Union[str, int] = None,
     ) -> None:
         super().__init__(
-            data, graph_color=graph_color, groupby_data=groupby_data
+            data, graph_color=graph_color, groupby_variable=groupby_variable
         )
         self.TITLE = title
         self.intro_text = self._get_introductory_summary()
@@ -39,7 +38,6 @@ class _ReportContent(_AnalysisResult):
             str: Introduction.
         """
         num_rows, num_cols = self.dataset.data.shape
-
         if num_rows == 1:
             rows = "1 row (observation)"
         else:
@@ -50,7 +48,6 @@ class _ReportContent(_AnalysisResult):
         else:
             cols = f"{num_cols:,} columns (features)"
 
-        # Get numeric column info
         if self.dataset._numeric_stats is None:
             numeric_descr = ""
         else:
@@ -62,14 +59,11 @@ class _ReportContent(_AnalysisResult):
 
         return f"The dataset consists of {rows} and {cols}{numeric_descr}."
 
-    def _describe_variables(self) -> Dict[str, Any]:
+    def _describe_variables(self) -> Dict[str, str]:
         """Get summary statistics for a variable.
 
-        Args:
-            univariate_stats (Variable): The data to analyze.
-
         Returns:
-            Dict[str, Any]: Summary statistics.
+            Dict[str, str]: Summary statistics.
         """
         descriptions = {}
         for name, variable in self.variables.items():

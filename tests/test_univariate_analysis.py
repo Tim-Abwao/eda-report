@@ -66,6 +66,12 @@ class TestCategoricalVariables:
             "Mode (Most frequent)": "a",
             "Maximum frequency": 2,
         }
+        assert self.categorical_variable._most_common_categories == {
+            "a": "2 (40.00%)",
+            "b": "1 (20.00%)",
+            "c": "1 (20.00%)",
+            "d": "1 (20.00%)",
+        }
 
     def test_normality_results(self):
         assert self.categorical_variable._normality_test_results is None
@@ -73,11 +79,12 @@ class TestCategoricalVariables:
 
     def test_repr(self):
         assert str(self.categorical_variable) == (
-            "\nName: None\nType: categorical\nNon-null Observations: 5\n"
-            "Unique Values: 4 -> ['a', 'b', 'c', 'd']\nMissing Values: 1 "
-            "(16.67%)\n\n\t\t  Summary Statistics\n\t\t  -----------------"
-            "-\n\tMode (Most frequent):               a\n\tMaximum "
-            "frequency:                  2"
+            "\nName: None\nType: categorical\nNon-null Observations: 5\nUniqu"
+            "e Values: 4 -> ['a', 'b', 'c', 'd']\nMissing Values: 1 (16.67%)"
+            "\nMode (Most frequent): a\nMaximum frequency: 2\n\n\t\tMost Comm"
+            "on Items\n\t\t-----------------\n                       a: 2 (40"
+            ".00%)\n                       b: 1 (20.00%)\n                   "
+            "    c: 1 (20.00%)\n                       d: 1 (20.00%)"
         )
 
 
@@ -112,6 +119,7 @@ class TestDateTimeVariables:
             "Upper Quartile": Timestamp("2022-01-07 18:00:00"),
             "Maximum": Timestamp("2022-01-10 00:00:00"),
         }
+        assert self.datetime_variable._most_common_categories is None
 
     def test_normality_results(self):
         assert self.datetime_variable._normality_test_results is None
@@ -122,10 +130,10 @@ class TestDateTimeVariables:
             " Values: 10 -> [Timestamp('2022-01-01 00:00:00'), [...]\nMissing"
             " Values: None\n\n\t\t  Summary Statistics\n\t\t  ---------------"
             "---\n\tAverage:              2022-01-05 12:00:00\n\tMinimum:    "
-            "          2022-01-01 00:00:00\n\tLower Quartile:       "
-            "2022-01-03 06:00:00\n\tMedian:               2022-01-05 12:00:00"
-            "\n\tUpper Quartile:       2022-01-07 18:00:00\n\tMaximum:       "
-            "       2022-01-10 00:00:00"
+            "          2022-01-01 00:00:00\n\tLower Quartile:       2022-01-0"
+            "3 06:00:00\n\tMedian:               2022-01-05 12:00:00\n\tUpper"
+            " Quartile:       2022-01-07 18:00:00\n\tMaximum:              20"
+            "22-01-10 00:00:00"
         )
 
 
@@ -149,6 +157,7 @@ class TestNumericVariable:
                 "Kurtosis": -1.2,
             }
         )
+        assert self.numeric_variable._most_common_categories is None
 
     def test_normality_results(self):
         assert isinstance(
@@ -169,21 +178,20 @@ class TestNumericVariable:
 
     def test_repr(self):
         assert str(self.numeric_variable) == (
-            "\nName: 1 to 50\nType: numeric\nNon-null Observations: 50\n"
-            "Unique Values: 50 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, "
-            "13, [...]\nMissing Values: None\n\n\t\t  Summary Statistics\n\t"
-            "\t  ------------------\n\tAverage:                      24.5000"
-            "\n\tStandard Deviation:           14.5774\n\tMinimum:           "
-            "            0.0000\n\tLower Quartile:               12.2500\n\t"
-            "Median:                       24.5000\n\tUpper Quartile:        "
-            "       36.7500\n\tMaximum:                      49.0000\n\t"
-            "Skewness:                      0.0000\n\tKurtosis:              "
-            "       -1.2000\n\n\t\t  Tests for Normality\n\t\t  -------------"
-            "------\n                               p-value Conclusion at α ="
-            " 0.05\nD'Agostino's K-squared test  0.0015981  Unlikely to be "
-            "normal\nKolmogorov-Smirnov test      0.0000000  Unlikely to be "
-            "normal\nShapiro-Wilk test            0.0580895        Possibly "
-            "normal"
+            "\nName: 1 to 50\nType: numeric\nNon-null Observations: 50\nUniqu"
+            "e Values: 50 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, ["
+            "...]\nMissing Values: None\n\n\t\t  Summary Statistics\n\t\t  --"
+            "----------------\n\tAverage:                      24.5000\n\tSta"
+            "ndard Deviation:           14.5774\n\tMinimum:                  "
+            "     0.0000\n\tLower Quartile:               12.2500\n\tMedian: "
+            "                      24.5000\n\tUpper Quartile:               3"
+            "6.7500\n\tMaximum:                      49.0000\n\tSkewness:    "
+            "                  0.0000\n\tKurtosis:                     -1.200"
+            "0\n\n\t\t  Tests for Normality\n\t\t  -------------------\n     "
+            "                          p-value Conclusion at α = 0.05\nD'Agos"
+            "tino's K-squared test  0.0015981  Unlikely to be normal\nKolmogo"
+            "rov-Smirnov test      0.0000000  Unlikely to be normal\nShapiro-"
+            "Wilk test            0.0580895        Possibly normal"
         )
 
 

@@ -4,10 +4,10 @@ from typing import Dict, Iterable, Optional, Union
 import pandas as pd
 from tqdm import tqdm
 
+from eda_report._validate import _validate_groupby_variable
 from eda_report.bivariate import Dataset
 from eda_report.plotting import _plot_dataset, _plot_variable
 from eda_report.univariate import Variable, _analyze_univariate
-from eda_report.validate import validate_groupby_data
 
 
 def _get_contingency_tables(
@@ -20,7 +20,7 @@ def _get_contingency_tables(
         groupby_data (pandas.Series): Values to group by.
 
     Returns:
-        Dict[str, pd.DataFrame]: Contingency tables for each column.
+        Dict[str, pandas.DataFrame]: Contingency tables for each column.
     """
     if (categorical_df.shape[1] == 0) or (groupby_data is None):
         return {}
@@ -36,7 +36,7 @@ def _get_contingency_tables(
         # Only include columns with upto 20 unique values to cut clutter
         if categorical_df[col].nunique() <= 20
     }
-    # Exclude groupby_data in case it is among the categorical cols
+    # Exclude groupby_variable in case it is among the categorical cols
     contingency_tables.pop(groupby_data.name, None)
     return contingency_tables
 
@@ -48,21 +48,20 @@ class _AnalysisResult:
         data (Iterable): The data to analyse.
         graph_color (str, optional): The color to apply to the graphs.
             Defaults to "cyan".
-        groupby_data (Union[str, int], optional): The column to
+        groupby_variable (Union[str, int], optional): The column to
             use to group values. Defaults to None.
-
     """
 
     def __init__(
         self,
         data: Iterable,
         graph_color: str = "cyan",
-        groupby_data: Union[str, int] = None,
+        groupby_variable: Union[str, int] = None,
     ) -> None:
         self.GRAPH_COLOR = graph_color
         self.dataset = Dataset(data)
-        self.GROUPBY_DATA = validate_groupby_data(
-            data=self.dataset.data, groupby_data=groupby_data
+        self.GROUPBY_DATA = _validate_groupby_variable(
+            data=self.dataset.data, groupby_variable=groupby_variable
         )
         self.variables = self._analyze_variables()
         self.univariate_stats = self._get_univariate_statistics()
@@ -102,7 +101,6 @@ class _AnalysisResult:
         self.contingency_tables = _get_contingency_tables(
             data[categorical_cols], self.GROUPBY_DATA
         )
-
         return univariate_stats
 
     def _get_univariate_statistics(self) -> Dict[str, pd.DataFrame]:

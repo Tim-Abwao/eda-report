@@ -5,8 +5,8 @@ class Error(Exception):
 
 
 class InputError(Error):
-    """The *Exception* raised when a given input object is *not of the
-    expected type* or is otherwise *invalid*.
+    """*Exception* raised when a given input object is *not of the expected
+    type* or is otherwise *invalid*.
 
     In most cases, an attempt is made to cast the erroneous input into the
     proper type, and this *Exception* is raised if it fails.
@@ -20,15 +20,14 @@ class InputError(Error):
 
 
 class EmptyDataError(InputError):
-    """The *Exception* raised when an iterable input object has length zero
-    or has no items to yield.
+    """*Exception* raised when an iterable input object has length zero or has
+    no more items to yield.
     """
 
     pass
 
 
 class GroupbyVariableError(InputError):
-    """The *Exception* raised when the specified group-by variable is invalid.
-    """
+    """*Exception* raised when the specified group-by variable is invalid."""
 
     pass

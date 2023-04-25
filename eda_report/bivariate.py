@@ -6,7 +6,7 @@ from typing import List
 
 from pandas import DataFrame
 
-from eda_report.validate import validate_multivariate_input
+from eda_report._validate import _validate_dataset
 
 
 def _compute_correlation(dataframe: DataFrame) -> List:
@@ -44,7 +44,6 @@ def _describe_correlation(corr_value: float) -> str:
         str: Brief description of correlation type.
     """
     nature = " positive" if corr_value > 0 else " negative"
-
     value = abs(corr_value)
     if value >= 0.8:
         strength = "very strong"
@@ -59,42 +58,36 @@ def _describe_correlation(corr_value: float) -> str:
     else:
         strength = "virtually no"
         nature = ""
-
     return f"{strength}{ nature} correlation ({corr_value:.2f})"
 
 
 class Dataset:
-    """Defines objects that analyze two-dimensional datasets.
+    """Analyze two-dimensional datasets to obtain descriptive statistics
+    and correlation information.
 
-    Input data is held as a :class:`pandas.DataFrame` in order to leverage
-    pandas_ built-in statistical methods, as well as functions
-    from the `SciPy ecosystem`_.
+    Input data is stored as a :class:`pandas.DataFrame` in order to leverage
+    pandas_' built-in statistical methods.
 
     .. _pandas: https://pandas.pydata.org/
-    .. _SciPy ecosystem: https://www.scipy.org/
-
-    .. note::
-       Not meant to be used directly: use the :func:`eda_report.summarize`
-       function instead.
 
     Args:
         data (Iterable): The data to analyze.
 
     Example:
         .. literalinclude:: examples.txt
-           :lines: 84-110
+           :lines: 78-100
     """
 
     def __init__(self, data: Iterable) -> None:
-        self.data = validate_multivariate_input(data)
+        self.data = _validate_dataset(data)
         self._get_summary_statistics()
         self._get_bivariate_analysis()
 
     def __repr__(self) -> str:
-        """Get the string representation for a ``Dataset``.
+        """Get the string representation for a `Dataset`.
 
         Returns:
-            str: The string representation of the ``Dataset`` instance.
+            str: The string representation of the `Dataset` instance.
         """
         if self._numeric_stats is None:
             numeric_stats = ""
@@ -105,7 +98,7 @@ class Dataset:
             )
             numeric_stats = "\n".join(
                 [
-                    f"\t\t  {numeric_stats_title}",
+                    f"\n\t\t  {numeric_stats_title}",
                     f"\t\t  {'-' * len(numeric_stats_title)}",
                     indent(f"{self._numeric_stats}\n", "  "),
                 ]
@@ -176,23 +169,38 @@ class Dataset:
             self._numeric_stats = numeric_stats.round(4)
 
         categorical_data = data.drop(columns=numeric_data.columns).copy()
-        # Convert categorical columns with "unique ratio" < 0.3 to categorical
-        # dtype
-        for col in categorical_data:
-            if (categorical_data[col].nunique() / len(categorical_data)) < 0.3:
-                categorical_data[col] = categorical_data[col].astype(
-                    "category"
-                )
-            else:
-                categorical_data[col] = categorical_data[col].astype("string")
         if categorical_data.shape[1] < 1:
             self._categorical_stats = None
         else:
+            for col in categorical_data:
+                # Convert categorical columns with "unique ratio" < 0.3 to
+                # categorical dtype, reducing memory usage.
+                if (
+                    categorical_data[col].nunique() / len(categorical_data)
+                ) < 0.3:
+                    categorical_data[col] = categorical_data[col].astype(
+                        "category"
+                    )
+                else:
+                    categorical_data[col] = categorical_data[col].astype(
+                        "string"
+                    )
             categorical_stats = categorical_data.describe().T
             categorical_stats["relative freq"] = (
                 categorical_stats["freq"] / len(self.data)
             ).apply(lambda x: f"{x :.2%}")
             self._categorical_stats = categorical_stats
+
+    def _get_bivariate_analysis(self) -> None:
+        """Compare numeric column pairs."""
+        self._correlation_values = _compute_correlation(self.data)
+        if self._correlation_values is None:
+            logging.warning(
+                "Skipped Bivariate Analysis: There are less than 2 numeric "
+                "variables."
+            )
+        else:
+            self._get_correlation_descriptions()
 
     def _get_correlation_descriptions(self) -> None:
         """Get brief descriptions of the nature of correlation between numeric
@@ -201,15 +209,3 @@ class Dataset:
             pair: _describe_correlation(corr_value)
             for pair, corr_value in self._correlation_values
         }
-
-    def _get_bivariate_analysis(self) -> None:
-        """Compare numeric column pairs."""
-        self._correlation_values = _compute_correlation(self.data)
-
-        if self._correlation_values is None:
-            logging.warning(
-                "Skipped Bivariate Analysis: There are less than 2 numeric "
-                "variables."
-            )
-        else:
-            self._get_correlation_descriptions()

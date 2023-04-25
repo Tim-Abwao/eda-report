@@ -1,7 +1,7 @@
 from pandas import DataFrame
 
-from eda_report.analysis import _AnalysisResult
-from eda_report.content import _ReportContent
+from eda_report._analysis import _AnalysisResult
+from eda_report._content import _ReportContent
 
 data = DataFrame(
     {"A": range(48), "B": list(range(16)) * 3, "C": list("abcd") * 12}

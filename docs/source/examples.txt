@@ -1,113 +1,103 @@
 UNIVARIATE
 ==========
 
-Categorical
------------
->>> Variable(list("abcdefgabcdefabcdeabcdabcaba"), name="text")
-                Overview
-                ========
-Name: text
-Type: categorical
-Number of Observations: 28
-Unique Values: 7 -> ['a', 'b', 'c', 'd', 'e', 'f', 'g']
-Missing Values: None
-
-          Most Common Items
-          -----------------
-             
-a  7 (25.00%)
-b  6 (21.43%)
-c  5 (17.86%)
-d  4 (14.29%)
-e  3 (10.71%)
-
 Numeric
 -------
 >>> Variable(range(1, 51), name="1 to 50")
-                Overview
-                ========
+
 Name: 1 to 50
 Type: numeric
+Non-null Observations: 50
 Unique Values: 50 -> [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, [...]
 Missing Values: None
 
-          Summary Statistics
-          ------------------
-                                
-Number of observations  50.00000
-Average                 25.50000
-Standard Deviation      14.57738
-Minimum                  1.00000
-Lower Quartile          13.25000
-Median                  25.50000
-Upper Quartile          37.75000
-Maximum                 50.00000
-Skewness                 0.00000
-Kurtosis                -1.20000
+                  Summary Statistics
+                  ------------------
+        Average:                      25.5000
+        Standard Deviation:           14.5774
+        Minimum:                       1.0000
+        Lower Quartile:               13.2500
+        Median:                       25.5000
+        Upper Quartile:               37.7500
+        Maximum:                      50.0000
+        Skewness:                      0.0000
+        Kurtosis:                     -1.2000
 
-          Tests for Normality
-          -------------------
+                  Tests for Normality
+                  -------------------
                                p-value Conclusion at α = 0.05
 D'Agostino's K-squared test  0.0015981  Unlikely to be normal
 Kolmogorov-Smirnov test      0.0000000  Unlikely to be normal
 Shapiro-Wilk test            0.0580895        Possibly normal
+
+Categorical
+-----------
+>>> Variable(["mango", "apple", "pear", "mango", "pear", "mango"], name="fruits")
+
+Name: fruits
+Type: categorical
+Non-null Observations: 6
+Unique Values: 3 -> ['apple', 'mango', 'pear']
+Missing Values: None
+Mode (Most frequent): mango
+Maximum frequency: 3
+
+                Most Common Items
+                -----------------
+                   mango: 3 (50.00%)
+                    pear: 2 (33.33%)
+                   apple: 1 (16.67%)
 
 Datetime
 --------
 >>> import pandas as pd
 >>> dt = pd.date_range("2022-03-08", periods=20, freq="D")
 >>> Variable(dt, name="dttm")
-                Overview
-                ========
+
 Name: dttm
 Type: datetime
-Number of Observations: 20
+Non-null Observations: 20
+Unique Values: 20 -> [Timestamp('2022-03-08 00:00:00'), [...]
 Missing Values: None
 
-          Summary Statistics
-          ------------------
-                                           
-Number of observations                   20
-Average                 2022-03-17 12:00:00
-Minimum                 2022-03-08 00:00:00
-Lower Quartile          2022-03-12 18:00:00
-Median                  2022-03-17 12:00:00
-Upper Quartile          2022-03-22 06:00:00
-Maximum                 2022-03-27 00:00:00
+                  Summary Statistics
+                  ------------------
+        Average:              2022-03-17 12:00:00
+        Minimum:              2022-03-08 00:00:00
+        Lower Quartile:       2022-03-12 18:00:00
+        Median:               2022-03-17 12:00:00
+        Upper Quartile:       2022-03-22 06:00:00
+        Maximum:              2022-03-27 00:00:00
 
 
-MULTIVARIATE
-==============
+BIVARIATE
+=========
 
-MultiVariable
--------------
->>> MultiVariable(iris_data)
-                        OVERVIEW
-                        ========
-Numeric features: sepal_length, sepal_width, petal_length, petal_width
-Categorical features: species
+Dataset
+-------
+>>> Dataset(iris_data)
+                  Summary Statistics for Numeric features (4)
+                  -------------------------------------------
+                count     avg  stddev  min  25%   50%  75%  max  skewness  kurtosis
+  sepal_length    150  5.8433  0.8281  4.3  5.1  5.80  6.4  7.9    0.3149   -0.5521
+  sepal_width     150  3.0573  0.4359  2.0  2.8  3.00  3.3  4.4    0.3190    0.2282
+  petal_length    150  3.7580  1.7653  1.0  1.6  4.35  5.1  6.9   -0.2749   -1.4021
+  petal_width     150  1.1993  0.7622  0.1  0.3  1.30  1.8  2.5   -0.1030   -1.3406
 
-          Summary Statistics (Numeric features)
-          -------------------------------------
-              count    mean     std  min  25%   50%  75%  max  skewness  kurtosis
-sepal_length  150.0  5.8433  0.8281  4.3  5.1  5.80  6.4  7.9    0.3149   -0.5521
-sepal_width   150.0  3.0573  0.4359  2.0  2.8  3.00  3.3  4.4    0.3190    0.2282
-petal_length  150.0  3.7580  1.7653  1.0  1.6  4.35  5.1  6.9   -0.2749   -1.4021
-petal_width   150.0  1.1993  0.7622  0.1  0.3  1.30  1.8  2.5   -0.1030   -1.3406
+                Summary Statistics for Categorical features (1)
+                -----------------------------------------------
+                    count unique     top freq relative freq
+            species   150      3  setosa   50        33.33%
 
-          Summary Statistics (Categorical features)
-          -----------------------------------------
-        count unique     top freq relative freq
-species   150      3  setosa   50        33.33%
 
-          Pearson's Correlation (Top 20)
-          ------------------------------
-petal_length & petal_width --> very strong positive correlation (0.96)
-sepal_length & petal_length --> very strong positive correlation (0.87)
-sepal_length & petal_width --> very strong positive correlation (0.82)
-sepal_width & petal_length --> moderate negative correlation (-0.43)
-sepal_width & petal_width --> weak negative correlation (-0.37)
-sepal_length & sepal_width --> very weak negative correlation (-0.12)
+                        Pearson's Correlation (Top 20)
+                        ------------------------------
+      petal_length & petal_width -> very strong positive correlation (0.96)
+     sepal_length & petal_length -> very strong positive correlation (0.87)
+      sepal_length & petal_width -> very strong positive correlation (0.82)
+      sepal_width & petal_length -> moderate negative correlation (-0.43)
+       sepal_width & petal_width -> weak negative correlation (-0.37)
+      sepal_length & sepal_width -> very weak negative correlation (-0.12)
 
 
 CLI
@@ -142,8 +132,8 @@ TOP LEVEL
 
 eda_report.get_word_report
 --------------------------
->>> from eda_report import get_word_report
->>> get_word_report(iris_data)
+>>> import eda_report
+>>> eda_report.get_word_report(iris_data)
 Analyze variables:  100%|███████████████████████████████████| 5/5
 Plot variables:     100%|███████████████████████████████████| 5/5
 Bivariate analysis: 100%|███████████████████████████████████| 6/6 pairs.
@@ -152,61 +142,53 @@ Bivariate analysis: 100%|██████████████████�
 
 eda_report.summarize
 --------------------
->>> from eda_report import summarize
->>> summarize(range(50))
-[WARNING 16:18:48.064] Skipped Bivariate Analysis: There are less than 2 numeric
- variables.
-                Overview
-                ========
+>>> eda_report.summarize(range(50))
+
 Name: var_1
 Type: numeric
+Non-null Observations: 50
 Unique Values: 50 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, [...]
 Missing Values: None
 
-          Summary Statistics
-          ------------------
-                                
-Number of observations  50.00000
-Average                 24.50000
-Standard Deviation      14.57738
-Minimum                  0.00000
-Lower Quartile          12.25000
-Median                  24.50000
-Upper Quartile          36.75000
-Maximum                 49.00000
-Skewness                 0.00000
-Kurtosis                -1.20000
+                  Summary Statistics
+                  ------------------
+        Average:                      24.5000
+        Standard Deviation:           14.5774
+        Minimum:                       0.0000
+        Lower Quartile:               12.2500
+        Median:                       24.5000
+        Upper Quartile:               36.7500
+        Maximum:                      49.0000
+        Skewness:                      0.0000
+        Kurtosis:                     -1.2000
 
-          Tests for Normality
-          -------------------
+                  Tests for Normality
+                  -------------------
                                p-value Conclusion at α = 0.05
 D'Agostino's K-squared test  0.0015981  Unlikely to be normal
 Kolmogorov-Smirnov test      0.0000000  Unlikely to be normal
 Shapiro-Wilk test            0.0580895        Possibly normal
->>> summarize(iris_data)
-                        OVERVIEW
-                        ========
-Numeric features: sepal_length, sepal_width, petal_length, petal_width
-Categorical features: species
+>>> eda_report.summarize(iris_data)
 
-          Summary Statistics (Numeric features)
-          -------------------------------------
-              count    mean     std  min  25%   50%  75%  max  skewness  kurtosis
-sepal_length  150.0  5.8433  0.8281  4.3  5.1  5.80  6.4  7.9    0.3149   -0.5521
-sepal_width   150.0  3.0573  0.4359  2.0  2.8  3.00  3.3  4.4    0.3190    0.2282
-petal_length  150.0  3.7580  1.7653  1.0  1.6  4.35  5.1  6.9   -0.2749   -1.4021
-petal_width   150.0  1.1993  0.7622  0.1  0.3  1.30  1.8  2.5   -0.1030   -1.3406
+                  Summary Statistics for Numeric features (4)
+                  -------------------------------------------
+                count     avg  stddev  min  25%   50%  75%  max  skewness  kurtosis
+  sepal_length    150  5.8433  0.8281  4.3  5.1  5.80  6.4  7.9    0.3149   -0.5521
+  sepal_width     150  3.0573  0.4359  2.0  2.8  3.00  3.3  4.4    0.3190    0.2282
+  petal_length    150  3.7580  1.7653  1.0  1.6  4.35  5.1  6.9   -0.2749   -1.4021
+  petal_width     150  1.1993  0.7622  0.1  0.3  1.30  1.8  2.5   -0.1030   -1.3406
 
-          Summary Statistics (Categorical features)
-          -----------------------------------------
-        count unique     top freq relative freq
-species   150      3  setosa   50        33.33%
+                Summary Statistics for Categorical features (1)
+                -----------------------------------------------
+                    count unique     top freq relative freq
+            species   150      3  setosa   50        33.33%
 
-          Pearson's Correlation (Top 20)
-          ------------------------------
-petal_length & petal_width --> very strong positive correlation (0.96)
-sepal_length & petal_length --> very strong positive correlation (0.87)
-sepal_length & petal_width --> very strong positive correlation (0.82)
-sepal_width & petal_length --> moderate negative correlation (-0.43)
-sepal_width & petal_width --> weak negative correlation (-0.37)
-sepal_length & sepal_width --> very weak negative correlation (-0.12)
+
+                        Pearson's Correlation (Top 20)
+                        ------------------------------
+      petal_length & petal_width -> very strong positive correlation (0.96)
+     sepal_length & petal_length -> very strong positive correlation (0.87)
+      sepal_length & petal_width -> very strong positive correlation (0.82)
+      sepal_width & petal_length -> moderate negative correlation (-0.43)
+       sepal_width & petal_width -> weak negative correlation (-0.37)
+      sepal_length & sepal_width -> very weak negative correlation (-0.12)

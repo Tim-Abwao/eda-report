@@ -7,7 +7,7 @@ from docx.shared import Inches, Pt
 from docx.text.paragraph import Paragraph
 from pandas import DataFrame, Series
 
-from eda_report.content import _ReportContent
+from eda_report._content import _ReportContent
 
 logging.basicConfig(
     format="[%(levelname)s %(asctime)s.%(msecs)03d] %(message)s",
@@ -20,8 +20,7 @@ mpl_logger.setLevel(logging.WARNING)
 
 
 class ReportDocument(_ReportContent):
-    """Creates a :class:`~docx.document.Document` with analysis results
-    using `python-docx`_.
+    """Creates a report :class:`~docx.document.Document` with analysis results.
 
     The report consists of 3 main sections:
 
@@ -29,18 +28,16 @@ class ReportDocument(_ReportContent):
     #. **Univariate Analysis**: Summary statistics and graphs for each feature.
     #. **Bivariate Analysis**: Pair-wise comparisons of numerical features.
 
-    .. _python-docx: https://python-docx.readthedocs.io/en/latest/
-
     Args:
         data (Iterable): The data to analyze.
         title (str, optional): The title to assign the report. Defaults to
             "Exploratory Data Analysis Report".
         graph_color (str, optional): The color to apply to the graphs.
             Defaults to "cyan".
-        groupby_data (Union[str, int], optional): The column to
+        groupby_variable (Union[str, int], optional): The column to
             use to group values. Defaults to None.
-        output_filename (str, optional): The file name or path to save the
-            document to. Defaults to "eda-report.docx".
+        output_filename (str, optional): The name/path to save the document
+            to. Defaults to "eda-report.docx".
         table_style (str, optional): The style to apply to the tables created.
             Defaults to "Table Grid".
     """
@@ -51,7 +48,7 @@ class ReportDocument(_ReportContent):
         *,
         title: str = "Exploratory Data Analysis Report",
         graph_color: str = "cyan",
-        groupby_data: Union[str, int] = None,
+        groupby_variable: Union[str, int] = None,
         output_filename: str = "eda-report.docx",
         table_style: str = "Table Grid",
     ) -> None:
@@ -59,7 +56,7 @@ class ReportDocument(_ReportContent):
             data,
             title=title,
             graph_color=graph_color,
-            groupby_data=groupby_data,
+            groupby_variable=groupby_variable,
         )
         self.OUTPUT_FILENAME = output_filename
         self.TABLE_STYLE = table_style
@@ -74,7 +71,7 @@ class ReportDocument(_ReportContent):
         logging.info(f"Done. Results saved as {self.OUTPUT_FILENAME!r}")
 
     def _create_cover_page(self) -> None:
-        """Add a title and a brief summary of the data."""
+        """Add a title and overview of the data."""
         self.document.add_heading(self.TITLE, level=0)
         self.document.add_paragraph(self.intro_text)
         self._get_numeric_overview_table()
@@ -231,7 +228,7 @@ class ReportDocument(_ReportContent):
         """Set the spacing above or below a paragraph.
 
         Args:
-            paragraph (Paragraph): A paragraph.
+            paragraph (docx.text.paragraph.Paragraph): A paragraph.
             before (int, optional): Size of spacing above the paragraph in pt.
                 Defaults to 15.
             after (int, optional): Size of spacing below the paragraph in pt.
@@ -253,10 +250,10 @@ class ReportDocument(_ReportContent):
 
         Args:
             data (DataFrame): The data to tabulate.
-            column_widths (Sequence, optional): Column specifications.
+            column_widths (Sequence, optional): Column dimensions in inches.
                 Defaults to ().
-            font_face (str, optional): Font typeface for cell text. Defaults
-                to "Courier New".
+            font_face (str, optional): Font for cell text. Defaults to
+                "Courier New".
             font_size (float, optional): Font size. Defaults to 10.
             style (str, optional): A `Word` table style. Defaults to
                 None.

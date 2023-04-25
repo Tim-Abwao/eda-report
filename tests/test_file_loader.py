@@ -1,8 +1,8 @@
 import pytest
 from pandas import DataFrame
 
+from eda_report._read_file import df_from_file
 from eda_report.exceptions import InputError
-from eda_report.read_file import df_from_file
 
 
 class TestFileLoader:

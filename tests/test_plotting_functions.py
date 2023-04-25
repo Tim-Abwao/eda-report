@@ -1,19 +1,19 @@
 from io import BytesIO
 
 import pytest
+from matplotlib.axes import Axes
 from matplotlib.colors import to_rgb
 from matplotlib.figure import Figure
-from matplotlib.axes import Axes
 from pandas import DataFrame, Series
 
 from eda_report.bivariate import Dataset
 from eda_report.plotting import (
+    _get_axes,
     _get_color_shades_of,
     _plot_dataset,
     _plot_regression,
     _plot_variable,
     _savefig,
-    _get_axes,
     bar_plot,
     box_plot,
     kde_plot,

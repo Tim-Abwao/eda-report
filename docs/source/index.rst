@@ -9,7 +9,7 @@ Speed up the `exploratory data analysis`_ and reporting process. Automatically a
 Descriptive statistics, bivariate analysis, tests for normality and more:
 
 .. literalinclude:: examples.txt
-   :lines: 155-156, 159-212
+   :lines: 145-170
 
 2. Revealing visualizations
 ---------------------------
@@ -18,9 +18,9 @@ Descriptive statistics, bivariate analysis, tests for normality and more:
 - *Bar-plots* for categorical variables.
 
 >>> import eda_report.plotting as ep
->>> fig = ep.regression_plot(mpg_data["acceleration"], mpg_data["horsepower"],
-...                          labels=("Acceleration", "Horsepower"))
->>> fig.savefig("regression-plot.png")
+>>> ax = ep.regression_plot(mpg_data["acceleration"], mpg_data["horsepower"],
+...                         labels=("Acceleration", "Horsepower"))
+>>> ax.figure.savefig("regression-plot.png")
 
 .. image:: _static/regression-plot.png
    :width: 80%
@@ -40,7 +40,7 @@ Descriptive statistics, bivariate analysis, tests for normality and more:
 An exploratory data analysis report document complete with variable descriptions, summary statistics, statistical plots, contingency tables and more:
 
 .. literalinclude:: examples.txt
-         :lines: 145-151
+         :lines: 135-141
 
 .. figure:: _static/report.*
    :alt: iris dataset report animation

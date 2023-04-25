@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-from eda_report.cli import run_from_cli
+from eda_report._cli import run_from_cli
 from eda_report.gui import EDAGUI
 
 

@@ -10,20 +10,13 @@ from pandas.api.types import (
 )
 from scipy import stats
 
-from eda_report.validate import validate_univariate_input
+from eda_report._validate import _validate_univariate_input
 
 
 class Variable:
 
-    """Defines objects that analyze one-dimensional datasets to obtain summary
-    statistics, and evaluate properties such as data type and missing values.
-
-    Input data is internally held as a :class:`~pandas.Series` in order
-    to leverage pandas_ built-in statistical methods, as well as functions
-    from the `SciPy ecosystem`_.
-
-    .. _pandas: https://pandas.pydata.org/
-    .. _SciPy ecosystem: https://www.scipy.org/
+    """Obtain summary statistics and properties such as data type, missing
+    value info, ..., from one-dimensional datasets.
 
     Args:
         data (Iterable): The data to analyze.
@@ -32,17 +25,17 @@ class Variable:
 
     Examples:
         .. literalinclude:: examples.txt
-           :lines: 6-22
+           :lines: 6-31
         .. literalinclude:: examples.txt
-           :lines: 26-53
+           :lines: 35-49
         .. literalinclude:: examples.txt
-           :lines: 57-76
+           :lines: 53-70
     """
 
     def __init__(self, data: Iterable, *, name: str = None) -> None:
-        data = validate_univariate_input(data, name=name)
+        data = _validate_univariate_input(data, name=name)
 
-        #: Optional[str]: The variable's *name*. If no name is specified
+        #: str: The variable's *name*. If no name is specified
         #: during instantiation, the name will be equal to the value of the
         #: ``name`` attribute of the input data (if present), or None.
         self.name = data.name
@@ -62,16 +55,16 @@ class Variable:
         self.missing = self._get_missing_values_info(data)
         self._num_non_null = len(data.dropna())
 
-        #: pandas.Series: Descriptive statistics
+        #: dict: Descriptive statistics
         self.summary_stats = self._get_summary_statistics(data)
         self._normality_test_results = self._test_for_normality(data)
+        self._most_common_categories = self._get_most_common_categories(data)
 
     def __repr__(self) -> str:
-        """Get the string representation of a variable based on it's summary
-        statistics.
+        """Define the string representation of a `Variable`.
 
         Returns:
-            str: Summary statistics.
+            str: Variable summary.
         """
         sample_values = shorten(
             f"{self.num_unique} -> {self.unique_values}", 60
@@ -82,9 +75,7 @@ class Variable:
                 f"Type: {self.var_type}",
                 f"Non-null Observations: {self._num_non_null}",
                 f"Unique Values: {sample_values}",
-                f"Missing Values: {self.missing}\n",
-                "\t\t  Summary Statistics",
-                "\t\t  ------------------",
+                f"Missing Values: {self.missing}",
             ]
         )
         if self.var_type == "numeric":
@@ -92,22 +83,38 @@ class Variable:
                 [
                     f"\t{key + ':':21} {value :>15.4f}"
                     for key, value in self.summary_stats.items()
-                ]
+                ],
             )
-            normality_test_results = "\n".join(
+            return "\n".join(
                 [
+                    f"{basic_details}\n",
+                    "\t\t  Summary Statistics",
+                    "\t\t  ------------------",
+                    summary_stats,
                     "\n\t\t  Tests for Normality",
                     "\t\t  -------------------",
                     f"{self._normality_test_results}",
                 ]
             )
+        elif self.var_type == "datetime":
+            summary_stats = "\n".join(
+                [
+                    f"\t{key + ':':18} {str(value):>22}"
+                    for key, value in self.summary_stats.items()
+                ],
+            )
             return "\n".join(
-                [basic_details, summary_stats, normality_test_results]
+                [
+                    f"{basic_details}\n",
+                    "\t\t  Summary Statistics",
+                    "\t\t  ------------------",
+                    summary_stats,
+                ]
             )
         else:
             summary_stats = "\n".join(
                 [
-                    f"\t{key + ':':21} {str(value):>15}"
+                    f"{key}: {value}"
                     for key, value in self.summary_stats.items()
                 ]
             )
@@ -130,8 +137,12 @@ class Variable:
     def _get_variable_type(self, data: Series) -> str:
         """Determine the variable type.
 
+        Args:
+            data (pandas.Series): The data to analyze.
+
         Returns:
-            str: The variable type.
+            str: The variable type: `boolean`, `categorical`, `datetime`,
+            `numeric` or `numeric (<10 levels)`.
         """
         if is_numeric_dtype(data):
             if is_bool_dtype(data) or set(data.dropna()) == {0, 1}:
@@ -146,12 +157,14 @@ class Variable:
             return "boolean"
         elif is_datetime64_any_dtype(data):
             return "datetime"
-
         else:
             return "categorical"
 
     def _get_missing_values_info(self, data: Series) -> Optional[str]:
-        """Get the number of values missing from the variable.
+        """Get the number of missing values.
+
+        Args:
+            data (pandas.Series): The data to analyze.
 
         Returns:
             Optional[str]: Details about the number of missing values.
@@ -163,7 +176,14 @@ class Variable:
             return f"{missing_values:,} ({missing_values / len(data):.2%})"
 
     def _get_summary_statistics(self, data: Series) -> Dict:
-        """Compute summary statistics for the variable based on data type."""
+        """Compute summary statistics for the variable based on data type.
+
+        Args:
+            data (pandas.Series): The data to analyze.
+
+        Returns:
+            Dict: Summary statistics.
+        """
         if self.var_type == "numeric":
             stats = data.describe()
             return {
@@ -202,6 +222,7 @@ class Variable:
         "Shapiro-Wilk" tests for normality.
 
         Args:
+            data (pandas.Series): The data to analyze.
             alpha (float, optional): The level of significance. Defaults to
                 0.05.
 
@@ -256,12 +277,23 @@ class Variable:
             }
 
     def rename(self, name: str) -> None:
+        """Update the variable's name.
+
+        Args:
+            name (str): New name.
+        """
         self.name = name
 
 
 def _analyze_univariate(name_and_data: Tuple) -> Variable:
-    """Helper function to concurrently analyze data with multiprocessing."""
+    """Helper function to concurrently analyze data with multiprocessing.
+
+    Args:
+        name_and_data (Tuple): Name and data.
+
+    Returns:
+        Variable: `Variable` instance.
+    """
     name, data = name_and_data
     var = Variable(data, name=name)
-
     return name, var

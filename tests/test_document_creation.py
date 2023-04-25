@@ -1,6 +1,6 @@
 from io import BytesIO
 
-from pandas.core.frame import DataFrame
+from pandas import DataFrame
 
 from eda_report.document import ReportDocument
 
@@ -13,7 +13,7 @@ class TestReportWithIdealInput:
         data,
         title="Test Report",
         graph_color="teal",
-        groupby_data="C",
+        groupby_variable="C",
         output_filename=BytesIO(),
     )
 

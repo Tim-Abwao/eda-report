@@ -86,9 +86,9 @@ class TestDataset:
 
     def test_repr(self):
         assert str(self.dataset) == (
-            "\t\t  Summary Statistics for Numeric features (1)\n\t\t  -------"
-            "------------------------------------\n     count   avg   stddev  "
-            "min    25%   50%    75%   max  skewness  kurtosis\n  A     50  "
+            "\n\t\t  Summary Statistics for Numeric features (1)\n\t\t  ------"
+            "-------------------------------------\n     count   avg   stddev "
+            " min    25%   50%    75%   max  skewness  kurtosis\n  A     50  "
             "24.5  14.5774  0.0  12.25  24.5  36.75  49.0       0.0      -1.2"
             "\n\n\t\tSummary Statistics for Categorical features (3)\n\t\t---"
             "--------------------------------------------\n\t      count "
@@ -103,8 +103,8 @@ class TestDataset:
     def test_numeric_only_repr(self):
         numeric_only = Dataset(sample_data[["A"]])
         assert str(numeric_only) == (
-            "\t\t  Summary Statistics for Numeric features (1)\n\t\t  -------"
-            "------------------------------------\n     count   avg   stddev "
+            "\n\t\t  Summary Statistics for Numeric features (1)\n\t\t  ------"
+            "-------------------------------------\n     count   avg   stddev "
             " min    25%   50%    75%   max  skewness  kurtosis\n  A     50  "
             "24.5  14.5774  0.0  12.25  24.5  36.75  49.0       0.0      -1.2"
             "\n\n\n\n\t"
@@ -141,8 +141,8 @@ class TestDataset:
         # displayed.
         assert len(plenty_numeric._correlation_descriptions) == 21
         assert str(plenty_numeric) == (
-            "\t\t  Summary Statistics for Numeric features (1)\n\t\t  -------"
-            "------------------------------------\n     count  avg  stddev  "
+            "\n\t\t  Summary Statistics for Numeric features (1)\n\t\t  ------"
+            "-------------------------------------\n     count  avg  stddev  "
             "min  25%  50%  75%   max  skewness  kurtosis\n  A     11  5.0  "
             "3.3166  0.0  2.5  5.0  7.5  10.0       0.0      -1.2\n\n\t\t"
             "Summary Statistics for Categorical features (6)\n\t\t------------"

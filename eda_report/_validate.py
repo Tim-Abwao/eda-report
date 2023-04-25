@@ -12,7 +12,7 @@ from eda_report.exceptions import (
 )
 
 
-def clean_column_labels(data: DataFrame) -> DataFrame:
+def _clean_column_labels(data: DataFrame) -> DataFrame:
     """Makes sure that columns have *meaningful* names.
 
     When creating a ``DataFrame`` from an ``Iterable``, if no column names
@@ -29,20 +29,19 @@ def clean_column_labels(data: DataFrame) -> DataFrame:
         data (pandas.DataFrame): Data to inspect and perhaps edit.
 
     Returns:
-        pandas.DataFrame: The ``data``, with reader-friendly column
+        pandas.DataFrame: The ``data``, with human-friendly column
         names.
     """
     if isinstance(data.columns, RangeIndex):
         data.columns = [f"var_{i+1}" for i in data.columns]
     elif is_numeric_dtype(data.columns):
         data.columns = [f"var_{i}" for i in data.columns]
-        return data
     else:
         data.columns = data.columns.map(str)
     return data
 
 
-def check_cardinality(groupby_data: Series, *, threshold: int = 10) -> None:
+def _check_cardinality(groupby_data: Series, *, threshold: int = 10) -> None:
     """Assesses whether the ``groupby_data`` has too many unique values
     (> ``threshold``, default 10).
 
@@ -65,9 +64,8 @@ def check_cardinality(groupby_data: Series, *, threshold: int = 10) -> None:
         raise GroupbyVariableError(message)
 
 
-def validate_multivariate_input(data: Iterable) -> DataFrame:
-    """Ensures that *multivariate input data* is of type
-    :class:`pandas.DataFrame`.
+def _validate_dataset(data: Iterable) -> DataFrame:
+    """Ensures that input data is of type :class:`pandas.DataFrame`.
 
     If it isn't, this attempts to explicitly cast it as a ``DataFrame``.
 
@@ -100,10 +98,10 @@ def validate_multivariate_input(data: Iterable) -> DataFrame:
         # Drop completely empty columns.
         .dropna(axis=1, how="all")
     )
-    return clean_column_labels(data_frame)
+    return _clean_column_labels(data_frame)
 
 
-def validate_univariate_input(
+def _validate_univariate_input(
     data: Iterable, *, name: str = None
 ) -> Optional[Series]:
     """Ensures that *univariate input data* is of type :class:`pandas.Series`.
@@ -138,15 +136,15 @@ def validate_univariate_input(
         return series
 
 
-def validate_groupby_data(
-    *, data: DataFrame, groupby_data: Union[int, str]
+def _validate_groupby_variable(
+    *, data: DataFrame, groupby_variable: Union[int, str]
 ) -> Optional[Series]:
     """Ensures that the specified column label/index for grouping values is
     present in the data.
 
     Args:
         data (DataFrame): The data being analyzed.
-        groupby_data (Union[int, str]): A column label or index.
+        groupby_variable (Union[int, str]): A column label or index.
 
     Raises:
         GroupbyVariableError: If the supplied column label does not exist, or
@@ -155,32 +153,32 @@ def validate_groupby_data(
     Returns:
         Optional[pandas.Series]: The groupby variable's data.
     """
-    if groupby_data is None:
+    if groupby_variable is None:
         return None
-    elif f"{groupby_data}".isdecimal():
-        idx = int(groupby_data)
+    elif f"{groupby_variable}".isdecimal():
+        idx = int(groupby_variable)
         try:
             groupby_data = data.iloc[:, idx]
         except IndexError:
             raise GroupbyVariableError(
-                f"Column index {groupby_data} is not in the range"
+                f"Column index {groupby_variable} is not in the range"
                 f" [0, {data.columns.size}]."
             )
-        check_cardinality(groupby_data)
+        _check_cardinality(groupby_data)
         return groupby_data
-    elif isinstance(groupby_data, str):
+    elif isinstance(groupby_variable, str):
         try:
-            groupby_data = data[groupby_data]
+            groupby_data = data[groupby_variable]
         except KeyError:
             raise GroupbyVariableError(
-                f"{groupby_data!r} is not in {data.columns.to_list()}"
+                f"{groupby_variable!r} is not in {data.columns.to_list()}"
             )
-        check_cardinality(groupby_data)
+        _check_cardinality(groupby_data)
         return groupby_data
     else:
         # If groupby_data is neither an index(int) or label(str)
         logging.warning(
-            f"Group-by variable '{groupby_data}' ignored."
+            f"Group-by variable '{groupby_variable}' ignored."
             " Not a valid column index or label."
         )
         return None

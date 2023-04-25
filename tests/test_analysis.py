@@ -2,7 +2,7 @@ from io import BytesIO
 
 from pandas import DataFrame, Series
 
-from eda_report.analysis import _AnalysisResult, _get_contingency_tables
+from eda_report._analysis import _AnalysisResult, _get_contingency_tables
 from eda_report.bivariate import Dataset
 
 data = DataFrame(
@@ -62,7 +62,7 @@ class TestGetContingencyTables:
 
 
 class TestAnalysisResult:
-    results = _AnalysisResult(data, graph_color="green", groupby_data="C")
+    results = _AnalysisResult(data, graph_color="green", groupby_variable="C")
 
     def test_general_properties(self):
         assert isinstance(self.results.dataset, Dataset)

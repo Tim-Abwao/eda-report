@@ -1,8 +1,8 @@
 import argparse
 from typing import Optional
 
+from eda_report._read_file import df_from_file
 from eda_report.document import ReportDocument
-from eda_report.read_file import df_from_file
 
 
 def process_cli_args() -> argparse.Namespace:
@@ -24,35 +24,30 @@ def process_cli_args() -> argparse.Namespace:
             "specified."
         ),
     )
-
     parser.add_argument(
         "-i",
         "--infile",
         type=df_from_file,
         help="A .csv or .xlsx file to analyze.",
     )
-
     parser.add_argument(
         "-o",
         "--outfile",
         default="eda-report.docx",
         help="The output name for analysis results (default: %(default)s)",
     )
-
     parser.add_argument(
         "-t",
         "--title",
         default="Exploratory Data Analysis Report",
         help="The top level heading for the report (default: %(default)s)",
     )
-
     parser.add_argument(
         "-c",
         "--color",
         default="cyan",
         help="The color to apply to graphs (default: %(default)s)",
     )
-
     parser.add_argument(
         "-g",
         "-T",
@@ -64,7 +59,6 @@ def process_cli_args() -> argparse.Namespace:
             " column label."
         ),
     )
-
     return parser.parse_args()
 
 
@@ -77,19 +71,16 @@ def run_from_cli() -> Optional[ReportDocument]:
     ``eda-report`` command (console script).
     """
     args = process_cli_args()
-
     if args.infile is None:
         from eda_report.gui import EDAGUI
-
         # Launch graphical user interface to select and analyze a file
         app = EDAGUI()
         app.mainloop()
-
     else:
         ReportDocument(
             args.infile,
             title=args.title,
             graph_color=args.color,
             output_filename=args.outfile,
-            groupby_data=args.groupby,
+            groupby_variable=args.groupby,
         )

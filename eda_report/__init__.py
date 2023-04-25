@@ -1,12 +1,12 @@
 from collections.abc import Iterable
 from typing import Union
 
+from eda_report._validate import _validate_dataset
 from eda_report.bivariate import Dataset
 from eda_report.document import ReportDocument
 from eda_report.univariate import Variable
-from eda_report.validate import validate_multivariate_input
 
-__version__ = "2.8.0.a"
+__version__ = "2.8.0.b"
 
 
 def get_word_report(
@@ -14,11 +14,12 @@ def get_word_report(
     *,
     title: str = "Exploratory Data Analysis Report",
     graph_color: str = "cyan",
-    groupby_data: Union[str, int] = None,
+    groupby_variable: Union[str, int] = None,
     output_filename: str = "eda-report.docx",
     table_style: str = "Table Grid",
 ) -> ReportDocument:
-    """Analyzes data, and generates a report in *Word* (*.docx*) format.
+    """Analyze `data`, and generate a report document in *Word* (*.docx*)
+    format.
 
     Args:
         data (Iterable): The data to analyze.
@@ -26,9 +27,9 @@ def get_word_report(
             "Exploratory Data Analysis Report".
         graph_color (str, optional): The color to apply to the graphs.
             Defaults to "cyan".
-        groupby_data (Union[str, int], optional): The label/index for the
+        groupby_variable (Union[str, int], optional): The label/index for the
             column to use to group values. Defaults to None.
-        output_filename (str, optional): The name and path to save the report
+        output_filename (str, optional): The name/path to save the report
             document. Defaults to "eda-report.docx".
         table_style (str, optional): The style to apply to the tables created.
             Defaults to "Table Grid".
@@ -38,15 +39,14 @@ def get_word_report(
 
     Example:
         .. literalinclude:: examples.txt
-           :lines: 145-151
-
+           :lines: 135-141
     """
     return ReportDocument(
         data,
         title=title,
         graph_color=graph_color,
         output_filename=output_filename,
-        groupby_data=groupby_data,
+        groupby_variable=groupby_variable,
         table_style=table_style,
     )
 
@@ -58,14 +58,13 @@ def summarize(data: Iterable) -> Union[Variable, Dataset]:
         data (Iterable): The data to analyze.
 
     Returns:
-        Dataset: Analysis results.
+        Union[Variable, Dataset]: Analysis results.
 
-    Examples:
+    Example:
         .. literalinclude:: examples.txt
-           :lines: 155-212
-
+           :lines: 171-194
     """
-    data = validate_multivariate_input(data)
+    data = _validate_dataset(data)
     if data.shape[1] == 1:
         return Variable(data.squeeze())
     else:
