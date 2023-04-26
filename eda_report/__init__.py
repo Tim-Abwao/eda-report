@@ -6,7 +6,7 @@ from eda_report.bivariate import Dataset
 from eda_report.document import ReportDocument
 from eda_report.univariate import Variable
 
-__version__ = "2.8.0.b"
+__version__ = "2.8.0"
 
 
 def get_word_report(
