@@ -41,7 +41,7 @@ class Variable:
         self.name = data.name
 
         #: str: The variable's *type* — one of *"boolean"*, *"categorical"*,
-        #: *"datetime"*, *"numeric"* or *"numeric (<10 levels)"*.
+        #: *"datetime"*, *"numeric"* or *"numeric (<=10 levels)"*.
         self.var_type = self._get_variable_type(data)
 
         #: int: The *number of unique values* present in the variable.
@@ -150,7 +150,7 @@ class Variable:
                 return "boolean"
             elif data.nunique() <= 10:
                 # Consider numeric data with <= 10 unique values categorical
-                return "numeric (<10 levels)"
+                return "numeric (<=10 levels)"
             else:
                 return "numeric"
         elif set(data.dropna()) in [{False, True}, {"No", "Yes"}, {"N", "Y"}]:

@@ -298,7 +298,7 @@ def _plot_variable(variable_data_hue_and_color: Tuple) -> Tuple:
                 data, label=variable.name, marker_color=color
             ),
         }
-    else:  # {"boolean", "categorical", "datetime", "numeric (<10 levels)"}
+    else:  # {"boolean", "categorical", "datetime", "numeric (<=10 levels)"}
         plots = {"bar_plot": bar_plot(data, label=variable.name, color=color)}
 
     graph_images = {name: _savefig(ax.figure) for name, ax in plots.items()}

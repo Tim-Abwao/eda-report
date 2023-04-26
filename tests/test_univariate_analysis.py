@@ -59,7 +59,7 @@ class TestCategoricalVariables:
 
     def test_variable_type(self):
         assert self.categorical_variable.var_type == "categorical"
-        assert self.numeric_categories.var_type == "numeric (<10 levels)"
+        assert self.numeric_categories.var_type == "numeric (<=10 levels)"
 
     def test_summary_statistics(self):
         assert self.categorical_variable.summary_stats == {
