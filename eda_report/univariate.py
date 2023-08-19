@@ -16,7 +16,7 @@ from eda_report._validate import _validate_univariate_input
 class Variable:
 
     """Obtain summary statistics and properties such as data type, missing
-    value info, ..., from one-dimensional datasets.
+    value info, cardinality & unique values from one-dimensional datasets.
 
     Args:
         data (Iterable): The data to analyze.
@@ -35,12 +35,12 @@ class Variable:
     def __init__(self, data: Iterable, *, name: str = None) -> None:
         data = _validate_univariate_input(data, name=name)
 
-        #: str: The variable's *name*. If no name is specified
-        #: during instantiation, the name will be equal to the value of the
-        #: ``name`` attribute of the input data (if present), or None.
+        #: str: The variable's *name*. If no name is specified, the name will
+        #: be set the value of the ``name`` attribute of the input data, or 
+        #: ``None``.
         self.name = data.name
 
-        #: str: The variable's *type* — one of *"boolean"*, *"categorical"*,
+        #: str: The type of variable — one of *"boolean"*, *"categorical"*,
         #: *"datetime"*, *"numeric"* or *"numeric (<=10 levels)"*.
         self.var_type = self._get_variable_type(data)
 
@@ -53,10 +53,11 @@ class Variable:
         #: str: The number of *missing values* in the form
         #: ``number (percentage%)`` e.g "4 (16.67%)".
         self.missing = self._get_missing_values_info(data)
-        self._num_non_null = len(data.dropna())
 
         #: dict: Descriptive statistics
         self.summary_stats = self._get_summary_statistics(data)
+
+        self._num_non_null = len(data.dropna())
         self._normality_test_results = self._test_for_normality(data)
         self._most_common_categories = self._get_most_common_categories(data)
 
@@ -120,7 +121,7 @@ class Variable:
             )
             most_common = "\n".join(
                 [
-                    f"{str(key):>24}: {value:}"
+                    f"{str(key):>24}: {value}"
                     for key, value in self._most_common_categories.items()
                 ]
             )
@@ -146,14 +147,20 @@ class Variable:
         """
         if is_numeric_dtype(data):
             if is_bool_dtype(data) or set(data.dropna()) == {0, 1}:
-                # Consider boolean data as categorical
+                # Consider data consisting of ones and zeros as boolean
                 return "boolean"
             elif data.nunique() <= 10:
-                # Consider numeric data with <= 10 unique values categorical
+                # Consider numeric data with cardinality <= 10 as categorical
                 return "numeric (<=10 levels)"
             else:
                 return "numeric"
-        elif set(data.dropna()) in [{False, True}, {"No", "Yes"}, {"N", "Y"}]:
+        # Accomodate common values for boolean variables
+        elif set(data.dropna()) in [
+            {False, True},
+            {"False", "True"},
+            {"No", "Yes"},
+            {"N", "Y"},
+        ]:
             return "boolean"
         elif is_datetime64_any_dtype(data):
             return "datetime"

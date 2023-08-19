@@ -130,6 +130,10 @@ def _validate_univariate_input(
             raise InputError(
                 f"Expected a one-dimensional sequence, but got {type(data)}."
             )
+    # Convert potentially mixed-type items to strings
+    if series.dtype == "O":
+        series = series.astype("string")
+
     if series.shape[0] == 0:
         raise EmptyDataError("No data to process.")
     else:

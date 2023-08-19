@@ -68,6 +68,11 @@ class TestUnivariateInputValidation:
             _validate_univariate_input((x**2 for x in range(10))), Series
         )
 
+    def test_mixed_type_input(self):
+        # Check that mixed data is stored as strings, not objects
+        mixed_data = _validate_univariate_input([1, 3, True, "hello"])
+        assert mixed_data.dtype == "string"
+
     def test_empty_input(self):
         with pytest.raises(EmptyDataError) as error:
             _validate_univariate_input(x for x in [])
