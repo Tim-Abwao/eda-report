@@ -3,6 +3,7 @@ UNIVARIATE
 
 Numeric
 -------
+>>> from eda_report.univariate import Variable
 >>> Variable(range(1, 51), name="1 to 50")
 
 Name: 1 to 50

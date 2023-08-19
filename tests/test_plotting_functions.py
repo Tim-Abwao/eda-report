@@ -8,7 +8,7 @@ from pandas import DataFrame, Series
 
 from eda_report.bivariate import Dataset
 from eda_report.plotting import (
-    _get_axes,
+    _get_or_validate_axes,
     _get_color_shades_of,
     _plot_dataset,
     _plot_regression,
@@ -37,17 +37,17 @@ def test_get_color_shades_of():
 
 class TestGetAxesFunction:
     def test_without_input(self):
-        ax = _get_axes()
+        ax = _get_or_validate_axes()
         assert isinstance(ax, Axes)
 
     def test_with_axes_input(self):
         ax1 = Figure().subplots()
-        ax2 = _get_axes(ax1)
+        ax2 = _get_or_validate_axes(ax1)
         assert ax1 is ax2
 
     def test_with_invalid_input(self):
         with pytest.raises(TypeError) as error:
-            _get_axes(123)
+            _get_or_validate_axes(123)
         # Check that the error message is as expected
         assert "Invalid input for 'ax': <class 'int'>" in str(error.value)
 

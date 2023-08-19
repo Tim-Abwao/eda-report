@@ -16,7 +16,7 @@ from eda_report._validate import _validate_univariate_input
 class Variable:
 
     """Obtain summary statistics and properties such as data type, missing
-    value info, cardinality & unique values from one-dimensional datasets.
+    value info & cardinality from one-dimensional datasets.
 
     Args:
         data (Iterable): The data to analyze.
@@ -25,11 +25,11 @@ class Variable:
 
     Examples:
         .. literalinclude:: examples.txt
-           :lines: 6-31
+           :lines: 6-32
         .. literalinclude:: examples.txt
-           :lines: 35-49
+           :lines: 36-50
         .. literalinclude:: examples.txt
-           :lines: 53-70
+           :lines: 54-71
     """
 
     def __init__(self, data: Iterable, *, name: str = None) -> None:
@@ -51,7 +51,7 @@ class Variable:
         self.unique_values = sorted(data.dropna().unique())
 
         #: str: The number of *missing values* in the form
-        #: ``number (percentage%)`` e.g "4 (16.67%)".
+        #: ``number (% of total count)`` e.g "4 (16.67%)".
         self.missing = self._get_missing_values_info(data)
 
         #: dict: Descriptive statistics

@@ -51,7 +51,7 @@ class EDAGUI(Frame):  # pragma: no cover
     Afterwards, a final file-dialog appears to help set the destination
     for the generated report.
 
-    .. hint::
+    .. tip::
         For help with `Tk` - related issues, consider visiting `TkDocs`_.
 
     .. _`TkDocs`: https://tkdocs.com/index.html

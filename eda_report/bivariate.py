@@ -75,7 +75,7 @@ class Dataset:
 
     Example:
         .. literalinclude:: examples.txt
-           :lines: 78-100
+           :lines: 79-101
     """
 
     def __init__(self, data: Iterable) -> None:
@@ -174,7 +174,7 @@ class Dataset:
         else:
             for col in categorical_data:
                 # Convert categorical columns with "unique ratio" < 0.3 to
-                # categorical dtype, reducing memory usage.
+                # categorical dtype, which would consume much less memory.
                 if (
                     categorical_data[col].nunique() / len(categorical_data)
                 ) < 0.3:

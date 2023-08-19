@@ -39,7 +39,7 @@ def get_word_report(
 
     Example:
         .. literalinclude:: examples.txt
-           :lines: 135-141
+           :lines: 136-142
     """
     return ReportDocument(
         data,
@@ -62,7 +62,7 @@ def summarize(data: Iterable) -> Union[Variable, Dataset]:
 
     Example:
         .. literalinclude:: examples.txt
-           :lines: 171-194
+           :lines: 172-195
     """
     data = _validate_dataset(data)
     if data.shape[1] == 1:

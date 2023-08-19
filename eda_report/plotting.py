@@ -40,12 +40,8 @@ REGPLOT_RC_PARAMS = {**GENERAL_RC_PARAMS, "figure.figsize": (5.2, 5)}
 @mpl.rc_context(GENERAL_RC_PARAMS)
 def _savefig(figure: Figure) -> BytesIO:
     """Saves the contents of a :class:`~matplotlib.figure.Figure` in PNG
-    format, as bytes in a file-like object.
-
-    This is a utility function helpful in by-passing the *filesystem*. Graphs
-    are stored in :class:`~io.BytesIO` objects, and can then be read
-    directly as *attributes*, thus allowing rapid in-memory access when
-    compiling the report.
+    format, as bytes in a file-like object. This allows rapid in-memory 
+    access when compiling the report.
 
     Args:
         figure (matplotlib.figure.Figure): Graph content.
@@ -58,8 +54,8 @@ def _savefig(figure: Figure) -> BytesIO:
     return graph
 
 
-def _get_axes(ax: Axes = None) -> Axes:
-    """Validate or create an Axes instance.
+def _get_or_validate_axes(ax: Axes = None) -> Axes:
+    """Create or validate an Axes instance.
 
     Args:
         ax (matplotlib.axes.Axes, optional): Axes instance. Defaults to None.
@@ -116,7 +112,7 @@ def box_plot(
     """
     original_data = _validate_univariate_input(data)
     data = original_data.dropna()
-    ax = _get_axes(ax)
+    ax = _get_or_validate_axes(ax)
     if hue is None:
         bxplot = ax.boxplot(
             data,
@@ -170,7 +166,7 @@ def kde_plot(
     """
     original_data = _validate_univariate_input(data)
     data = original_data.dropna()
-    ax = _get_axes(ax)
+    ax = _get_or_validate_axes(ax)
     if len(data) < 2 or np.isclose(data.std(), 0):
         msg = "[Could not plot kernel density estimate.\n Data is singular.]"
         ax.text(x=0.08, y=0.45, s=msg, color="#f72", size=14, weight=600)
@@ -229,7 +225,7 @@ def prob_plot(
     """
     original_data = _validate_univariate_input(data)
     data = original_data.dropna()
-    ax = _get_axes(ax)
+    ax = _get_or_validate_axes(ax)
     probplot(data, fit=True, plot=ax)
     ax.lines[0].set_color(marker_color)
     ax.lines[1].set_color(line_color)
@@ -259,7 +255,7 @@ def bar_plot(
     """
     original_data = _validate_univariate_input(data)
     data = original_data.dropna()
-    ax = _get_axes(ax)
+    ax = _get_or_validate_axes(ax)
     # Include no more than 10 of the most common values
     top_10 = data.value_counts().nlargest(10)
     bars = ax.bar(top_10.index.map(str), top_10, alpha=0.8, color=color)
@@ -341,7 +337,7 @@ def plot_correlation(
     # Reverse items so largest values appear at the top.
     corr_data = dict(reversed(pairs_to_show))
     labels = [" vs ".join(pair) for pair in corr_data.keys()]
-    ax = _get_axes(ax)
+    ax = _get_or_validate_axes(ax)
     ax.barh(labels, corr_data.values(), edgecolor="#222", linewidth=0.5)
     ax.set_xlim(-1.1, 1.1)
     ax.spines["left"].set_position("zero")  # Place y-axis spine at x=0
@@ -364,7 +360,7 @@ def plot_correlation(
             ax.text(
                 p.get_x(),
                 p.get_y() + p.get_height() / 2,
-                f"  {p.get_width():,.2}  ({label})",
+                f"  {p.get_width():,.2} ({label})",
                 size=8,
                 ha="left",
                 va="center",
@@ -383,7 +379,7 @@ def regression_plot(
     line_color: Union[str, Sequence] = "#444",
     ax: Axes = None,
 ) -> Axes:
-    """Get a regression-plot from the provided pair of values.
+    """Get a regression-plot from the provided pair of numeric values.
 
     Args:
         x (Iterable): Numeric values.
@@ -404,12 +400,12 @@ def regression_plot(
     if len(data) > 50000:
         data = data.sample(50000)
 
-    ax = _get_axes(ax)
+    ax = _get_or_validate_axes(ax)
     x = data[var1]
     y = data[var2]
     slope, intercept = np.polyfit(x, y, deg=1)
     ax.scatter(x, y, s=40, alpha=0.7, color=marker_color, edgecolors="#444")
-    reg_line_x = np.linspace(x.min(), x.max(), num=100)
+    reg_line_x = np.linspace(x.min(), x.max(), num=20)
     reg_line_y = slope * reg_line_x + intercept
     ax.plot(reg_line_x, reg_line_y, color=line_color, lw=2)
     ax.set_title(
