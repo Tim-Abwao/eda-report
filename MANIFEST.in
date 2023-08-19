@@ -1,1 +1,2 @@
 include eda_report/images/*.png
+exclude tests/*
