@@ -44,6 +44,7 @@ You can use the :func:`~eda_report.summarize` function to analyze datasets:
    :lines: 146-171
 .. literalinclude:: examples.txt
    :lines: 172-195
+
 You can plot several statistical graphs (see :ref:`plotting-examples`):
 
 >>> import eda_report.plotting as ep
