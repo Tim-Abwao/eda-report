@@ -2,6 +2,7 @@ from collections.abc import Iterable
 from textwrap import shorten
 from typing import Dict, Optional, Tuple
 
+import numpy as np
 from pandas import DataFrame, Series
 from pandas.api.types import (
     is_bool_dtype,
@@ -47,8 +48,8 @@ class Variable:
         #: int: The *number of unique values* present in the variable.
         self.num_unique = data.nunique()
 
-        #: list: The *unique values* present in the variable.
-        self.unique_values = sorted(data.dropna().unique())
+        #: numpy.ndarray: The *unique values* present in the variable.
+        self.unique_values = np.sort(data.dropna().unique())
 
         #: str: The number of *missing values* in the form
         #: ``number (% of total count)`` e.g "4 (16.67%)".
@@ -68,7 +69,9 @@ class Variable:
             str: Variable summary.
         """
         sample_values = shorten(
-            f"{self.num_unique} -> {self.unique_values}", 60
+            f"{self.num_unique} -> {self.unique_values}",
+            width=60,
+            placeholder=" ... ]",
         )
         basic_details = "\n".join(
             [
