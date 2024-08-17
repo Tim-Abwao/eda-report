@@ -48,7 +48,7 @@ class TestGeneralVariableProperties:
         assert self.variable.unique_values == pytest.approx(list(range(20)))
 
         assert self.unnamed_variable.num_unique == 4
-        assert self.unnamed_variable.unique_values == list("abde")
+        assert all(self.unnamed_variable.unique_values == list("abde"))
 
 
 class TestCategoricalVariables:
@@ -79,12 +79,13 @@ class TestCategoricalVariables:
 
     def test_repr(self):
         assert str(self.categorical_variable) == (
-            "\nName: None\nType: categorical\nNon-null Observations: 5\nUniqu"
-            "e Values: 4 -> ['a', 'b', 'c', 'd']\nMissing Values: 1 (16.67%)"
-            "\nMode (Most frequent): a\nMaximum frequency: 2\n\n\t\tMost Comm"
-            "on Items\n\t\t-----------------\n                       a: 2 (40"
-            ".00%)\n                       b: 1 (20.00%)\n                   "
-            "    c: 1 (20.00%)\n                       d: 1 (20.00%)"
+            "\nName: None\nType: categorical\nNon-null Observations: 5"
+            "\nUnique Values: 4 -> ['a' 'b' 'c' 'd']\nMissing Values: "
+            "1 (16.67%)\nMode (Most frequent): a\nMaximum frequency: 2"
+            "\n\n\t\tMost Common Items\n\t\t-----------------\n       "
+            "                a: 2 (40.00%)\n                       b: "
+            "1 (20.00%)\n                       c: 1 (20.00%)\n       "
+            "                d: 1 (20.00%)"
         )
 
 
@@ -126,14 +127,14 @@ class TestDateTimeVariables:
 
     def test_repr(self):
         assert str(self.datetime_variable) == (
-            "\nName: dates\nType: datetime\nNon-null Observations: 10\nUnique"
-            " Values: 10 -> [Timestamp('2022-01-01 00:00:00'), [...]\nMissing"
-            " Values: None\n\n\t\t  Summary Statistics\n\t\t  ---------------"
-            "---\n\tAverage:              2022-01-05 12:00:00\n\tMinimum:    "
-            "          2022-01-01 00:00:00\n\tLower Quartile:       2022-01-0"
-            "3 06:00:00\n\tMedian:               2022-01-05 12:00:00\n\tUpper"
-            " Quartile:       2022-01-07 18:00:00\n\tMaximum:              20"
-            "22-01-10 00:00:00"
+            "\nName: dates\nType: datetime\nNon-null Observations: 10\n"
+            "Unique Values: 10 -> ['2022-01-01T00:00:00.000000000' ... "
+            "]\nMissing Values: None\n\n\t\t  Summary Statistics\n\t\t "
+            " ------------------\n\tAverage:              2022-01-05 12"
+            ":00:00\n\tMinimum:              2022-01-01 00:00:00\n\t"
+            "Lower Quartile:       2022-01-03 06:00:00\n\tMedian:      "
+            "         2022-01-05 12:00:00\n\tUpper Quartile:       2022"
+            "-01-07 18:00:00\n\tMaximum:              2022-01-10 00:00:00"
         )
 
 
@@ -167,7 +168,7 @@ class TestNumericVariable:
             "p-value": {
                 "D'Agostino's K-squared test": "0.0015981",
                 "Kolmogorov-Smirnov test": "0.0000000",
-                "Shapiro-Wilk test": "0.0580895",
+                "Shapiro-Wilk test": "0.0580919",
             },
             "Conclusion at α = 0.05": {
                 "D'Agostino's K-squared test": "Unlikely to be normal",
@@ -178,20 +179,22 @@ class TestNumericVariable:
 
     def test_repr(self):
         assert str(self.numeric_variable) == (
-            "\nName: 1 to 50\nType: numeric\nNon-null Observations: 50\nUniqu"
-            "e Values: 50 -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, ["
-            "...]\nMissing Values: None\n\n\t\t  Summary Statistics\n\t\t  --"
-            "----------------\n\tAverage:                      24.5000\n\tSta"
-            "ndard Deviation:           14.5774\n\tMinimum:                  "
-            "     0.0000\n\tLower Quartile:               12.2500\n\tMedian: "
-            "                      24.5000\n\tUpper Quartile:               3"
-            "6.7500\n\tMaximum:                      49.0000\n\tSkewness:    "
-            "                  0.0000\n\tKurtosis:                     -1.200"
-            "0\n\n\t\t  Tests for Normality\n\t\t  -------------------\n     "
-            "                          p-value Conclusion at α = 0.05\nD'Agos"
-            "tino's K-squared test  0.0015981  Unlikely to be normal\nKolmogo"
-            "rov-Smirnov test      0.0000000  Unlikely to be normal\nShapiro-"
-            "Wilk test            0.0580895        Possibly normal"
+            "\nName: 1 to 50\nType: numeric\nNon-null Observations: 50"
+            "\nUnique Values: 50 -> [ 0 1 2 3 4 5 6 7 8 9 10 11 12 13 1"
+            "4 15 16 17 18 ... ]\nMissing Values: None\n\n\t\t  Summary"
+            " Statistics\n\t\t  ------------------\n\tAverage:         "
+            "             24.5000\n\tStandard Deviation:           14.5"
+            "774\n\tMinimum:                       0.0000\n\tLower Quar"
+            "tile:               12.2500\n\tMedian:                    "
+            "   24.5000\n\tUpper Quartile:               36.7500\n\tMax"
+            "imum:                      49.0000\n\tSkewness:           "
+            "           0.0000\n\tKurtosis:                     -1.2000"
+            "\n\n\t\t  Tests for Normality\n\t\t  -------------------\n"
+            "                               p-value Conclusion at α = 0"
+            ".05\nD'Agostino's K-squared test  0.0015981  Unlikely to "
+            "be normal\nKolmogorov-Smirnov test      0.0000000  Unlikel"
+            "y to be normal\nShapiro-Wilk test            0.0580919    "
+            "    Possibly normal"
         )
 
 

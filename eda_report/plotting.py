@@ -40,7 +40,7 @@ REGPLOT_RC_PARAMS = {**GENERAL_RC_PARAMS, "figure.figsize": (5.2, 5)}
 @mpl.rc_context(GENERAL_RC_PARAMS)
 def _savefig(figure: Figure) -> BytesIO:
     """Saves the contents of a :class:`~matplotlib.figure.Figure` in PNG
-    format, as bytes in a file-like object. This allows rapid in-memory 
+    format, as bytes in a file-like object. This allows rapid in-memory
     access when compiling the report.
 
     Args:
@@ -116,7 +116,7 @@ def box_plot(
     if hue is None:
         bxplot = ax.boxplot(
             data,
-            labels=[label],
+            tick_labels=[label],
             sym=".",
             boxprops=dict(facecolor=color, alpha=0.75),
         )
@@ -124,7 +124,9 @@ def box_plot(
     else:
         hue = _validate_univariate_input(hue)[original_data.notna()]
         groups = {key: sub_series for key, sub_series in data.groupby(hue)}
-        bxplot = ax.boxplot(groups.values(), labels=groups.keys(), sym=".")
+        bxplot = ax.boxplot(
+            groups.values(), tick_labels=groups.keys(), sym="."
+        )
 
         if color is None:
             colors = [f"C{idx}" for idx in range(hue.nunique())]

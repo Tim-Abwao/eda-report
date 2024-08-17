@@ -15,7 +15,6 @@ from eda_report._validate import _validate_univariate_input
 
 
 class Variable:
-
     """Obtain summary statistics and properties such as data type, missing
     value info & cardinality from one-dimensional datasets.
 
@@ -37,7 +36,7 @@ class Variable:
         data = _validate_univariate_input(data, name=name)
 
         #: str: The variable's *name*. If no name is specified, the name will
-        #: be set the value of the ``name`` attribute of the input data, or 
+        #: be set the value of the ``name`` attribute of the input data, or
         #: ``None``.
         self.name = data.name
 
