@@ -13,20 +13,20 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     env:
       OS: ${{ matrix.os }}
-      PYTHON: "3.11"
+      PYTHON: "3.12"
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: "3.11"
+        python-version: "3.12"
     - name: Generate coverage report
       run: |
         pip install -r requirements-dev.txt
         coverage run -m pytest
         coverage combine
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         env_vars: OS,PYTHON
         flags: unittests
