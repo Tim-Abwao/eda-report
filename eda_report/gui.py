@@ -13,9 +13,10 @@ try:
     from tkinter.simpledialog import askstring
 except (ImportError, ModuleNotFoundError) as error:
     print(
-        f"{error}.\nPlease visit https://tkdocs.com/tutorial/install.html for"
-        " help installing it.\n\nOr just specify CLI args. Try eda-report -h "
-        "for more details."
+        f"Unable to lauch app window because:\n\n\t* {error}.\n\n"
+        "Please visit https://tkdocs.com/tutorial/install.html for"
+        " help installing it.\n\nYou can still use the eda-report command. "
+        "Try 'eda-report -h' for more details.\n"
     )
     exit()
 
