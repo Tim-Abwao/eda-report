@@ -2,7 +2,7 @@ Installation
 ------------
 
 .. important::
-    Only **Python3.9 to 3.11** are currently supported.
+    Only **Python3.10 to 3.12** are currently supported.
 
 .. tip::
    Consider using a `virtual environment`_. Virtual environments are a great way to ensure that you install the right versions of dependencies, while avoiding breaking other Python packages in your system.
