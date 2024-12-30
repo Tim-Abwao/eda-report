@@ -1,5 +1,5 @@
 from io import BytesIO
-from multiprocessing import Pool
+from multiprocessing import get_context
 from typing import Dict, Iterable, Optional, Sequence, Tuple, Union
 
 import matplotlib as mpl
@@ -458,7 +458,7 @@ def _plot_dataset(variables: Dataset, color: str = None) -> Optional[Dict]:
         pairs_to_include = [
             pair for pair, _ in variables._correlation_values[:20]
         ]
-        with Pool() as p:
+        with get_context("spawn").Pool() as p:
             paired_data = [
                 (variables.data.loc[:, pair], color)
                 for pair in pairs_to_include

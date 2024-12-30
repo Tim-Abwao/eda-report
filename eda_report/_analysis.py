@@ -1,4 +1,4 @@
-from multiprocessing import Pool
+from multiprocessing import get_context
 from typing import Dict, Iterable, Optional, Union
 
 import pandas as pd
@@ -8,6 +8,8 @@ from eda_report._validate import _validate_groupby_variable
 from eda_report.bivariate import Dataset
 from eda_report.plotting import _plot_dataset, _plot_variable
 from eda_report.univariate import Variable, _analyze_univariate
+
+mp_context = get_context("spawn")  # Use "spawn" start method
 
 
 def _get_contingency_tables(
@@ -77,7 +79,7 @@ class _AnalysisResult:
             Dict[str, Variable]: Univariate analysis results.
         """
         data = self.dataset.data
-        with Pool() as p:
+        with mp_context.Pool() as p:
             univariate_stats = dict(
                 tqdm(
                     # Analyze variables concurrently
@@ -132,7 +134,8 @@ class _AnalysisResult:
         Returns:
             Dict[str, Dict]: Univariate graphs.
         """
-        with Pool() as p:
+
+        with mp_context.Pool() as p:
             data = self.dataset.data
             variable_data_hue_and_color = [
                 (
