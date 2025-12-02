@@ -3,7 +3,7 @@ coverage==7.6.10
 cycler==0.12.1
 et_xmlfile==2.0.0
 flake8==7.1.1
-fonttools==4.55.3
+fonttools==4.61.0
 iniconfig==2.0.0
 kiwisolver==1.4.8
 lxml==5.3.0
