@@ -87,7 +87,7 @@ class TestUnivariateInputValidation:
             _validate_univariate_input(DataFrame([1, 2, 3]))
         assert (
             "Expected a one-dimensional sequence, but got "
-            "<class 'pandas.core.frame.DataFrame'>."
+            "<class 'pandas.DataFrame'>."
         ) in str(error.value)
 
 

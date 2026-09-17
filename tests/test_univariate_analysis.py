@@ -127,14 +127,14 @@ class TestDateTimeVariables:
 
     def test_repr(self):
         assert str(self.datetime_variable) == (
-            "\nName: dates\nType: datetime\nNon-null Observations: 10\n"
-            "Unique Values: 10 -> ['2022-01-01T00:00:00.000000000' ... "
-            "]\nMissing Values: None\n\n\t\t  Summary Statistics\n\t\t "
-            " ------------------\n\tAverage:              2022-01-05 12"
-            ":00:00\n\tMinimum:              2022-01-01 00:00:00\n\t"
-            "Lower Quartile:       2022-01-03 06:00:00\n\tMedian:      "
-            "         2022-01-05 12:00:00\n\tUpper Quartile:       2022"
-            "-01-07 18:00:00\n\tMaximum:              2022-01-10 00:00:00"
+            "\nName: dates\nType: datetime\nNon-null Observations: 10\nUnique"
+            " Values: 10 -> ['2022-01-01T00:00:00.000000' ... ]\nMissing "
+            "Values: None\n\n\t\t  Summary Statistics\n\t\t  ----------------"
+            "--\n\tAverage:              2022-01-05 12:00:00\n\tMinimum:     "
+            "         2022-01-01 00:00:00\n\tLower Quartile:       2022-01-03"
+            " 06:00:00\n\tMedian:               2022-01-05 12:00:00\n\tUpper "
+            "Quartile:       2022-01-07 18:00:00\n\tMaximum:              "
+            "2022-01-10 00:00:00"
         )
 
 
