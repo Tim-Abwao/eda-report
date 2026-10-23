@@ -20,7 +20,7 @@ matplotlib==3.11.2
 numpy==2.5.3
 packaging==26.3
 pandas==3.0.5
-pillow==12.3.0
+pillow==13.0.0
 Pygments==2.21.0
 pyparsing==3.3.2
 python-dateutil==2.9.0.post0
